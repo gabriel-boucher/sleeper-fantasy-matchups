@@ -1,50 +1,67 @@
-import { Matchup, MatchupId, RosterId, Team, User } from "./data";
-import { DraftDto, MatchupDto, UserDto } from "./dto";
+import { League, LeagueSeason, Matchup, MatchupId, RosterId, Team, User } from "./data";
+import { LeagueDto, MatchupDto, RosterDto, UserDto } from "./dto";
 
 export function toUser(userDto: UserDto): User {
     return {
         user_id: userDto.user_id,
         display_name: userDto.display_name,
-        team_name: userDto.metadata.team_name
+        team_name: userDto.metadata?.team_name
     };
 }
 
-export function toMatchup(draftDto: DraftDto, userDtos: UserDto[], matchupDtos: MatchupDto[], weekNumber: number): Matchup[] {
-    const rosterIdToUser = new Map<RosterId, User>();
-    
-    Object.entries(draftDto.draft_order).forEach(([userId, slot]) => {
-        const rosterId = draftDto.slot_to_roster_id[slot.toString()];
-        const userDto = userDtos.find(u => u.user_id === userId);
-        if (rosterId && userDto) {
-            rosterIdToUser.set(rosterId, toUser(userDto));
+export function toLeagues(leagueDtos: LeagueDto[]): League[] {
+    const leaguesById = new Map(leagueDtos.map(l => [l.league_id, l]));
+    const previousIds = new Set(leagueDtos.map(l => l.previous_league_id));
+
+    // The latest season of each league is the one no other season points back to
+    return leagueDtos
+        .filter(l => !previousIds.has(l.league_id))
+        .map(latest => {
+            const seasons: LeagueSeason[] = [];
+            let current: LeagueDto | undefined = latest;
+            while (current) {
+                seasons.push({ season: current.season, league_id: current.league_id });
+                current = current.previous_league_id ? leaguesById.get(current.previous_league_id) : undefined;
+            }
+            return { id: latest.league_id, name: latest.name, seasons };
+        })
+        .sort((a, b) => b.seasons[0].season.localeCompare(a.seasons[0].season) || a.name.localeCompare(b.name));
+}
+
+// Orphaned rosters (no owner) are left out
+export function toRosterOwners(rosterDtos: RosterDto[], users: User[]): Map<RosterId, User> {
+    const usersById = new Map(users.map(u => [u.user_id, u]));
+    const rosterOwners = new Map<RosterId, User>();
+
+    rosterDtos.forEach(rosterDto => {
+        const user = rosterDto.owner_id ? usersById.get(rosterDto.owner_id) : undefined;
+        if (user) {
+            rosterOwners.set(rosterDto.roster_id, user);
         }
     });
 
-    const matchupIdToTeam = new Map<MatchupId, Team[]>();
+    return rosterOwners;
+}
+
+// Teams without an opponent (byes, eliminated playoff teams) are left out
+export function toMatchups(rosterOwners: Map<RosterId, User>, matchupDtos: MatchupDto[], weekNumber: number): Matchup[] {
+    const teamsByMatchupId = new Map<MatchupId, Team[]>();
 
     matchupDtos.forEach(matchupDto => {
-        const user = rosterIdToUser.get(matchupDto.roster_id);
+        const user = rosterOwners.get(matchupDto.roster_id);
         const matchupId = matchupDto.matchup_id;
-        if (user) {
-            if (!matchupIdToTeam.has(matchupId)) {
-                matchupIdToTeam.set(matchupId, []);
+        if (user && matchupId !== null) {
+            if (!teamsByMatchupId.has(matchupId)) {
+                teamsByMatchupId.set(matchupId, []);
             }
-            matchupIdToTeam.get(matchupId)!.push({ user, points: matchupDto.points });
+            teamsByMatchupId.get(matchupId)!.push({ user, points: matchupDto.points });
         }
     });
 
-    return matchupDtos.map(matchupDto => {
-        const team: Team = {
-            user: rosterIdToUser.get(matchupDto.roster_id)!,
-            points: matchupDto.points
-        };
-        
-        const opponent: Team = matchupIdToTeam.get(matchupDto.matchup_id)!.find(t => t.user.user_id !== team.user?.user_id )!;
-
-        return {
-            week: weekNumber,
-            team,
-            opponent
-        };
-    });
-} 
+    return [...teamsByMatchupId.values()].flatMap(teams =>
+        teams.flatMap(team => {
+            const opponent = teams.find(t => t.user.user_id !== team.user.user_id);
+            return opponent ? [{ week: weekNumber, team, opponent }] : [];
+        })
+    );
+}

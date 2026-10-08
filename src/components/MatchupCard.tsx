@@ -1,30 +1,41 @@
-import { Team } from "../data/data";
+import { Matchup, Team } from "../data/data";
+import { getResult, getTeamName, MatchupResult } from "../data/matchupAnalysis";
 import "./MatchupCard.css";
 
+const RESULT_LABELS: Record<MatchupResult, string> = {
+  win: 'W',
+  loss: 'L',
+  tie: 'T',
+  unplayed: '–'
+};
+
 interface MatchupCardProps {
-  team1: Team;
-  team2: Team;
-  week: number;
+  matchup: Matchup;
 }
 
-export function MatchupCard({ team1, team2, week }: MatchupCardProps) {
-  if (team1.points === 0 && team2.points === 0) {
-    return <></>;
-  }
+export function MatchupCard({ matchup }: MatchupCardProps) {
+  const result = getResult(matchup);
+
   return (
-    <div className="matchup-card">
-      <h3 className="matchup-header">Week {week} Matchup</h3>
-      <div className="matchup-content">
-        <div className={`team-container ${team1.points > team2.points ? 'winner' : ''}`}>
-          <div className="team-name">{team1.user.team_name || team1.user.display_name}</div>
-          <div className="team-points">{team1.points.toFixed(2)}</div>
-        </div>
-        <div className="vs-divider">vs</div>
-        <div className={`team-container ${team2.points > team1.points ? 'winner' : ''}`}>
-          <div className="team-name">{team2.user.team_name || team2.user.display_name}</div>
-          <div className="team-points">{team2.points.toFixed(2)}</div>
-        </div>
+    <article className={`matchup-card ${result}`}>
+      <div className="matchup-week">
+        <span className="matchup-week-label">Week</span>
+        <span className="matchup-week-number">{matchup.week}</span>
       </div>
+      <div className="matchup-teams">
+        <TeamRow team={matchup.team} isWinner={result === 'win'} />
+        <TeamRow team={matchup.opponent} isWinner={result === 'loss'} />
+      </div>
+      <span className="result-badge" aria-label={result}>{RESULT_LABELS[result]}</span>
+    </article>
+  );
+}
+
+function TeamRow({ team, isWinner }: { team: Team; isWinner: boolean }) {
+  return (
+    <div className={`matchup-team ${isWinner ? 'winner' : ''}`}>
+      <span className="team-name">{getTeamName(team.user)}</span>
+      <span className="team-points">{team.points.toFixed(2)}</span>
     </div>
   );
 }

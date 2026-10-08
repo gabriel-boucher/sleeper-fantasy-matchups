@@ -20,3 +20,15 @@ export interface Matchup {
     team: Team;
     opponent: Team;
 }
+
+export interface LeagueSeason {
+    season: string;
+    league_id: string;
+}
+
+// A league across all its seasons; Sleeper creates a new league_id every season
+export interface League {
+    id: string;
+    name: string;
+    seasons: LeagueSeason[]; // most recent first
+}

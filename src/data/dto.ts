@@ -1,7 +1,7 @@
 export interface MatchupDto {
   roster_id: number;
   players: string[];
-  matchup_id: number;
+  matchup_id: number | null;
   points: number;
 }
 
@@ -13,7 +13,25 @@ export interface UserDto {
   };
 }
 
-export interface DraftDto {
-  draft_order: Record<string, number>;
-  slot_to_roster_id: Record<string, number>;
+export interface SleeperUserDto {
+  user_id: string;
+  username: string;
+  display_name: string;
+}
+
+export interface LeagueDto {
+  league_id: string;
+  name: string;
+  season: string;
+  previous_league_id: string | null;
+}
+
+export interface RosterDto {
+  roster_id: number;
+  owner_id: string | null;
+}
+
+export interface NflStateDto {
+  season: string;
+  league_season: string;
 }
