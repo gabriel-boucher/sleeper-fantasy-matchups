@@ -46,17 +46,65 @@ export function getPlayedMatchups(matchups: Matchup[]): Matchup[] {
   return matchups.filter(m => getResult(m) !== 'unplayed');
 }
 
+export function createEmptyRecord(): TeamRecord {
+  return { wins: 0, losses: 0, ties: 0, pointsFor: 0, pointsAgainst: 0 };
+}
+
+export function addGame(record: TeamRecord, pointsFor: number, pointsAgainst: number): TeamRecord {
+  if (pointsFor > pointsAgainst) record.wins++;
+  else if (pointsFor < pointsAgainst) record.losses++;
+  else record.ties++;
+  record.pointsFor += pointsFor;
+  record.pointsAgainst += pointsAgainst;
+  return record;
+}
+
 export function getRecord(matchups: Matchup[]): TeamRecord {
   return getPlayedMatchups(matchups).reduce(
-    (record, m) => {
-      const result = getResult(m);
-      if (result === 'win') record.wins++;
-      else if (result === 'loss') record.losses++;
-      else record.ties++;
-      record.pointsFor += m.team.points;
-      record.pointsAgainst += m.opponent.points;
-      return record;
-    },
-    { wins: 0, losses: 0, ties: 0, pointsFor: 0, pointsAgainst: 0 }
+    (record, m) => addGame(record, m.team.points, m.opponent.points),
+    createEmptyRecord()
   );
+}
+
+export function getGamesPlayed(record: TeamRecord): number {
+  return record.wins + record.losses + record.ties;
+}
+
+export function getWinPct(record: TeamRecord): number {
+  const games = getGamesPlayed(record);
+  return games > 0 ? (record.wins + record.ties / 2) / games : 0;
+}
+
+export function formatRecord(record: TeamRecord): string {
+  return `${record.wins}–${record.losses}${record.ties ? `–${record.ties}` : ''}`;
+}
+
+export interface ScheduleRecord {
+  scheduleOwner: User;
+  record: TeamRecord;
+}
+
+export interface ScheduleRange {
+  best: ScheduleRecord;
+  worst: ScheduleRecord;
+}
+
+// The user's record against every team's schedule (their own included), sorted best first
+export function getRecordsAgainstAllSchedules(matchups: Matchup[], users: User[], userId: UserId): ScheduleRecord[] {
+  return users
+    .map(scheduleOwner => ({
+      scheduleOwner,
+      record: getRecord(
+        scheduleOwner.user_id === userId
+          ? getMatchupsFor(matchups, userId)
+          : getMatchupsAgainstSchedule(matchups, userId, scheduleOwner.user_id)
+      )
+    }))
+    .sort((a, b) => getWinPct(b.record) - getWinPct(a.record));
+}
+
+export function getScheduleRange(matchups: Matchup[], users: User[], userId: UserId): ScheduleRange | null {
+  const records = getRecordsAgainstAllSchedules(matchups, users, userId);
+  if (records.length === 0 || getGamesPlayed(records[0].record) === 0) return null;
+  return { best: records[0], worst: records[records.length - 1] };
 }

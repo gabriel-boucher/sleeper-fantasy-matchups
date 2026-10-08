@@ -1,42 +1,49 @@
+import { ReactNode } from 'react';
 import { Matchup } from '../data/data';
-import { getPlayedMatchups, getRecord, getResult } from '../data/matchupAnalysis';
+import { getPlayedMatchups, getRecord, getResult, getWinPct } from '../data/matchupAnalysis';
+import { RecordTile } from './RecordTile';
 
 interface RecordSummaryProps {
   matchups: Matchup[];
   scheduleOwnerName?: string;
+  onSelectOwnSchedule: () => void;
+  children?: ReactNode;
 }
 
-export function RecordSummary({ matchups, scheduleOwnerName }: RecordSummaryProps) {
+export function RecordSummary({ matchups, scheduleOwnerName, onSelectOwnSchedule, children }: RecordSummaryProps) {
   const record = getRecord(matchups);
-  const games = record.wins + record.losses + record.ties;
-  const winPct = games > 0 ? ((record.wins + record.ties / 2) / games) * 100 : 0;
 
   return (
     <section className="panel record-summary">
-      <div className="record-heading">
-        <h2 className="section-title">Season record</h2>
-        {scheduleOwnerName && (
-          <span className="record-context">Against {scheduleOwnerName}'s schedule</span>
-        )}
+      <h2 className="section-title">Season record</h2>
+
+      <div className="record-row">
+        <RecordTile
+          label="Current record"
+          variant="current"
+          record={record}
+          scheduleOwnerName={scheduleOwnerName}
+          onClick={onSelectOwnSchedule}
+        />
+        {children}
       </div>
 
-      <dl className="stat-grid">
-        <Stat label="Record" value={`${record.wins}–${record.losses}${record.ties ? `–${record.ties}` : ''}`} highlight />
-        <Stat label="Win %" value={`${winPct.toFixed(0)}%`} />
+      <div className="stat-grid">
+        <Stat label="Win %" value={`${(getWinPct(record) * 100).toFixed(0)}%`} />
         <Stat label="Points for" value={record.pointsFor.toFixed(2)} />
         <Stat label="Points against" value={record.pointsAgainst.toFixed(2)} />
-      </dl>
+      </div>
 
       <ResultStrip matchups={matchups} />
     </section>
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="stat">
-      <dt className="stat-label">{label}</dt>
-      <dd className={`stat-value ${highlight ? 'highlight' : ''}`}>{value}</dd>
+      <span className="stat-label">{label}</span>
+      <span className="stat-value">{value}</span>
     </div>
   );
 }

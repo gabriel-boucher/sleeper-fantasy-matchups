@@ -24,6 +24,9 @@ export interface LeagueDto {
   name: string;
   season: string;
   previous_league_id: string | null;
+  settings?: {
+    playoff_week_start?: number;
+  };
 }
 
 export interface RosterDto {
