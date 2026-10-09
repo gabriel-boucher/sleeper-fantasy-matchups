@@ -1,3 +1,5 @@
+import './LuckBadge.css';
+
 const BADGES = {
   luckiest: { icon: '🍀', label: 'Luckiest' },
   unluckiest: { icon: '🌧️', label: 'Unluckiest' }

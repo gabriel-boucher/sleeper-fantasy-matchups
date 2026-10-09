@@ -1,6 +1,7 @@
-import { UserId } from '../data/data';
-import { getTeamName, ScheduleRange, ScheduleRecord } from '../data/matchupAnalysis';
+import { UserId } from '../../data/data';
+import { getTeamName, ScheduleRange, ScheduleRecord } from '../../data/matchupAnalysis';
 import { RecordTile } from './RecordTile';
+import './ScheduleRangeSummary.css';
 
 interface ScheduleRangeSummaryProps {
   range: ScheduleRange;

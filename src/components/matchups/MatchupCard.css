@@ -1,14 +1,8 @@
-.matchup-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 10px;
-}
-
 .matchup-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 16px 12px 12px;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-3);
   background: var(--surface);
   border: 1px solid var(--border);
   border-left: 4px solid var(--border);
@@ -19,6 +13,7 @@
 .matchup-card.win { border-left-color: var(--win); }
 .matchup-card.loss { border-left-color: var(--loss); }
 .matchup-card.tie { border-left-color: var(--tie); }
+.matchup-card.live { border-left-color: var(--accent); }
 
 .matchup-week {
   display: flex;
@@ -30,14 +25,14 @@
 }
 
 .matchup-week-label {
-  font-size: 0.6875rem;
+  font-size: var(--font-size-2xs);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--letter-spacing-caps);
   color: var(--text-subtle);
 }
 
 .matchup-week-number {
-  font-size: 1.25rem;
+  font-size: var(--font-size-lg);
   font-weight: 700;
 }
 
@@ -46,14 +41,14 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .matchup-team {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 12px;
+  gap: var(--space-3);
   color: var(--text-muted);
 }
 
@@ -80,7 +75,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  font-size: 0.8125rem;
+  font-size: var(--font-size-sm);
   font-weight: 700;
   background: var(--surface-muted);
   color: var(--text-muted);
@@ -90,12 +85,45 @@
 .matchup-card.loss .result-badge { background: var(--loss-bg); color: var(--loss); }
 .matchup-card.tie .result-badge { background: var(--tie-bg); color: var(--tie); }
 
-@media (max-width: 640px) {
-  .matchup-list {
-    grid-template-columns: 1fr;
-  }
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--space-1);
+  padding: var(--space-0-5) var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
 
+/* Pulsing dot once games have kicked off */
+.live-badge.started {
+  color: var(--accent);
+}
+
+.live-badge.started::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  50% { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-badge.started::before {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
   .matchup-card {
-    gap: 12px;
+    gap: var(--space-3);
   }
 }

@@ -1,0 +1,48 @@
+.week-navigator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.week-navigator-arrow {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.week-navigator-arrow:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.week-navigator-arrow:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+.week-navigator-arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.week-navigator-label {
+  min-width: 110px;
+  text-align: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.week-navigator-count {
+  font-weight: 400;
+  color: var(--text-subtle);
+}

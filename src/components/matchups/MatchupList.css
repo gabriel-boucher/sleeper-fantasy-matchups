@@ -1,0 +1,35 @@
+.matchup-section {
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+.matchup-section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.matchup-section-header .section-title {
+  margin: 0;
+}
+
+/* Fills column by column; --matchup-rows is set from the number of games */
+.matchup-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(var(--matchup-rows, 1), auto);
+  grid-auto-flow: column;
+  gap: var(--space-2-5);
+}
+
+@media (max-width: 640px) {
+  .matchup-list {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-flow: row;
+  }
+}

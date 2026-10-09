@@ -13,6 +13,8 @@ export interface User {
 export interface Team {
     user: User;
     points: number;
+    // Best possible score from the roster that week; null when it can't be worked out
+    bestPoints: number | null;
 }
 
 export interface Matchup {

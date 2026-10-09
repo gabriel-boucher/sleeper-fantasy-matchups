@@ -1,4 +1,4 @@
-import { LeagueDto, MatchupDto, NflStateDto, RosterDto, SleeperUserDto, UserDto } from "../data/dto";
+import { LeagueDto, MatchupDto, NflStateDto, PlayerDto, RosterDto, SleeperUserDto, UserDto } from "../data/dto";
 
 const BASE_URL = 'https://api.sleeper.app/v1';
 
@@ -8,7 +8,6 @@ async function get<T>(path: string, errorMessage: string): Promise<T> {
   return response.json();
 }
 
-// Sleeper responds with `null` when the username doesn't exist
 export function getUserByUsername(username: string): Promise<SleeperUserDto | null> {
   return get(`/user/${encodeURIComponent(username)}`, 'Failed to fetch user');
 }
@@ -36,4 +35,9 @@ export function getRosters(leagueId: string): Promise<RosterDto[]> {
 
 export function getUsers(leagueId: string): Promise<UserDto[]> {
   return get(`/league/${leagueId}/users`, 'Failed to fetch users');
+}
+
+// Large (~2.5 MB gzipped); Sleeper asks apps to fetch it at most once a day
+export function getAllPlayers(): Promise<Record<string, PlayerDto>> {
+  return get('/players/nfl', 'Failed to fetch players');
 }

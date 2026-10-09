@@ -1,8 +1,8 @@
-import { UserId } from '../data/data';
-import { useAsync } from '../hooks/useAsync';
-import { loadSeason } from '../services/seasonService';
+import { UserId } from '../../data/data';
+import { useAsync } from '../../hooks/useAsync';
+import { loadSeason } from '../../services/seasonService';
 import { SeasonView } from './SeasonView';
-import { ErrorMessage, LoadingMessage } from './StatusMessage';
+import { ErrorMessage, LoadingMessage } from '../common/StatusMessage';
 
 interface SeasonMatchupsProps {
   leagueId: string;

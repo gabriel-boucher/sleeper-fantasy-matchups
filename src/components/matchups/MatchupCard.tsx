@@ -1,5 +1,5 @@
-import { Matchup, Team } from "../data/data";
-import { getResult, getTeamName, MatchupResult } from "../data/matchupAnalysis";
+import { Matchup, Team } from "../../data/data";
+import { getResult, getTeamName, MatchupResult } from "../../data/matchupAnalysis";
 import "./MatchupCard.css";
 
 const RESULT_LABELS: Record<MatchupResult, string> = {
@@ -11,13 +11,17 @@ const RESULT_LABELS: Record<MatchupResult, string> = {
 
 interface MatchupCardProps {
   matchup: Matchup;
+  // The week is still being played: show the score so far, not a result
+  isLive?: boolean;
 }
 
-export function MatchupCard({ matchup }: MatchupCardProps) {
+export function MatchupCard({ matchup, isLive = false }: MatchupCardProps) {
+  // In a live week, "win"/"loss" just means who's ahead right now
   const result = getResult(matchup);
+  const hasStarted = result !== 'unplayed';
 
   return (
-    <article className={`matchup-card ${result}`}>
+    <article className={`matchup-card ${isLive ? 'live' : result}`}>
       <div className="matchup-week">
         <span className="matchup-week-label">Week</span>
         <span className="matchup-week-number">{matchup.week}</span>
@@ -26,7 +30,11 @@ export function MatchupCard({ matchup }: MatchupCardProps) {
         <TeamRow team={matchup.team} isWinner={result === 'win'} />
         <TeamRow team={matchup.opponent} isWinner={result === 'loss'} />
       </div>
-      <span className="result-badge" aria-label={result}>{RESULT_LABELS[result]}</span>
+      {isLive ? (
+        <span className={`live-badge ${hasStarted ? 'started' : ''}`}>{hasStarted ? 'Live' : 'Upcoming'}</span>
+      ) : (
+        <span className="result-badge" aria-label={result}>{RESULT_LABELS[result]}</span>
+      )}
     </article>
   );
 }

@@ -1,27 +1,39 @@
-import { UserId } from '../data/data';
-import { getLuckExtremes, getRankChange, LeaderboardEntry } from '../data/leaderboard';
-import { getTeamName } from '../data/matchupAnalysis';
+import { ReactNode } from 'react';
+import { UserId } from '../../data/data';
+import { getLuckExtremes, getRankChange, LeaderboardEntry, ScheduleStrength } from '../../data/leaderboard';
+import { BenchStats } from '../../data/lineup';
+import { getTeamName } from '../../data/matchupAnalysis';
 import { LuckBadge } from './LuckBadge';
+import './Leaderboard.css';
 
 interface LeaderboardProps {
   entries: LeaderboardEntry[];
+  description: string;
+  controls?: ReactNode;
+  toolbar?: ReactNode;
   selectedUserId: UserId;
   onSelectUser: (userId: UserId) => void;
 }
 
-export function Leaderboard({ entries, selectedUserId, onSelectUser }: LeaderboardProps) {
-  if (entries.length === 0) return null;
+export function Leaderboard({ entries, description, controls, toolbar, selectedUserId, onSelectUser }: LeaderboardProps) {
   const hasTies = entries.some(e => e.record.ties > 0);
+  const hasBench = entries.some(e => e.bench !== null);
   const { luckiest, unluckiest } = getLuckExtremes(entries);
 
   return (
     <section className="panel leaderboard">
-      <h2 className="section-title">All-play leaderboard</h2>
-      <p className="leaderboard-description">
-        Every regular-season week, each team plays every other team's score. PF and PA are the actual
-        regular-season totals, and PF breaks ties in wins. The arrow shows how this ranking compares to the real standings:
-        the biggest climb is the unluckiest team 🌧️ and the biggest drop is the luckiest 🍀, with PA breaking ties.
-      </p>
+      <div className="leaderboard-header">
+        <h2 className="section-title">All-play leaderboard</h2>
+        {controls}
+      </div>
+      <p className="leaderboard-description">{description}</p>
+      <ul className="leaderboard-legend">
+        <li><span className="legend-arrows"><span className="up">▲</span><span className="down">▼</span></span> real ranking difference</li>
+        <li><span aria-hidden="true">🍀</span> Luckiest: biggest fraud</li>
+        <li><span aria-hidden="true">🌧️</span> Unluckiest: biggest cope</li>
+      </ul>
+
+      {toolbar}
 
       <div className="leaderboard-scroll">
         <table className="leaderboard-table">
@@ -36,6 +48,8 @@ export function Leaderboard({ entries, selectedUserId, onSelectUser }: Leaderboa
               {hasTies && <th scope="col">T</th>}
               <th scope="col">PF</th>
               <th scope="col">PA</th>
+              <th scope="col" title="Strength of schedule: opponents' points per game vs. the league average">SOS</th>
+              {hasBench && <th scope="col" title="Points left on the bench: best possible lineup minus points actually scored">Bench</th>}
             </tr>
           </thead>
           <tbody>
@@ -63,6 +77,8 @@ export function Leaderboard({ entries, selectedUserId, onSelectUser }: Leaderboa
                   {hasTies && <td>{record.ties}</td>}
                   <td>{record.pointsFor.toFixed(2)}</td>
                   <td>{record.pointsAgainst.toFixed(2)}</td>
+                  <td><ScheduleStrengthValue strength={entry.scheduleStrength} /></td>
+                  {hasBench && <td><BenchValue bench={entry.bench} /></td>}
                 </tr>
               );
             })}
@@ -73,7 +89,36 @@ export function Leaderboard({ entries, selectedUserId, onSelectUser }: Leaderboa
   );
 }
 
-// Up means the team ranks higher in all-play than in the real standings
+// Harder schedules (opponents scored more than average) read as bad news, easier ones as good
+function ScheduleStrengthValue({ strength }: { strength: ScheduleStrength }) {
+  const { difference, opponentAverage, leagueAverage } = strength;
+  const rounded = Number(difference.toFixed(1));
+  const level = rounded > 0 ? 'harder' : rounded < 0 ? 'easier' : 'even';
+  const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : '';
+
+  return (
+    <span
+      className={`schedule-strength ${level}`}
+      title={`Opponents averaged ${opponentAverage.toFixed(2)} pts per game (league average ${leagueAverage.toFixed(2)})`}
+    >
+      {sign}{Math.abs(rounded).toFixed(1)}
+    </span>
+  );
+}
+
+function BenchValue({ bench }: { bench: BenchStats | null }) {
+  if (!bench) return <span className="bench-value unknown" title="Best lineup unavailable">–</span>;
+
+  return (
+    <span
+      className="bench-value"
+      title={`Best lineup: ${bench.bestPoints.toFixed(2)} pts · ${(bench.efficiency * 100).toFixed(1)}% efficiency`}
+    >
+      {bench.pointsLeft.toFixed(2)}
+    </span>
+  );
+}
+
 function RankChange({ change }: { change: number }) {
   if (change === 0) {
     return <span className="rank-change-badge same" title="Same as the real standings">–</span>;

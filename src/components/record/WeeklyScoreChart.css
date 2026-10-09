@@ -1,0 +1,149 @@
+.weekly-chart-section {
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+.weekly-chart-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.weekly-chart-header .section-title {
+  margin: 0;
+}
+
+.weekly-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.weekly-chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+}
+
+/* Short line keys, matching the chart's lines */
+.weekly-chart-key {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.weekly-chart-key.team { background: var(--chart-team); }
+.weekly-chart-key.average { background: var(--chart-average); }
+.weekly-chart-key.median { background: var(--chart-median); }
+
+.weekly-chart {
+  position: relative;
+  outline: none;
+  border-radius: var(--radius-sm);
+}
+
+.weekly-chart:focus-visible {
+  box-shadow: var(--focus-shadow);
+}
+
+.weekly-chart svg {
+  display: block;
+  overflow: visible;
+}
+
+.weekly-chart-grid {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+
+.weekly-chart-axis {
+  font-size: var(--font-size-2xs);
+  fill: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.weekly-chart-crosshair {
+  stroke: var(--text-subtle);
+  stroke-width: 1;
+}
+
+.weekly-chart-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.weekly-chart-line.team { stroke: var(--chart-team); }
+.weekly-chart-line.average { stroke: var(--chart-average); }
+.weekly-chart-line.median { stroke: var(--chart-median); }
+
+/* Surface ring keeps dots readable where lines cross */
+.weekly-chart-dot {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.weekly-chart-dot.team { fill: var(--chart-team); }
+.weekly-chart-dot.average { fill: var(--chart-average); }
+.weekly-chart-dot.median { fill: var(--chart-median); }
+
+.weekly-chart-end-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  fill: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.weekly-chart-hit-area {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.weekly-chart-tooltip {
+  position: absolute;
+  top: 0;
+  z-index: 1;
+  min-width: 150px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.12);
+  font-size: var(--font-size-sm);
+  pointer-events: none;
+}
+
+/* Sits beside the crosshair, on whichever side has room */
+.weekly-chart-tooltip.right { transform: translateX(var(--space-3)); }
+.weekly-chart-tooltip.left { transform: translateX(calc(-100% - var(--space-3))); }
+
+.weekly-chart-tooltip-title {
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.weekly-chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+}
+
+.weekly-chart-tooltip-row strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}

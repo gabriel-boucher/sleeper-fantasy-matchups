@@ -1,6 +1,6 @@
-import { User, UserId } from '../data/data';
-import { getTeamName } from '../data/matchupAnalysis';
-import { SelectField, SelectOption } from './SelectField';
+import { User, UserId } from '../../data/data';
+import { getTeamName } from '../../data/matchupAnalysis';
+import { SelectField, SelectOption } from '../common/SelectField';
 
 interface TeamFiltersProps {
   users: User[];
@@ -16,7 +16,7 @@ function toOption(user: User): SelectOption {
 
 export function TeamFilters({ users, userId, scheduleOwnerId, onUserChange, onScheduleOwnerChange }: TeamFiltersProps) {
   return (
-    <div className="panel field-row">
+    <div className="field-row">
       <SelectField
         id="user-select"
         label="Team"
@@ -27,10 +27,10 @@ export function TeamFilters({ users, userId, scheduleOwnerId, onUserChange, onSc
       />
       <SelectField
         id="opponent-select"
-        label="Against the schedule of"
+        label="Schedule"
         value={scheduleOwnerId}
         options={users.filter(u => u.user_id !== userId).map(toOption)}
-        placeholder="Its own schedule"
+        placeholder="Own schedule"
         disabled={!userId}
         onChange={onScheduleOwnerChange}
       />

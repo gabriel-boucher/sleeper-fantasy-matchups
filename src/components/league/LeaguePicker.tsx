@@ -1,5 +1,5 @@
-import { League } from '../data/data';
-import { SelectField } from './SelectField';
+import { League } from '../../data/data';
+import { SelectField } from '../common/SelectField';
 
 interface LeaguePickerProps {
   leagues: League[];

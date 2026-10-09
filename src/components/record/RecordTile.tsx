@@ -1,9 +1,9 @@
-import { formatRecord, TeamRecord } from '../data/matchupAnalysis';
+import { formatRecord, TeamRecord } from '../../data/matchupAnalysis';
+import './RecordTile.css';
 
 interface RecordTileProps {
   label: string;
   record: TeamRecord;
-  // Undefined means the team's own schedule
   scheduleOwnerName?: string;
   variant: 'current' | 'best' | 'worst';
   onClick: () => void;
@@ -12,10 +12,10 @@ interface RecordTileProps {
 export function RecordTile({ label, record, scheduleOwnerName, variant, onClick }: RecordTileProps) {
   return (
     <button type="button" className={`record-tile ${variant}`} onClick={onClick} title="Show these matchups">
-      <span className="stat-label">{label}</span>
-      <span className="stat-value">{formatRecord(record)}</span>
+      <span className="record-tile-label">{label}</span>
+      <span className="record-tile-value">{formatRecord(record)}</span>
       <span className="record-tile-schedule">
-        {scheduleOwnerName ? `With ${scheduleOwnerName}'s schedule` : 'With its own schedule'}
+        {scheduleOwnerName ? `${scheduleOwnerName}'s schedule` : 'Own schedule'}
       </span>
     </button>
   );

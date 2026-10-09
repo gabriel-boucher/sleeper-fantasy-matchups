@@ -1,13 +1,22 @@
 import { Matchup, User, UserId } from "./data";
-import { addGame, createEmptyRecord, getGamesPlayed, getMatchupsFor, getRecord, getWinPct, TeamRecord } from "./matchupAnalysis";
+import { BenchStats, getBenchStats } from "./lineup";
+import { addGame, createEmptyRecord, getGamesPlayed, getMatchupsFor, getPlayedMatchups, getRecord, getWinPct, TeamRecord } from "./matchupAnalysis";
 
 export interface LeaderboardEntry {
   user: User;
-  // Wins, losses and ties are all-play; points for and against are from the actual matchups
   record: TeamRecord;
   rank: number;
-  // Rank in the real standings: actual record, then points for
   actualRank: number;
+  scheduleStrength: ScheduleStrength;
+  bench: BenchStats | null;
+}
+
+// How hard a team's real opponents were: their points per game against it vs. the league average.
+// A positive difference means a harder schedule.
+export interface ScheduleStrength {
+  opponentAverage: number;
+  leagueAverage: number;
+  difference: number;
 }
 
 export interface LuckExtremes {
@@ -15,33 +24,76 @@ export interface LuckExtremes {
   unluckiest: UserId | null;
 }
 
-// All-play: every week, each team plays every other team's score that week.
+export interface WeekRange {
+  from: number;
+  to: number;
+}
+
+// Regular-season weeks with results, for browsing the leaderboard one week at a time
+export function getLeaderboardWeeks(matchups: Matchup[], lastRegularSeasonWeek: number): number[] {
+  return [...new Set(matchups.map(m => m.week))]
+    .filter(week => week <= lastRegularSeasonWeek)
+    .sort((a, b) => a - b);
+}
+
+// All-play: every week in the range, each team plays every other team's score that week.
 // Ranked by wins, with points for breaking ties.
-export function getAllPlayLeaderboard(matchups: Matchup[], users: User[], lastWeek: number): LeaderboardEntry[] {
-  const regularSeason = matchups.filter(m => m.week <= lastWeek);
-  const allPlayRecords = getAllPlayRecords(regularSeason, users);
+// Real ranks come from Sleeper's official standings when given (they include median wins), otherwise
+// from the head-to-head record over the same weeks.
+export function getAllPlayLeaderboard(
+  matchups: Matchup[],
+  users: User[],
+  weeks: WeekRange,
+  standings: Map<UserId, TeamRecord> = new Map()
+): LeaderboardEntry[] {
+  const inRange = matchups.filter(m => m.week >= weeks.from && m.week <= weeks.to);
+  const allPlayRecords = getAllPlayRecords(inRange, users);
 
   const teams = users
-    .map(user => ({
-      user,
-      allPlay: allPlayRecords.get(user.user_id)!,
-      actual: getRecord(getMatchupsFor(regularSeason, user.user_id))
-    }))
+    .map(user => {
+      const teamMatchups = getMatchupsFor(inRange, user.user_id);
+      const actual = getRecord(teamMatchups);
+      const official = standings.get(user.user_id);
+      return {
+        user,
+        allPlay: allPlayRecords.get(user.user_id)!,
+        actual,
+        standing: official && getGamesPlayed(official) > 0 ? official : actual,
+        bench: getBenchStats(getPlayedMatchups(teamMatchups))
+      };
+    })
     .filter(team => getGamesPlayed(team.allPlay) > 0);
 
   const actualRanks = new Map(
     [...teams]
-      .sort((a, b) => getWinPct(b.actual) - getWinPct(a.actual) || b.actual.pointsFor - a.actual.pointsFor)
+      .sort((a, b) => getWinPct(b.standing) - getWinPct(a.standing) || b.standing.pointsFor - a.standing.pointsFor)
       .map((team, i) => [team.user.user_id, i + 1])
   );
 
+  const leagueAverage = getAveragePoints(teams.map(team => team.actual));
+
   return teams
-    .map(({ user, allPlay, actual }) => ({
+    .map(({ user, allPlay, actual, bench }) => ({
       user,
-      record: { ...allPlay, pointsFor: actual.pointsFor, pointsAgainst: actual.pointsAgainst }
+      record: { ...allPlay, pointsFor: actual.pointsFor, pointsAgainst: actual.pointsAgainst },
+      scheduleStrength: getScheduleStrength(actual, leagueAverage),
+      bench
     }))
     .sort((a, b) => b.record.wins - a.record.wins || b.record.pointsFor - a.record.pointsFor)
     .map((entry, i) => ({ ...entry, rank: i + 1, actualRank: actualRanks.get(entry.user.user_id)! }));
+}
+
+// Average score per team per game across the league
+function getAveragePoints(records: TeamRecord[]): number {
+  const games = records.reduce((sum, r) => sum + getGamesPlayed(r), 0);
+  const points = records.reduce((sum, r) => sum + r.pointsFor, 0);
+  return games > 0 ? points / games : 0;
+}
+
+function getScheduleStrength(actual: TeamRecord, leagueAverage: number): ScheduleStrength {
+  const games = getGamesPlayed(actual);
+  const opponentAverage = games > 0 ? actual.pointsAgainst / games : 0;
+  return { opponentAverage, leagueAverage, difference: opponentAverage - leagueAverage };
 }
 
 // Spots the team gains in all-play compared to the real standings; positive means it deserved better

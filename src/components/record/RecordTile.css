@@ -1,0 +1,70 @@
+.record-tile {
+  --tile-color: var(--border);
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: var(--space-3) var(--space-3-5);
+  background: var(--surface-muted);
+  border: 1px solid transparent;
+  border-left: 4px solid var(--tile-color);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.record-tile:hover {
+  border-top-color: var(--border);
+  border-right-color: var(--border);
+  border-bottom-color: var(--border);
+}
+
+.record-tile:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+.record-tile.best { --tile-color: var(--win); }
+.record-tile.worst { --tile-color: var(--loss); }
+
+.record-tile.current {
+  --tile-color: var(--accent);
+
+  justify-content: center;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--accent);
+}
+
+.record-tile.current:hover {
+  border-color: var(--accent-hover);
+}
+
+.record-tile-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.record-tile-value {
+  margin-top: var(--space-0-5);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  color: var(--tile-color);
+}
+
+.record-tile.current .record-tile-value {
+  font-size: var(--font-size-display);
+  line-height: 1.1;
+}
+
+.record-tile-schedule {
+  max-width: 100%;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

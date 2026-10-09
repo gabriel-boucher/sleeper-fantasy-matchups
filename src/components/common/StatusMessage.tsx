@@ -1,3 +1,5 @@
+import './StatusMessage.css';
+
 export function LoadingMessage({ text }: { text: string }) {
   return (
     <div className="status-message" role="status">
