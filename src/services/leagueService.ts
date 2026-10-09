@@ -43,7 +43,9 @@ async function withPreviousSeasons(leagueDtos: LeagueDto[]): Promise<LeagueDto[]
     const missingIds = [...new Set(added.map(l => l.previous_league_id))]
       .filter((id): id is string => !!id && id !== '0' && !knownIds.has(id));
     missingIds.forEach(id => knownIds.add(id));
-    added = await Promise.all(missingIds.map(getLeague));
+    // A deleted past season comes back null; the league just keeps the seasons that still exist
+    const fetched = await Promise.all(missingIds.map(getLeague));
+    added = fetched.filter((league): league is LeagueDto => league !== null);
     leagues.push(...added);
   }
 

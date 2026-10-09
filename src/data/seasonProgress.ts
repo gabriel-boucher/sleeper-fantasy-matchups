@@ -12,17 +12,20 @@ export function getLastCompletedWeek(leagueSeason: string, state: NflStateDto): 
   switch (state.season_type) {
     case 'pre':
       return 0;
-    case 'off':
-      return WEEKCOUNT;
-    default:
+    case 'regular':
       // The current week is still being played
       return Math.max(state.week - 1, 0);
+    default:
+      // NFL playoffs ('post') and offseason: fantasy weeks all happen in the regular season,
+      // so they're all over, whatever week number Sleeper reports
+      return WEEKCOUNT;
   }
 }
 
-// The week being played right now in a league's season, or null outside the season
+// The week being played right now in a league's season, or null outside the regular season
 export function getLiveWeek(leagueSeason: string, state: NflStateDto): number | null {
   const isCurrentSeason = Number(leagueSeason) === Number(state.season);
-  const isInSeason = state.season_type === 'regular' || state.season_type === 'post';
-  return isCurrentSeason && isInSeason && state.week >= 1 && state.week <= WEEKCOUNT ? state.week : null;
+  return isCurrentSeason && state.season_type === 'regular' && state.week >= 1 && state.week <= WEEKCOUNT
+    ? state.week
+    : null;
 }

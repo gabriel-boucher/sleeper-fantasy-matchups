@@ -33,6 +33,7 @@ export async function loadSeason(leagueId: string): Promise<Season> {
     // Optional extra: without positions the season still loads, just without bench points
     getPlayerPositions().catch(() => null)
   ]);
+  if (!leagueDto) throw new Error('This season no longer exists on Sleeper');
 
   const users = userDtos.map(toUser);
   const rosterOwners = toRosterOwners(rosterDtos, users);
