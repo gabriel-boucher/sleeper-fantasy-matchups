@@ -1,5 +1,5 @@
 // The page's selections live in the query string so a link reopens the same view.
-export type UrlParam = 'user' | 'league' | 'season' | 'team' | 'vs' | 'week';
+export type UrlParam = 'user' | 'league' | 'season' | 'team' | 'vs' | 'week' | 'live';
 
 export function readUrlParam(name: UrlParam): string | null {
   return new URLSearchParams(window.location.search).get(name);

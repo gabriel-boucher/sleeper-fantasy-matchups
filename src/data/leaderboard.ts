@@ -36,6 +36,17 @@ export function getLeaderboardWeeks(matchups: Matchup[], lastRegularSeasonWeek: 
     .sort((a, b) => a - b);
 }
 
+// Official standings plus each team's current result in the week being played.
+// Teams that haven't scored yet (0-0) aren't counted.
+export function withLiveResults(standings: Map<UserId, TeamRecord>, liveMatchups: Matchup[]): Map<UserId, TeamRecord> {
+  const updated = new Map([...standings].map(([id, record]) => [id, { ...record }]));
+  getPlayedMatchups(liveMatchups).forEach(m => {
+    const record = updated.get(m.team.user.user_id);
+    if (record) addGame(record, m.team.points, m.opponent.points);
+  });
+  return updated;
+}
+
 // All-play: every week in the range, each team plays every other team's score that week.
 // Ranked by wins, with points for breaking ties.
 // Real ranks come from Sleeper's official standings when given (they include median wins), otherwise

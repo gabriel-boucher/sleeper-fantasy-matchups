@@ -26,7 +26,7 @@ function App() {
 
   function handleSearch(username: string) {
     // A new user starts from scratch, so drop the previous user's selections
-    updateUrlParams({ user: username, league: null, season: null, team: null, vs: null, week: null });
+    updateUrlParams({ user: username, league: null, season: null, team: null, vs: null, week: null, live: null });
     setSearch({ username });
   }
 

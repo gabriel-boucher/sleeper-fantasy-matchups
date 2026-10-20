@@ -5,11 +5,18 @@ export interface MatchupDto {
   points: number;
   // Every rostered player's points that week, keyed by player id
   players_points?: Record<string, number> | null;
+  // Started player ids in lineup-slot order; "0" marks an empty slot
+  starters?: string[] | null;
 }
 
 export interface PlayerDto {
   // Positions the player can be slotted at, e.g. ["WR"] or ["QB", "TE"]
   fantasy_positions?: string[] | null;
+  full_name?: string | null;
+  // Team defenses only have these, e.g. "Kansas City" / "Chiefs"
+  first_name?: string | null;
+  last_name?: string | null;
+  team?: string | null;
 }
 
 export interface UserDto {

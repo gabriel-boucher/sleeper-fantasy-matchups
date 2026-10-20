@@ -11,6 +11,7 @@ interface RecordSummaryProps {
   controls: ReactNode;
   matchups: Matchup[] | null;
   liveMatchup?: Matchup | null;
+  onSelectMatchup: (matchup: Matchup) => void;
   // The team's own points each week, which don't depend on the schedule being viewed
   weeklyScores: WeeklyScore[];
   scheduleOwnerName?: string;
@@ -34,7 +35,7 @@ export function RecordSummary({ controls, matchups, ...detailsProps }: RecordSum
 
 type RecordDetailsProps = Omit<RecordSummaryProps, 'controls' | 'matchups'> & { matchups: Matchup[] };
 
-function RecordDetails({ matchups, liveMatchup, weeklyScores, scheduleOwnerName, onSelectOwnSchedule, children }: RecordDetailsProps) {
+function RecordDetails({ matchups, liveMatchup, onSelectMatchup, weeklyScores, scheduleOwnerName, onSelectOwnSchedule, children }: RecordDetailsProps) {
   const record = getRecord(matchups);
 
   return (
@@ -53,6 +54,7 @@ function RecordDetails({ matchups, liveMatchup, weeklyScores, scheduleOwnerName,
       <MatchupList
         matchups={matchups}
         liveMatchup={liveMatchup}
+        onSelectMatchup={onSelectMatchup}
         headerContent={
           <dl className="season-stats">
             <Stat label="W%" value={`${(getWinPct(record) * 100).toFixed(0)}%`} />

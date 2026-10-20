@@ -1,0 +1,170 @@
+.lineup-dialog {
+  width: min(560px, calc(100vw - 2 * var(--space-4)));
+  max-height: min(85vh, 900px);
+  padding: 0;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(16, 24, 40, 0.25);
+}
+
+.lineup-dialog::backdrop {
+  background: rgba(10, 12, 16, 0.55);
+}
+
+/* Fills the dialog so only clicks outside it count as backdrop clicks */
+.lineup-dialog-content {
+  padding: var(--space-5);
+}
+
+.lineup-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.lineup-dialog-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.lineup-dialog-live {
+  padding: var(--space-0-5) var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+  color: var(--accent);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.lineup-dialog-score {
+  margin: var(--space-1) 0 0;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.lineup-dialog-score strong {
+  color: var(--text);
+}
+
+.lineup-dialog-close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.lineup-dialog-close:hover {
+  color: var(--text);
+  border-color: var(--text-subtle);
+}
+
+.lineup-dialog-close:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+.lineup-section + .lineup-section {
+  margin-top: var(--space-5);
+}
+
+.lineup-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lineup-table td {
+  padding: var(--space-2) var(--space-1);
+  border-top: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.lineup-table .lineup-slot {
+  width: 1%;
+  padding-right: var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-subtle);
+  white-space: nowrap;
+}
+
+.lineup-player-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.lineup-player-text {
+  min-width: 0;
+}
+
+.lineup-player-name {
+  display: block;
+  font-weight: 500;
+}
+
+.lineup-player-meta {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--text-subtle);
+}
+
+.lineup-player-empty {
+  color: var(--text-subtle);
+  font-style: italic;
+}
+
+.lineup-table .lineup-tag {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.lineup-tag-badge {
+  padding: var(--space-0-5) var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-2xs);
+  font-weight: 600;
+}
+
+.lineup-tag-badge.start { background: var(--win-bg); color: var(--win); }
+.lineup-tag-badge.sit { background: var(--loss-bg); color: var(--loss); }
+
+.lineup-table .lineup-points {
+  width: 1%;
+  padding-left: var(--space-3);
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.lineup-dialog-summary {
+  margin: var(--space-5) 0 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.lineup-dialog-summary strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,25 @@
+.player-avatar {
+  display: block;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-muted);
+  /* Headshots are wider than tall; keep the face centered */
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* Team logos should show whole, not cropped */
+.player-avatar.logo {
+  object-fit: contain;
+  padding: var(--space-1);
+}
+
+.player-avatar.fallback {
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-2xs);
+  font-weight: 700;
+  color: var(--text-muted);
+}

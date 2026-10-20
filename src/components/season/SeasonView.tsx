@@ -6,6 +6,7 @@ import { useLiveMatchups } from '../../hooks/useLiveMatchups';
 import { Season } from '../../services/seasonService';
 import { readUrlParam, updateUrlParams } from '../../utils/urlParams';
 import { LeaderboardSection } from '../leaderboard/LeaderboardSection';
+import { LineupDialog } from '../matchups/LineupDialog';
 import { RecordSummary } from '../record/RecordSummary';
 import { ScheduleRangeSummary } from '../record/ScheduleRangeSummary';
 import { TeamFilters } from './TeamFilters';
@@ -53,6 +54,12 @@ export function SeasonView({ season, currentUserId }: SeasonViewProps) {
     return forTeam[0] ?? null;
   }, [liveMatchups, userId, scheduleOwnerId]);
 
+  // Week whose lineup is open; the matchup is looked up each render so live scores stay fresh
+  const [openWeek, setOpenWeek] = useState<number | null>(null);
+  const openMatchup = openWeek === null
+    ? null
+    : liveMatchup?.week === openWeek ? liveMatchup : matchups.find(m => m.week === openWeek) ?? null;
+
   const weeklyScores = useMemo(
     () => (userId ? getWeeklyScores(season.matchups, userId) : []),
     [season.matchups, userId]
@@ -84,6 +91,7 @@ export function SeasonView({ season, currentUserId }: SeasonViewProps) {
         }
         matchups={userId ? matchups : null}
         liveMatchup={liveMatchup}
+        onSelectMatchup={m => setOpenWeek(m.week)}
         weeklyScores={weeklyScores}
         scheduleOwnerName={scheduleOwner && getTeamName(scheduleOwner)}
         onSelectOwnSchedule={() => setScheduleOwnerId('')}
@@ -92,7 +100,18 @@ export function SeasonView({ season, currentUserId }: SeasonViewProps) {
           <ScheduleRangeSummary range={scheduleRange} userId={userId} onSelectSchedule={setScheduleOwnerId} />
         )}
       </RecordSummary>
-      <LeaderboardSection season={season} selectedUserId={userId} onSelectUser={handleUserChange} />
+      <LeaderboardSection season={season} liveMatchups={liveMatchups} selectedUserId={userId} onSelectUser={handleUserChange} />
+      {openMatchup && (
+        <LineupDialog
+          matchup={openMatchup}
+          isLive={openMatchup === liveMatchup}
+          slotNames={season.startingSlotNames}
+          slots={season.lineup?.slots ?? null}
+          players={season.players}
+          showNflTeams={season.isCurrentSeason}
+          onClose={() => setOpenWeek(null)}
+        />
+      )}
     </>
   );
 }

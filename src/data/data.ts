@@ -15,6 +15,16 @@ export interface Team {
     points: number;
     // Best possible score from the roster that week; null when it can't be worked out
     bestPoints: number | null;
+    // Who was on the roster that week; null if Sleeper didn't return it
+    roster: TeamRoster | null;
+}
+
+export interface TeamRoster {
+    // Player ids in lineup-slot order ("0" for an empty slot)
+    starters: string[];
+    // Every rostered player id, starters included
+    players: string[];
+    playerPoints: Record<string, number>;
 }
 
 export interface Matchup {

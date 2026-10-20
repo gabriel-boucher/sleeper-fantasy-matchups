@@ -1,7 +1,7 @@
-import { League, LeagueSeason, Matchup, MatchupId, RosterId, Team, User, UserId } from "./data";
+import { League, LeagueSeason, Matchup, MatchupId, RosterId, Team, TeamRoster, User, UserId } from "./data";
 import { LeagueDto, MatchupDto, RosterDto, UserDto } from "./dto";
 import { TeamRecord } from "./matchupAnalysis";
-import { getBestLineupPoints, PlayerPositions } from "./lineup";
+import { getBestLineup, PlayerDirectory } from "./lineup";
 
 export function toUser(userDto: UserDto): User {
     return {
@@ -63,19 +63,28 @@ export function toStandings(rosterDtos: RosterDto[]): Map<UserId, TeamRecord> {
     return standings;
 }
 
-function toBestPoints(matchupDto: MatchupDto, lineup: LineupContext | null): number | null {
-    if (!lineup || !matchupDto.players || !matchupDto.players_points) return null;
-    const best = getBestLineupPoints(lineup.slots, matchupDto.players, matchupDto.players_points, lineup.positions);
+function toRoster(matchupDto: MatchupDto): TeamRoster | null {
+    if (!matchupDto.players || !matchupDto.players_points) return null;
+    return {
+        starters: matchupDto.starters ?? [],
+        players: matchupDto.players,
+        playerPoints: matchupDto.players_points
+    };
+}
+
+function toBestPoints(roster: TeamRoster | null, points: number, lineup: LineupContext | null): number | null {
+    if (!lineup || !roster) return null;
+    const best = getBestLineup(lineup.slots, roster.players, roster.playerPoints, lineup.players).points;
     // Never below what was actually scored (e.g. a starter missing from the player list)
-    return Math.max(best, matchupDto.points);
+    return Math.max(best, points);
+}
+
+export interface LineupContext {
+    slots: string[][];
+    players: PlayerDirectory;
 }
 
 // Teams without an opponent (byes, eliminated playoff teams) are left out
-export interface LineupContext {
-    slots: string[][];
-    positions: PlayerPositions;
-}
-
 export function toMatchups(
     rosterOwners: Map<RosterId, User>,
     matchupDtos: MatchupDto[],
@@ -91,10 +100,12 @@ export function toMatchups(
             if (!teamsByMatchupId.has(matchupId)) {
                 teamsByMatchupId.set(matchupId, []);
             }
+            const roster = toRoster(matchupDto);
             teamsByMatchupId.get(matchupId)!.push({
                 user,
                 points: matchupDto.points,
-                bestPoints: toBestPoints(matchupDto, lineup)
+                bestPoints: toBestPoints(roster, matchupDto.points, lineup),
+                roster
             });
         }
     });

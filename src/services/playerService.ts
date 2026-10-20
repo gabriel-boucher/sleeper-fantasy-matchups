@@ -1,44 +1,60 @@
-import { PlayerPositions } from "../data/lineup";
+import { PlayerDirectory, PlayerInfo } from "../data/lineup";
+import { PlayerDto } from "../data/dto";
 import { getAllPlayers } from "./sleeperApi";
 
-const STORAGE_KEY = 'sleeper-player-positions';
+const STORAGE_KEY = 'sleeper-players';
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
-interface StoredPositions {
+// Compact on purpose: about 12,000 players have to fit comfortably in browser storage
+type StoredPlayer = [name: string, positions: string[], nflTeam: string | null];
+
+interface StoredPlayers {
   savedAt: number;
-  positions: Record<string, string[]>;
+  players: Record<string, StoredPlayer>;
 }
 
-let pending: Promise<PlayerPositions> | null = null;
+let pending: Promise<PlayerDirectory> | null = null;
 
-// Each player's eligible positions. The full player list is large, so it's downloaded at most
-// once a day and only the positions (a few hundred KB) are kept in the browser.
-export function getPlayerPositions(): Promise<PlayerPositions> {
-  pending ??= loadPlayerPositions().catch(err => {
+// Name, positions and team of every player. The full player list is large, so it's downloaded at
+// most once a day and only these fields are kept in the browser.
+export function getPlayerDirectory(): Promise<PlayerDirectory> {
+  pending ??= loadPlayerDirectory().catch(err => {
     pending = null;
     throw err;
   });
   return pending;
 }
 
-async function loadPlayerPositions(): Promise<PlayerPositions> {
+async function loadPlayerDirectory(): Promise<PlayerDirectory> {
   const stored = readStored();
   if (stored && Date.now() - stored.savedAt < MAX_AGE_MS) {
-    return new Map(Object.entries(stored.positions));
+    return toDirectory(stored.players);
   }
 
-  const players = await getAllPlayers();
-  const positions: Record<string, string[]> = {};
-  Object.entries(players).forEach(([id, player]) => {
-    if (player.fantasy_positions?.length) positions[id] = player.fantasy_positions;
+  const players: Record<string, StoredPlayer> = {};
+  Object.entries(await getAllPlayers()).forEach(([id, player]) => {
+    if (player.fantasy_positions?.length) {
+      players[id] = [getPlayerName(player, id), player.fantasy_positions, player.team ?? null];
+    }
   });
 
-  writeStored({ savedAt: Date.now(), positions });
-  return new Map(Object.entries(positions));
+  writeStored({ savedAt: Date.now(), players });
+  return toDirectory(players);
+}
+
+// Team defenses have no full name, only "Kansas City" / "Chiefs"
+function getPlayerName(player: PlayerDto, id: string): string {
+  return player.full_name || [player.first_name, player.last_name].filter(Boolean).join(' ') || id;
+}
+
+function toDirectory(players: Record<string, StoredPlayer>): PlayerDirectory {
+  return new Map(Object.entries(players).map(([id, [name, positions, nflTeam]]): [string, PlayerInfo] =>
+    [id, { name, positions, nflTeam }]
+  ));
 }
 
 // Storage can be unavailable (private mode) or full; the app just downloads again next time
-function readStored(): StoredPositions | null {
+function readStored(): StoredPlayers | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
@@ -47,7 +63,7 @@ function readStored(): StoredPositions | null {
   }
 }
 
-function writeStored(value: StoredPositions): void {
+function writeStored(value: StoredPlayers): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
   } catch {

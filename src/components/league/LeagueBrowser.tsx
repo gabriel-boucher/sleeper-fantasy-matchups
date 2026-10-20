@@ -32,12 +32,12 @@ export function LeagueBrowser({ userLeagues: { userId, leagues } }: LeagueBrowse
     const season = leagues.flatMap(l => l.seasons).find(s => s.league_id === seasonLeagueId);
     updateUrlParams({ league: leagueId, season: season?.season ?? null });
     // Without a season there's no team view to own these
-    if (!season) updateUrlParams({ team: null, vs: null, week: null });
+    if (!season) updateUrlParams({ team: null, vs: null, week: null, live: null });
   }, [leagues, leagueId, seasonLeagueId]);
 
   function handleLeagueChange(id: string) {
     // Teams differ between leagues, so the team selection doesn't carry over
-    updateUrlParams({ team: null, vs: null, week: null });
+    updateUrlParams({ team: null, vs: null, week: null, live: null });
     setLeagueId(id);
     // Default to the most recent season
     setSeasonLeagueId(leagues.find(l => l.id === id)?.seasons[0].league_id ?? '');

@@ -12,9 +12,10 @@ interface MatchupListProps {
   liveMatchup?: Matchup | null;
   // Shown on the same line as the title, aligned right
   headerContent?: ReactNode;
+  onSelectMatchup: (matchup: Matchup) => void;
 }
 
-export function MatchupList({ matchups, liveMatchup, headerContent }: MatchupListProps) {
+export function MatchupList({ matchups, liveMatchup, headerContent, onSelectMatchup }: MatchupListProps) {
   const played = getPlayedMatchups(matchups);
   const cardCount = played.length + (liveMatchup ? 1 : 0);
   // Weeks fill the first column top to bottom, then the second
@@ -31,9 +32,9 @@ export function MatchupList({ matchups, liveMatchup, headerContent }: MatchupLis
       ) : (
         <div className="matchup-list" style={style}>
           {played.map(matchup => (
-            <MatchupCard key={`${matchup.week}-${matchup.team.user.user_id}`} matchup={matchup} />
+            <MatchupCard key={`${matchup.week}-${matchup.team.user.user_id}`} matchup={matchup} onSelect={onSelectMatchup} />
           ))}
-          {liveMatchup && <MatchupCard matchup={liveMatchup} isLive />}
+          {liveMatchup && <MatchupCard matchup={liveMatchup} isLive onSelect={onSelectMatchup} />}
         </div>
       )}
     </section>
