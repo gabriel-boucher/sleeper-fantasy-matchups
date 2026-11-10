@@ -21,6 +21,11 @@ type SortDirection = 'desc' | 'asc';
 interface SortOrder {
   value: (entry: LeaderboardEntry) => number | null;
   highestFirst: boolean;
+  // Orders rows the main value leaves tied, before falling back to the leaderboard's own order
+  tieBreak?: {
+    value: (entry: LeaderboardEntry) => number;
+    highestFirst: boolean;
+  };
 }
 
 // What ▼ (desc) and ▲ (asc) each order by
@@ -56,7 +61,17 @@ function byRecord(wins: SortOrder['value'], losses: SortOrder['value']): SortOpt
 }
 
 const ALL_PLAY_RECORD = byRecord(e => e.record.wins, e => e.record.losses);
-const ACTUAL_RECORD = byRecord(e => e.actualRecord.wins, e => e.actualRecord.losses);
+
+// Ties go to points for, like the real standings: ▼ more points first, ▲ fewer points first
+// (so ▲ lists the worst teams first, mirroring ▼)
+const ACTUAL_RECORD: SortOption = (() => {
+  const record = byRecord(e => e.actualRecord.wins, e => e.actualRecord.losses);
+  const pointsFor = (e: LeaderboardEntry) => e.actualRecord.pointsFor;
+  return {
+    desc: { ...record.desc, tieBreak: { value: pointsFor, highestFirst: true } },
+    asc: { ...record.asc, tieBreak: { value: pointsFor, highestFirst: false } }
+  };
+})();
 
 function getColumns(entries: LeaderboardEntry[]): Column[] {
   const hasAllPlayTies = entries.some(e => e.record.ties > 0);
@@ -163,17 +178,22 @@ function getColumns(entries: LeaderboardEntry[]): Column[] {
 // Most all-play wins first: the leaderboard's own ranking
 const DEFAULT_SORT: Sort = { key: 'allPlayRecord', direction: 'desc' };
 
-// Ties keep the leaderboard's own order; no order (a column that's gone) keeps that order as is
+// Ties go to the order's tie-break if it has one, then the leaderboard's own order;
+// no order (a column that's gone) keeps that order as is
 function sortEntries(entries: LeaderboardEntry[], order: SortOrder | undefined): LeaderboardEntry[] {
   if (!order) return entries;
   const sign = order.highestFirst ? -1 : 1;
+  const { tieBreak } = order;
+  const breakTie = (a: LeaderboardEntry, b: LeaderboardEntry) =>
+    (tieBreak ? (tieBreak.highestFirst ? -1 : 1) * (tieBreak.value(a) - tieBreak.value(b)) : 0) || a.rank - b.rank;
+
   return [...entries].sort((a, b) => {
     const valueA = order.value(a);
     const valueB = order.value(b);
     if (valueA === null || valueB === null) {
-      return (valueA === null ? 1 : 0) - (valueB === null ? 1 : 0) || a.rank - b.rank;
+      return (valueA === null ? 1 : 0) - (valueB === null ? 1 : 0) || breakTie(a, b);
     }
-    return sign * (valueA - valueB) || a.rank - b.rank;
+    return sign * (valueA - valueB) || breakTie(a, b);
   });
 }
 
