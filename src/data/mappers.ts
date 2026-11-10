@@ -68,7 +68,8 @@ function toRoster(matchupDto: MatchupDto): TeamRoster | null {
     return {
         starters: matchupDto.starters ?? [],
         players: matchupDto.players,
-        playerPoints: matchupDto.players_points
+        playerPoints: matchupDto.players_points,
+        playerProjections: null
     };
 }
 
@@ -105,7 +106,8 @@ export function toMatchups(
                 user,
                 points: matchupDto.points,
                 bestPoints: toBestPoints(roster, matchupDto.points, lineup),
-                roster
+                roster,
+                projectedPoints: null
             });
         }
     });

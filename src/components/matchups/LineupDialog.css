@@ -1,5 +1,19 @@
 .lineup-dialog {
-  width: min(560px, calc(100vw - 2 * var(--space-4)));
+  /* Sleeper's lineup slot colors */
+  --slot-qb: #fc2b6d;
+  --slot-rb: #20ceb8;
+  --slot-wr: #56c9f8;
+  --slot-te: #feae58;
+  --slot-k: #c96cff;
+  --slot-def: #bf755d;
+  --slot-dl: #fa9e59;
+  --slot-lb: #ae86ef;
+  --slot-db: #fe95b9;
+  --slot-text: #10131a;
+  /* Middle column holding the slot badges */
+  --slot-column: 56px;
+
+  width: min(820px, calc(100vw - 2 * var(--space-4)));
   max-height: min(85vh, 900px);
   padding: 0;
   background: var(--surface);
@@ -20,10 +34,10 @@
 
 .lineup-dialog-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
 .lineup-dialog-title {
@@ -32,8 +46,11 @@
   align-items: center;
   gap: var(--space-2);
   margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-caps);
+  color: var(--text-muted);
 }
 
 .lineup-dialog-live {
@@ -43,16 +60,8 @@
   color: var(--accent);
   font-size: var(--font-size-xs);
   font-weight: 600;
-}
-
-.lineup-dialog-score {
-  margin: var(--space-1) 0 0;
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.lineup-dialog-score strong {
-  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .lineup-dialog-close {
@@ -63,9 +72,8 @@
   height: 32px;
   background: none;
   border: 1px solid var(--border);
+  padding: 0;
   border-radius: 50%;
-  font-size: var(--font-size-lg);
-  line-height: 1;
   color: var(--text-muted);
   cursor: pointer;
 }
@@ -80,28 +88,147 @@
   box-shadow: var(--focus-shadow);
 }
 
-.lineup-section + .lineup-section {
-  margin-top: var(--space-5);
+/* Every head-to-head line: team | slot | opponent */
+.h2h-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--slot-column) minmax(0, 1fr);
+  align-items: center;
 }
 
-.lineup-table {
-  width: 100%;
-  border-collapse: collapse;
+/* Scoreboard: name beside the score (projection under it), score toward the middle; the opponent mirrored */
+.h2h-scores {
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-2);
 }
 
-.lineup-table td {
-  padding: var(--space-2) var(--space-1);
-  border-top: 1px solid var(--border);
-  vertical-align: middle;
+.h2h-team {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+  padding-bottom: var(--space-3);
+  border-bottom: 3px solid var(--border);
 }
 
-.lineup-table .lineup-slot {
-  width: 1%;
-  padding-right: var(--space-3);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  color: var(--text-subtle);
+.h2h-team.right {
+  flex-direction: row-reverse;
+}
+
+.h2h-team-score {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  align-items: flex-end;
+}
+
+.h2h-team.right .h2h-team-score {
+  align-items: flex-start;
+}
+
+.h2h-team.ahead {
+  border-bottom-color: var(--win);
+}
+
+.h2h-team-name {
+  min-width: 0;
+  overflow: hidden;
   white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+}
+
+.h2h-team-points {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.h2h-team.ahead .h2h-team-points {
+  color: var(--text);
+}
+
+.h2h-team-projected {
+  font-size: var(--font-size-base);
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.h2h-vs {
+  justify-self: center;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.lineup-section {
+  margin-top: var(--space-4);
+}
+
+.lineup-section-title {
+  text-align: center;
+}
+
+.h2h-player-row {
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--border);
+}
+
+/* Player on the outside, points next to the slot in the middle */
+.h2h-player {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: 0 var(--space-3);
+}
+
+.h2h-player.left {
+  padding-left: 0;
+}
+
+.h2h-player.right {
+  flex-direction: row-reverse;
+  padding-right: 0;
+  text-align: right;
+}
+
+.h2h-player .lineup-player-info {
+  flex: 1;
+}
+
+.h2h-player.right .lineup-player-info,
+.h2h-player.right .lineup-player-meta {
+  flex-direction: row-reverse;
+}
+
+.h2h-player-points {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
+
+.h2h-player.left .h2h-player-points {
+  align-items: flex-end;
+}
+
+.h2h-player.right .h2h-player-points {
+  align-items: flex-start;
+}
+
+.h2h-player-actual {
+  font-weight: 600;
+}
+
+.h2h-player-projected {
+  font-size: var(--font-size-xs);
+  color: var(--text-subtle);
 }
 
 .lineup-player-info {
@@ -117,13 +244,26 @@
 
 .lineup-player-name {
   display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-weight: 500;
 }
 
+/* Position and team, then the lineup tag on the same line */
 .lineup-player-meta {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   font-size: var(--font-size-xs);
   color: var(--text-subtle);
+}
+
+.lineup-player-meta-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .lineup-player-empty {
@@ -131,14 +271,10 @@
   font-style: italic;
 }
 
-.lineup-table .lineup-tag {
-  width: 1%;
-  white-space: nowrap;
-  text-align: right;
-}
-
 .lineup-tag-badge {
-  padding: var(--space-0-5) var(--space-2);
+  flex-shrink: 0;
+  padding: 0 var(--space-1-5);
+  line-height: 1.5;
   border-radius: var(--radius-full);
   font-size: var(--font-size-2xs);
   font-weight: 600;
@@ -147,24 +283,114 @@
 .lineup-tag-badge.start { background: var(--win-bg); color: var(--win); }
 .lineup-tag-badge.sit { background: var(--loss-bg); color: var(--loss); }
 
-.lineup-table .lineup-points {
-  width: 1%;
-  padding-left: var(--space-3);
-  text-align: right;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+/* Lineup slot in the middle of each row */
+.slot-badge {
+  justify-self: center;
+  min-width: 40px;
+  padding: var(--space-1) var(--space-1-5);
+  border-radius: var(--radius-xs);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: var(--font-size-2xs);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.slot-badge:not(.slot-BN) {
+  color: var(--slot-text);
+}
+
+.slot-QB { background: var(--slot-qb); }
+.slot-RB { background: var(--slot-rb); }
+.slot-WR { background: var(--slot-wr); }
+.slot-TE { background: var(--slot-te); }
+.slot-K { background: var(--slot-k); }
+.slot-DEF { background: var(--slot-def); }
+.slot-DL { background: var(--slot-dl); }
+.slot-LB { background: var(--slot-lb); }
+.slot-DB { background: var(--slot-db); }
+/* Flex slots blend the colors of the positions they accept */
+.slot-FLEX { background: linear-gradient(90deg, var(--slot-rb), var(--slot-wr), var(--slot-te)); }
+.slot-WRRB_FLEX { background: linear-gradient(90deg, var(--slot-wr), var(--slot-rb)); }
+.slot-REC_FLEX { background: linear-gradient(90deg, var(--slot-wr), var(--slot-te)); }
+.slot-SUPER_FLEX { background: linear-gradient(90deg, var(--slot-qb), var(--slot-rb), var(--slot-wr), var(--slot-te)); }
+.slot-IDP_FLEX { background: linear-gradient(90deg, var(--slot-dl), var(--slot-lb), var(--slot-db)); }
+
+.h2h-summaries {
+  align-items: start;
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
 }
 
 .lineup-dialog-summary {
-  margin: var(--space-5) 0 0;
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border);
+  margin: 0;
   font-size: var(--font-size-sm);
   color: var(--text-muted);
+}
+
+.lineup-dialog-summary.right {
+  text-align: right;
 }
 
 .lineup-dialog-summary strong {
   color: var(--text);
   font-variant-numeric: tabular-nums;
+}
+
+/* Phones: names need the room more than headshots do */
+@media (max-width: 560px) {
+  .lineup-dialog {
+    --slot-column: 44px;
+  }
+
+  .lineup-dialog-content {
+    padding: var(--space-4);
+  }
+
+  .lineup-player-info .player-avatar {
+    display: none;
+  }
+
+  .h2h-player {
+    gap: var(--space-2);
+    padding: 0 var(--space-1-5);
+    font-size: var(--font-size-sm);
+  }
+
+  /* Too narrow to fit beside the score on one line, so names get two */
+  .h2h-team-name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: var(--font-size-base);
+    line-height: 1.2;
+  }
+
+  .h2h-team.right .h2h-team-name {
+    text-align: right;
+  }
+
+  .h2h-team-points {
+    font-size: var(--font-size-lg);
+  }
+
+  .h2h-team-projected {
+    font-size: var(--font-size-md);
+  }
+
+  .slot-badge {
+    min-width: 36px;
+    padding: var(--space-1);
+  }
+
+  /* No room for the tag text beside the position; it moves under it */
+  .lineup-player-meta {
+    flex-wrap: wrap;
+    row-gap: var(--space-0-5);
+  }
 }

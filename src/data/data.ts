@@ -17,6 +17,8 @@ export interface Team {
     bestPoints: number | null;
     // Who was on the roster that week; null if Sleeper didn't return it
     roster: TeamRoster | null;
+    // Points the starters were projected to score; null until projections load or if unavailable
+    projectedPoints: number | null;
 }
 
 export interface TeamRoster {
@@ -25,6 +27,8 @@ export interface TeamRoster {
     // Every rostered player id, starters included
     players: string[];
     playerPoints: Record<string, number>;
+    // Each player's projected points that week; null when projections aren't available
+    playerProjections: Record<string, number> | null;
 }
 
 export interface Matchup {

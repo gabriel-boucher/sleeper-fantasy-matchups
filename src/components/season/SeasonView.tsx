@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { UserId } from '../../data/data';
 import { getMatchupsAgainstSchedule, getMatchupsFor, getScheduleRange, getTeamName } from '../../data/matchupAnalysis';
 import { getWeeklyScores } from '../../data/weeklyScores';
+import { withProjections } from '../../data/projections';
 import { useLiveMatchups } from '../../hooks/useLiveMatchups';
+import { useProjections } from '../../hooks/useProjections';
 import { Season } from '../../services/seasonService';
 import { readUrlParam, updateUrlParams } from '../../utils/urlParams';
 import { LeaderboardSection } from '../leaderboard/LeaderboardSection';
@@ -29,7 +31,14 @@ function getInitialTeams(season: Season, currentUserId: UserId) {
   return { userId, scheduleOwnerId };
 }
 
-export function SeasonView({ season, currentUserId }: SeasonViewProps) {
+export function SeasonView({ season: loadedSeason, currentUserId }: SeasonViewProps) {
+  // Projections arrive after the season; until then everything shows without them
+  const projections = useProjections(loadedSeason);
+  const season = useMemo(
+    () => (projections ? { ...loadedSeason, matchups: withProjections(loadedSeason.matchups, projections) } : loadedSeason),
+    [loadedSeason, projections]
+  );
+
   const [initial] = useState(() => getInitialTeams(season, currentUserId));
   const [userId, setUserId] = useState(initial.userId);
   const [scheduleOwnerId, setScheduleOwnerId] = useState(initial.scheduleOwnerId);
@@ -45,7 +54,11 @@ export function SeasonView({ season, currentUserId }: SeasonViewProps) {
       : getMatchupsFor(season.matchups, userId);
   }, [season.matchups, userId, scheduleOwnerId]);
 
-  const liveMatchups = useLiveMatchups(season);
+  const refreshedLiveMatchups = useLiveMatchups(loadedSeason);
+  const liveMatchups = useMemo(
+    () => (projections ? withProjections(refreshedLiveMatchups, projections) : refreshedLiveMatchups),
+    [refreshedLiveMatchups, projections]
+  );
   const liveMatchup = useMemo(() => {
     if (!userId) return null;
     const forTeam = scheduleOwnerId

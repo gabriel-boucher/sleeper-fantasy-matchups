@@ -1,4 +1,4 @@
-import { LeagueDto, MatchupDto, NflStateDto, PlayerDto, RosterDto, SleeperUserDto, UserDto } from "../data/dto";
+import { LeagueDto, ProjectionDto, MatchupDto, NflStateDto, PlayerDto, RosterDto, SleeperUserDto, UserDto } from "../data/dto";
 
 const BASE_URL = 'https://api.sleeper.app/v1';
 
@@ -45,4 +45,12 @@ export function getUsers(leagueId: string): Promise<UserDto[]> {
 // Large (~2.5 MB gzipped); Sleeper asks apps to fetch it at most once a day
 export function getAllPlayers(): Promise<Record<string, PlayerDto>> {
   return get('/players/nfl', 'Failed to fetch players');
+}
+
+// Not part of Sleeper's documented API, but it's what the Sleeper app uses for projections
+export async function getProjections(season: string, week: number, positions: string[]): Promise<ProjectionDto[]> {
+  const query = ['season_type=regular', ...positions.map(p => `position[]=${encodeURIComponent(p)}`)].join('&');
+  const response = await fetch(`https://api.sleeper.com/projections/nfl/${season}/${week}?${query}`);
+  if (!response.ok) throw new Error('Failed to fetch projections');
+  return (await response.json()) ?? [];
 }

@@ -1,9 +1,10 @@
 import { Matchup, RosterId, User, UserId, WEEKCOUNT } from "../data/data";
-import { getStartingSlotNames, getStartingSlots, PlayerDirectory } from "../data/lineup";
+import { getStartingPositions, getStartingSlotNames, getStartingSlots, PlayerDirectory } from "../data/lineup";
 import { LineupContext, toMatchups, toRosterOwners, toStandings, toUser } from "../data/mappers";
 import { TeamRecord } from "../data/matchupAnalysis";
 import { getLastCompletedWeek, getLiveWeek } from "../data/seasonProgress";
 import { getPlayerDirectory } from "./playerService";
+import { ProjectionSettings } from "./projectionService";
 import { getLeague, getMatchups, getNflState, getRosters, getUsers } from "./sleeperApi";
 
 export interface Season {
@@ -25,6 +26,8 @@ export interface Season {
   players: PlayerDirectory | null;
   // Sleeper only knows players' current NFL teams, which are only right for the current season
   isCurrentSeason: boolean;
+  // What's needed to score projections the league's way; null if the league has no scoring settings
+  projectionSettings: ProjectionSettings | null;
 }
 
 export async function loadSeason(leagueId: string): Promise<Season> {
@@ -61,7 +64,14 @@ export async function loadSeason(leagueId: string): Promise<Season> {
     lineup,
     startingSlotNames: getStartingSlotNames(leagueDto.roster_positions ?? []),
     players,
-    isCurrentSeason: Number(leagueDto.season) === Number(nflState.season)
+    isCurrentSeason: Number(leagueDto.season) === Number(nflState.season),
+    projectionSettings: leagueDto.scoring_settings
+      ? {
+          season: leagueDto.season,
+          scoring: leagueDto.scoring_settings,
+          positions: getStartingPositions(leagueDto.roster_positions ?? [])
+        }
+      : null
   };
 }
 

@@ -44,6 +44,11 @@ export function getStartingSlots(rosterPositions: string[]): string[][] | null {
   return starting.map(slot => SLOT_ELIGIBILITY[slot]);
 }
 
+// Every position a league can start, e.g. ["QB", "RB", "WR", "TE"]
+export function getStartingPositions(rosterPositions: string[]): string[] {
+  return [...new Set(getStartingSlotNames(rosterPositions).flatMap(slot => SLOT_ELIGIBILITY[slot] ?? []))];
+}
+
 export interface BestLineup {
   points: number;
   playerIds: Set<string>;
@@ -84,6 +89,8 @@ export interface LineupPlayer {
   // null for an empty starting slot or a player Sleeper's list doesn't have
   player: PlayerInfo | null;
   points: number;
+  // Projected points; null for an empty slot or when projections aren't available
+  projected: number | null;
   // Whether the best lineup would have started this player; null if unknown
   inBestLineup: boolean | null;
 }
@@ -106,6 +113,7 @@ export function getWeekLineup(
     slot,
     player: players?.get(id) ?? null,
     points: roster.playerPoints[id] ?? 0,
+    projected: roster.playerProjections ? roster.playerProjections[id] ?? 0 : null,
     inBestLineup: best ? best.playerIds.has(id) : null
   });
 
@@ -113,7 +121,7 @@ export function getWeekLineup(
   return {
     // Sleeper uses "0" for a starting slot left empty
     starters: roster.starters.map((id, i) => (id === '0'
-      ? { id, slot: slotNames[i] ?? null, player: null, points: 0, inBestLineup: null }
+      ? { id, slot: slotNames[i] ?? null, player: null, points: 0, projected: null, inBestLineup: null }
       : toLineupPlayer(id, slotNames[i] ?? null))),
     bench: roster.players
       .filter(id => !starterIds.has(id))

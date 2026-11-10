@@ -49,6 +49,11 @@ function TeamRow({ team, isWinner }: { team: Team; isWinner: boolean }) {
   return (
     <span className={`matchup-team ${isWinner ? 'winner' : ''}`}>
       <span className="team-name">{getTeamName(team.user)}</span>
+      {team.projectedPoints !== null && (
+        <span className="team-projected" title="Projected points">
+          {team.projectedPoints.toFixed(2)}
+        </span>
+      )}
       <span className="team-points">{team.points.toFixed(2)}</span>
     </span>
   );

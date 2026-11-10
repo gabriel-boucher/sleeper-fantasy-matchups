@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Matchup } from '../../data/data';
-import { getRecord, getWinPct } from '../../data/matchupAnalysis';
+import { getPlayedMatchups, getRecord, getWinPct } from '../../data/matchupAnalysis';
+import { getTotalProjection } from '../../data/projections';
 import { WeeklyScore } from '../../data/weeklyScores';
 import { MatchupList } from '../matchups/MatchupList';
 import { RecordTile } from './RecordTile';
@@ -37,6 +38,7 @@ type RecordDetailsProps = Omit<RecordSummaryProps, 'controls' | 'matchups'> & { 
 
 function RecordDetails({ matchups, liveMatchup, onSelectMatchup, weeklyScores, scheduleOwnerName, onSelectOwnSchedule, children }: RecordDetailsProps) {
   const record = getRecord(matchups);
+  const projected = getTotalProjection(getPlayedMatchups(matchups));
 
   return (
     <>
@@ -60,6 +62,7 @@ function RecordDetails({ matchups, liveMatchup, onSelectMatchup, weeklyScores, s
             <Stat label="W%" value={`${(getWinPct(record) * 100).toFixed(0)}%`} />
             <Stat label="PF" value={record.pointsFor.toFixed(2)} />
             <Stat label="PA" value={record.pointsAgainst.toFixed(2)} />
+            {projected !== null && <Stat label="PROJ" value={projected.toFixed(2)} />}
           </dl>
         }
       />

@@ -40,6 +40,8 @@ export interface LeagueDto {
   previous_league_id: string | null;
   // Lineup slots in order, e.g. ["QB", "RB", "RB", "FLEX", "BN", "BN"]
   roster_positions?: string[] | null;
+  // Points per stat, keyed like projection stats, e.g. { rec: 1, pass_td: 4 }
+  scoring_settings?: Record<string, number> | null;
   settings?: {
     playoff_week_start?: number;
   };
@@ -67,4 +69,10 @@ export interface NflStateDto {
   // Current week of `season`; it stays on a week until that week's games are over
   week: number;
   season_type: 'pre' | 'regular' | 'post' | 'off';
+}
+
+export interface ProjectionDto {
+  player_id: string;
+  // Projected stat line, keyed like a league's scoring settings
+  stats: Record<string, number>;
 }

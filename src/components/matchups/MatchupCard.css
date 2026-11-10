@@ -85,6 +85,16 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Pushed right next to the score, quieter than it */
+.team-projected {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: var(--font-size-xs);
+  font-weight: 400;
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
 .result-badge {
   display: grid;
   place-items: center;
@@ -142,5 +152,10 @@
 @media (max-width: 640px) {
   .matchup-card {
     gap: var(--space-3);
+  }
+
+  /* Leaves more room for team names */
+  .matchup-team {
+    gap: var(--space-2);
   }
 }

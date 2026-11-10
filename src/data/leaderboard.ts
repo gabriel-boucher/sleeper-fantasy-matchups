@@ -1,14 +1,20 @@
 import { Matchup, User, UserId } from "./data";
 import { BenchStats, getBenchStats } from "./lineup";
+import { getTotalProjection } from "./projections";
 import { addGame, createEmptyRecord, getGamesPlayed, getMatchupsFor, getPlayedMatchups, getRecord, getWinPct, TeamRecord } from "./matchupAnalysis";
 
 export interface LeaderboardEntry {
   user: User;
+  // All-play wins and losses, with the team's real points for and against
   record: TeamRecord;
+  // The real record: Sleeper's official standings when given (median wins included), otherwise head to head
+  actualRecord: TeamRecord;
   rank: number;
   actualRank: number;
   scheduleStrength: ScheduleStrength;
   bench: BenchStats | null;
+  // What the team's starters were projected to score over the same games; null if unknown
+  projectedPoints: number | null;
 }
 
 // How hard a team's real opponents were: their points per game against it vs. the league average.
@@ -70,7 +76,8 @@ export function getAllPlayLeaderboard(
         allPlay: allPlayRecords.get(user.user_id)!,
         actual,
         standing: official && getGamesPlayed(official) > 0 ? official : actual,
-        bench: getBenchStats(getPlayedMatchups(teamMatchups))
+        bench: getBenchStats(getPlayedMatchups(teamMatchups)),
+        projectedPoints: getTotalProjection(getPlayedMatchups(teamMatchups))
       };
     })
     .filter(team => getGamesPlayed(team.allPlay) > 0);
@@ -84,11 +91,13 @@ export function getAllPlayLeaderboard(
   const leagueAverage = getAveragePoints(teams.map(team => team.actual));
 
   return teams
-    .map(({ user, allPlay, actual, bench }) => ({
+    .map(({ user, allPlay, actual, standing, bench, projectedPoints }) => ({
       user,
       record: { ...allPlay, pointsFor: actual.pointsFor, pointsAgainst: actual.pointsAgainst },
+      actualRecord: standing,
       scheduleStrength: getScheduleStrength(actual, leagueAverage),
-      bench
+      bench,
+      projectedPoints
     }))
     .sort((a, b) => b.record.wins - a.record.wins || b.record.pointsFor - a.record.pointsFor)
     .map((entry, i) => ({ ...entry, rank: i + 1, actualRank: actualRanks.get(entry.user.user_id)! }));
