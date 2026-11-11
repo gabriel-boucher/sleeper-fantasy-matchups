@@ -17,6 +17,11 @@ export function getUserByUsername(username: string): Promise<SleeperUserDto | nu
   return get(`/user/${encodeURIComponent(username)}`, 'Failed to fetch user');
 }
 
+// The same endpoint also takes a user id, which is how a league member's actual username is found
+export function getUserById(userId: string): Promise<SleeperUserDto | null> {
+  return get(`/user/${encodeURIComponent(userId)}`, 'Failed to fetch user');
+}
+
 export function getNflState(): Promise<NflStateDto> {
   return get('/state/nfl', 'Failed to fetch NFL state');
 }

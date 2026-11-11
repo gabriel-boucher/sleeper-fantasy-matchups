@@ -40,17 +40,21 @@
   margin-bottom: var(--space-4);
 }
 
-.lineup-dialog-title {
+/* Week switcher on the left of the header, with the Live tag beside it */
+.lineup-dialog-week {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
-  margin: 0;
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-caps);
-  color: var(--text-muted);
+  gap: var(--space-2) var(--space-3);
+}
+
+.lineup-dialog-week .week-navigator {
+  justify-content: flex-start;
+  margin-bottom: 0;
+}
+
+.lineup-dialog-week .week-navigator-label {
+  min-width: 0;
 }
 
 .lineup-dialog-live {
@@ -130,13 +134,55 @@
   border-bottom-color: var(--win);
 }
 
+/* Picture beside the names; mirrored for the opponent so the picture stays on the outside */
+.h2h-team-who {
+  --avatar-size: 40px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5);
+  min-width: 0;
+}
+
+.h2h-team.right .h2h-team-who {
+  flex-direction: row-reverse;
+}
+
+/* Team name with the manager's username under it */
+.h2h-team-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.h2h-team.right .h2h-team-identity {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* Long team names get a second line rather than being cut off */
 .h2h-team-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  max-width: 100%;
   min-width: 0;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
   font-size: var(--font-size-xl);
   font-weight: 700;
+  line-height: 1.2;
+}
+
+.h2h-team.right .h2h-team-name {
+  text-align: right;
+}
+
+.h2h-team-username {
+  max-width: 100%;
+  font-size: var(--font-size-sm);
 }
 
 .h2h-team-points {
@@ -353,6 +399,19 @@
     display: none;
   }
 
+  /* No room beside the names here: the picture goes above them instead */
+  .h2h-team-who,
+  .h2h-team.right .h2h-team-who {
+    --avatar-size: 32px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+
+  .h2h-team.right .h2h-team-who {
+    align-items: flex-end;
+  }
+
   .h2h-player {
     gap: var(--space-2);
     padding: 0 var(--space-1-5);
@@ -361,18 +420,7 @@
 
   /* Too narrow to fit beside the score on one line, so names get two */
   .h2h-team-name {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    white-space: normal;
-    overflow-wrap: anywhere;
     font-size: var(--font-size-base);
-    line-height: 1.2;
-  }
-
-  .h2h-team.right .h2h-team-name {
-    text-align: right;
   }
 
   .h2h-team-points {

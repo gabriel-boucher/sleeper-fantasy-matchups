@@ -55,23 +55,21 @@ function byValue(value: SortOrder['value']): SortOption {
   return { desc: { value, highestFirst: true }, asc: { value, highestFirst: false } };
 }
 
-// ▼ most wins first, ▲ most losses first
-function byRecord(wins: SortOrder['value'], losses: SortOrder['value']): SortOption {
-  return { desc: { value: wins, highestFirst: true }, asc: { value: losses, highestFirst: true } };
+// ▼ most wins first, ▲ most losses first. Ties go to points for, like the real standings:
+// ▼ more points first, ▲ fewer points first (so ▲ lists the worst teams first, mirroring ▼).
+function byRecord(
+  wins: SortOrder['value'],
+  losses: SortOrder['value'],
+  pointsFor: (entry: LeaderboardEntry) => number
+): SortOption {
+  return {
+    desc: { value: wins, highestFirst: true, tieBreak: { value: pointsFor, highestFirst: true } },
+    asc: { value: losses, highestFirst: true, tieBreak: { value: pointsFor, highestFirst: false } }
+  };
 }
 
-const ALL_PLAY_RECORD = byRecord(e => e.record.wins, e => e.record.losses);
-
-// Ties go to points for, like the real standings: ▼ more points first, ▲ fewer points first
-// (so ▲ lists the worst teams first, mirroring ▼)
-const ACTUAL_RECORD: SortOption = (() => {
-  const record = byRecord(e => e.actualRecord.wins, e => e.actualRecord.losses);
-  const pointsFor = (e: LeaderboardEntry) => e.actualRecord.pointsFor;
-  return {
-    desc: { ...record.desc, tieBreak: { value: pointsFor, highestFirst: true } },
-    asc: { ...record.asc, tieBreak: { value: pointsFor, highestFirst: false } }
-  };
-})();
+const ALL_PLAY_RECORD = byRecord(e => e.record.wins, e => e.record.losses, e => e.record.pointsFor);
+const ACTUAL_RECORD = byRecord(e => e.actualRecord.wins, e => e.actualRecord.losses, e => e.actualRecord.pointsFor);
 
 function getColumns(entries: LeaderboardEntry[]): Column[] {
   const hasAllPlayTies = entries.some(e => e.record.ties > 0);

@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import './SelectField.css';
 
 export interface SelectOption {
@@ -12,13 +13,22 @@ interface SelectFieldProps {
   options: SelectOption[];
   placeholder?: string;
   disabled?: boolean;
+  // Shown at the right end of the label's line
+  labelExtra?: ReactNode;
   onChange: (value: string) => void;
 }
 
-export function SelectField({ id, label, value, options, placeholder, disabled, onChange }: SelectFieldProps) {
+export function SelectField({ id, label, value, options, placeholder, disabled, labelExtra, onChange }: SelectFieldProps) {
   return (
     <div className="field">
-      <label htmlFor={id} className="field-label">{label}</label>
+      {labelExtra ? (
+        <div className="field-label-row">
+          <label htmlFor={id} className="field-label">{label}</label>
+          <span className="field-label-extra">{labelExtra}</span>
+        </div>
+      ) : (
+        <label htmlFor={id} className="field-label">{label}</label>
+      )}
       <div className="select-wrapper">
         <select
           id={id}

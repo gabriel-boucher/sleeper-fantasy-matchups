@@ -8,6 +8,8 @@ export interface User {
   user_id: UserId;
   display_name: string;
   team_name?: string;
+  // The team's picture in this league: its custom one if set, otherwise the user's profile picture
+  avatarUrl: string | null;
 }
 
 export interface Team {

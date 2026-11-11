@@ -1,3 +1,31 @@
+/* Label on the left, extra info (e.g. "Managed by @user") on the right of the same line */
+.field-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-1-5);
+}
+
+.field-label-row .field-label {
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+
+.field-label-extra {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--font-size-sm);
+  color: var(--text-subtle);
+}
+
+.field-label-extra .username {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
 .select-wrapper {
   position: relative;
 }

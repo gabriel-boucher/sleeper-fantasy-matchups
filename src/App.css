@@ -1,37 +1,78 @@
-.app {
+/* Top bar across the whole window: title on the left, username search on the right.
+   It stays put while scrolling. */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* Lined up with the page content below */
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-6);
   max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: var(--space-12) var(--space-4) var(--space-16);
+  padding: var(--space-3) var(--space-4);
 }
 
-.app-header {
-  margin-bottom: var(--space-8);
+/* Home page: no search box in the bar, so the title sits in the middle */
+.navbar-inner--centered {
+  justify-content: center;
+  text-align: center;
 }
 
-.app-title {
+.navbar-title {
+  flex-shrink: 0;
   margin: 0;
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: 700;
   letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
-.app-subtitle {
-  margin: var(--space-1) 0 var(--space-6);
-  color: var(--text-muted);
+.navbar-home {
+  color: inherit;
+  text-decoration: none;
 }
 
-.app-main {
+.navbar-home:hover {
+  color: var(--accent);
+}
+
+.navbar-home:focus-visible {
+  outline: none;
+  border-radius: var(--radius-xs);
+  box-shadow: var(--focus-shadow);
+}
+
+/* The page column */
+.app {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-16);
 }
 
 @media (max-width: 640px) {
-  .app {
-    padding-top: var(--space-8);
+  /* Title on its own line, search full width under it */
+  .navbar-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
   }
 
-  .app-title {
-    font-size: 1.5rem;
+  .navbar-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .app {
+    padding-top: var(--space-4);
   }
 }

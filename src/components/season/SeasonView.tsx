@@ -1,16 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { UserId } from '../../data/data';
-import { getMatchupsAgainstSchedule, getMatchupsFor, getScheduleRange, getTeamName } from '../../data/matchupAnalysis';
+import { getMatchupsAgainstSchedule, getMatchupsFor, getPlayedMatchups, getScheduleRange, getTeamName } from '../../data/matchupAnalysis';
 import { getWeeklyScores } from '../../data/weeklyScores';
 import { withProjections } from '../../data/projections';
 import { useLiveMatchups } from '../../hooks/useLiveMatchups';
 import { useProjections } from '../../hooks/useProjections';
 import { Season } from '../../services/seasonService';
-import { readUrlParam, updateUrlParams } from '../../utils/urlParams';
+import { readUrlParam } from '../../utils/urlParams';
+import { useUrlParamsSync } from '../../hooks/useUrlParamsSync';
 import { LeaderboardSection } from '../leaderboard/LeaderboardSection';
 import { LineupDialog } from '../matchups/LineupDialog';
 import { RecordSummary } from '../record/RecordSummary';
 import { ScheduleRangeSummary } from '../record/ScheduleRangeSummary';
+import { TeamActionsProvider } from '../common/TeamLinks';
 import { TeamFilters } from './TeamFilters';
 
 interface SeasonViewProps {
@@ -43,9 +45,7 @@ export function SeasonView({ season: loadedSeason, currentUserId }: SeasonViewPr
   const [userId, setUserId] = useState(initial.userId);
   const [scheduleOwnerId, setScheduleOwnerId] = useState(initial.scheduleOwnerId);
 
-  useEffect(() => {
-    updateUrlParams({ team: userId, vs: scheduleOwnerId });
-  }, [userId, scheduleOwnerId]);
+  useUrlParamsSync({ team: userId, vs: scheduleOwnerId });
 
   const matchups = useMemo(() => {
     if (!userId) return [];
@@ -72,6 +72,11 @@ export function SeasonView({ season: loadedSeason, currentUserId }: SeasonViewPr
   const openMatchup = openWeek === null
     ? null
     : liveMatchup?.week === openWeek ? liveMatchup : matchups.find(m => m.week === openWeek) ?? null;
+  // The weeks the popup can step through: the same ones that have a matchup card
+  const matchupWeeks = useMemo(
+    () => [...getPlayedMatchups(matchups).map(m => m.week), ...(liveMatchup ? [liveMatchup.week] : [])],
+    [matchups, liveMatchup]
+  );
 
   const weeklyScores = useMemo(
     () => (userId ? getWeeklyScores(season.matchups, userId) : []),
@@ -90,8 +95,15 @@ export function SeasonView({ season: loadedSeason, currentUserId }: SeasonViewPr
     setScheduleOwnerId('');
   }
 
+  // Clicking a team name anywhere: show that team's season (closing the popup it may have come from)
+  const selectTeam = useCallback((id: UserId) => {
+    setUserId(id);
+    setScheduleOwnerId('');
+    setOpenWeek(null);
+  }, []);
+
   return (
-    <>
+    <TeamActionsProvider selectTeam={selectTeam}>
       <RecordSummary
         controls={
           <TeamFilters
@@ -118,6 +130,8 @@ export function SeasonView({ season: loadedSeason, currentUserId }: SeasonViewPr
         <LineupDialog
           matchup={openMatchup}
           isLive={openMatchup === liveMatchup}
+          weeks={matchupWeeks}
+          onWeekChange={setOpenWeek}
           slotNames={season.startingSlotNames}
           slots={season.lineup?.slots ?? null}
           players={season.players}
@@ -125,6 +139,6 @@ export function SeasonView({ season: loadedSeason, currentUserId }: SeasonViewPr
           onClose={() => setOpenWeek(null)}
         />
       )}
-    </>
+    </TeamActionsProvider>
   );
 }

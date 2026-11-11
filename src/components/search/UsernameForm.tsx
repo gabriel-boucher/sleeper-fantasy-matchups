@@ -5,9 +5,21 @@ interface UsernameFormProps {
   initialUsername?: string;
   loading: boolean;
   onSubmit: (username: string) => void;
+  /** Needed when more than one form is on the page, so each label points at its own box */
+  id?: string;
+  /** "hero" is the large version used on the home page */
+  variant?: 'compact' | 'hero';
+  autoFocus?: boolean;
 }
 
-export function UsernameForm({ initialUsername = '', loading, onSubmit }: UsernameFormProps) {
+export function UsernameForm({
+  initialUsername = '',
+  loading,
+  onSubmit,
+  id = 'username-input',
+  variant = 'compact',
+  autoFocus,
+}: UsernameFormProps) {
   const [username, setUsername] = useState(initialUsername);
   const trimmed = username.trim();
 
@@ -17,18 +29,20 @@ export function UsernameForm({ initialUsername = '', loading, onSubmit }: Userna
   }
 
   return (
-    <form className="search-form" onSubmit={handleSubmit}>
-      <label htmlFor="username-input" className="field-label">Sleeper username</label>
+    <form className={`search-form search-form--${variant}`} onSubmit={handleSubmit}>
+      {/* The placeholder says what to type; the label is for screen readers */}
+      <label htmlFor={id} className="visually-hidden">Sleeper username</label>
       <div className="search-row">
         <input
-          id="username-input"
+          id={id}
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter your username..."
+          placeholder="Sleeper username"
           className="field-control"
           autoComplete="off"
           spellCheck={false}
+          autoFocus={autoFocus}
         />
         <button type="submit" className="button" disabled={loading || !trimmed}>
           {loading ? 'Searching…' : 'Find leagues'}

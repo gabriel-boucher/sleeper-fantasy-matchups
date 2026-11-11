@@ -1,0 +1,36 @@
+/* Team names and usernames you can click: they read as text and underline on hover */
+.team-link {
+  display: inline;
+  max-width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: inherit;
+  color: inherit;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.team-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.team-link:focus-visible {
+  outline: none;
+  border-radius: var(--radius-xs);
+  box-shadow: var(--focus-shadow);
+}
+
+.username {
+  color: var(--text-subtle);
+  font-weight: 400;
+}
+
+.team-link.username:hover {
+  color: var(--accent);
+}

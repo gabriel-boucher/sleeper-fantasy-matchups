@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Matchup, UserId } from '../../data/data';
 import { getAllPlayLeaderboard, getLeaderboardWeeks, withLiveResults } from '../../data/leaderboard';
 import { Season } from '../../services/seasonService';
-import { readUrlParam, updateUrlParams } from '../../utils/urlParams';
+import { readUrlParam } from '../../utils/urlParams';
+import { useUrlParamsSync } from '../../hooks/useUrlParamsSync';
 import { Segment, SegmentedControl } from '../common/SegmentedControl';
 import { Toggle } from '../common/Toggle';
 import { Leaderboard } from './Leaderboard';
-import { WeekNavigator } from './WeekNavigator';
+import { WeekNavigator } from '../common/WeekNavigator';
 
 type LeaderboardView = 'season' | 'week';
 
@@ -48,9 +49,7 @@ export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSel
   // Turning the live week off while viewing it falls back to the latest finished week
   const week = weeks.includes(selectedWeek) ? selectedWeek : weeks[weeks.length - 1] ?? 0;
 
-  useEffect(() => {
-    updateUrlParams({ week: view === 'week' ? String(week) : null, live: isLiveIncluded ? '1' : null });
-  }, [view, week, isLiveIncluded]);
+  useUrlParamsSync({ week: view === 'week' ? String(week) : null, live: isLiveIncluded ? '1' : null });
 
   const entries = useMemo(() => {
     if (view === 'week') return getAllPlayLeaderboard(matchups, season.users, { from: week, to: week });

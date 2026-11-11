@@ -1,10 +1,50 @@
+/* Compact search for the nav bar */
+.search-form {
+  flex: 1;
+  max-width: 420px;
+}
+
 .search-row {
   display: flex;
   gap: var(--space-2);
 }
 
-@media (max-width: 420px) {
-  .search-row {
+.search-row .field-control,
+.search-row .button {
+  height: 38px;
+}
+
+.search-row .button {
+  padding: 0 var(--space-4);
+}
+
+@media (max-width: 640px) {
+  .search-form {
+    max-width: none;
+  }
+}
+
+/* Large search on the home page */
+.search-form--hero {
+  width: 100%;
+  max-width: 520px;
+}
+
+.search-form--hero .search-row .field-control,
+.search-form--hero .search-row .button {
+  height: 50px;
+}
+
+.search-form--hero .search-row .field-control {
+  font-size: var(--font-size-base);
+}
+
+.search-form--hero .search-row .button {
+  padding: 0 var(--space-6);
+}
+
+@media (max-width: 480px) {
+  .search-form--hero .search-row {
     flex-direction: column;
   }
 }

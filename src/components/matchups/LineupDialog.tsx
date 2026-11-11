@@ -1,13 +1,19 @@
-import { MouseEvent, SyntheticEvent, useEffect, useMemo, useRef } from 'react';
+import { KeyboardEvent, MouseEvent, SyntheticEvent, useEffect, useMemo, useRef } from 'react';
 import { Matchup, Team } from '../../data/data';
 import { getWeekLineup, LineupPlayer, PlayerDirectory, WeekLineup } from '../../data/lineup';
 import { getResult, getTeamName } from '../../data/matchupAnalysis';
+import { TeamNameLink, UsernameLink } from '../common/TeamLinks';
+import { UserAvatar } from '../common/UserAvatar';
+import { WeekNavigator } from '../common/WeekNavigator';
 import { PlayerAvatar } from './PlayerAvatar';
 import './LineupDialog.css';
 
 interface LineupDialogProps {
   matchup: Matchup;
   isLive: boolean;
+  // Weeks the popup can step through, in order
+  weeks: number[];
+  onWeekChange: (week: number) => void;
   slotNames: string[];
   // Positions each starting slot accepts; null when the best lineup can't be worked out
   slots: string[][] | null;
@@ -27,7 +33,7 @@ interface Row {
 }
 
 // Both lineups of a matchup head to head, slot by slot, opened from a matchup card
-export function LineupDialog({ matchup, isLive, slotNames, slots, players, showNflTeams, onClose }: LineupDialogProps) {
+export function LineupDialog({ matchup, isLive, weeks, onWeekChange, slotNames, slots, players, showNflTeams, onClose }: LineupDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const { team, opponent } = matchup;
   const result = getResult(matchup);
@@ -56,6 +62,16 @@ export function LineupDialog({ matchup, isLive, slotNames, slots, players, showN
     onClose();
   }
 
+  // ← and → step through the weeks too
+  function handleKeyDown(e: KeyboardEvent<HTMLDialogElement>) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const index = weeks.indexOf(matchup.week);
+    const week = weeks[index + (e.key === 'ArrowLeft' ? -1 : 1)];
+    if (week === undefined) return;
+    e.preventDefault();
+    onWeekChange(week);
+  }
+
   return (
     <dialog
       ref={dialogRef}
@@ -63,15 +79,19 @@ export function LineupDialog({ matchup, isLive, slotNames, slots, players, showN
       onClick={handleClick}
       onCancel={handleCancel}
       onClose={onClose}
+      onKeyDown={handleKeyDown}
       aria-labelledby="lineup-dialog-title"
     >
       <div className="lineup-dialog-content">
         <header className="lineup-dialog-header">
-          <h2 id="lineup-dialog-title" className="lineup-dialog-title">
-            Week {matchup.week}
-            <span className="visually-hidden">: {getTeamName(team.user)} vs {getTeamName(opponent.user)}</span>
-            {isLive && <span className="lineup-dialog-live">Live</span>}
+          {/* The week shows in the navigator; the heading names the matchup for screen readers */}
+          <h2 id="lineup-dialog-title" className="visually-hidden">
+            Week {matchup.week}: {getTeamName(team.user)} vs {getTeamName(opponent.user)}
           </h2>
+          <div className="lineup-dialog-week">
+            <WeekNavigator weeks={weeks} week={matchup.week} onChange={onWeekChange} />
+            {isLive && <span className="lineup-dialog-live">Live</span>}
+          </div>
           <button type="button" className="lineup-dialog-close" onClick={onClose} aria-label="Close">
             {/* Drawn rather than a "×" character, which fonts don't center */}
             <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
@@ -118,7 +138,14 @@ function pairRows(left: LineupPlayer[], right: LineupPlayer[], getSlot: (index: 
 function TeamScore({ team, side, isAhead }: { team: Team; side: Side; isAhead: boolean }) {
   return (
     <div className={`h2h-team ${side} ${isAhead ? 'ahead' : ''}`}>
-      <span className="h2h-team-name">{getTeamName(team.user)}</span>
+      {/* Team picture, then the team name over the manager's Sleeper name (mirrored on the right) */}
+      <span className="h2h-team-who">
+        <UserAvatar url={team.user.avatarUrl} name={getTeamName(team.user)} />
+        <span className="h2h-team-identity">
+          <TeamNameLink user={team.user} className="h2h-team-name" />
+          <UsernameLink user={team.user} className="h2h-team-username" />
+        </span>
+      </span>
       {/* Score with its projection right under it, beside the name */}
       <span className="h2h-team-score">
         <span className="h2h-team-points">{team.points.toFixed(2)}</span>

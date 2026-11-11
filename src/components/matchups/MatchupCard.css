@@ -1,4 +1,5 @@
 .matchup-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -8,7 +9,6 @@
   border-left: 4px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow);
-  /* It's a button: fill the grid cell and keep the card's text layout */
   width: 100%;
   min-width: 0;
   text-align: left;
@@ -22,9 +22,26 @@
   border-bottom-color: var(--text-subtle);
 }
 
-.matchup-card:focus-visible {
+/* The "show lineup" button stretches over the whole card, behind the team names */
+.matchup-card-open {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: inherit;
+  cursor: pointer;
+}
+
+.matchup-card-open:focus-visible {
   outline: none;
   box-shadow: var(--focus-shadow);
+}
+
+/* Team names sit above it so they get their own clicks */
+.matchup-card .team-link {
+  position: relative;
+  z-index: 1;
 }
 
 .matchup-card.win { border-left-color: var(--win); }
@@ -75,6 +92,7 @@
 }
 
 .team-name {
+  min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -112,39 +130,20 @@
 .matchup-card.loss .result-badge { background: var(--loss-bg); color: var(--loss); }
 .matchup-card.tie .result-badge { background: var(--tie-bg); color: var(--tie); }
 
-.live-badge {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  gap: var(--space-1);
-  padding: var(--space-0-5) var(--space-2);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  background: var(--surface-muted);
-  color: var(--text-muted);
-}
-
-/* Pulsing dot once games have kicked off */
-.live-badge.started {
+/* The week being played: blue like the card's edge, with a pulsing dot once games have kicked off */
+.matchup-card.live .result-badge.started {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
   color: var(--accent);
-}
-
-.live-badge.started::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
+  font-size: var(--font-size-sm);
   animation: live-pulse 1.6s ease-in-out infinite;
 }
 
 @keyframes live-pulse {
-  50% { opacity: 0.3; }
+  50% { opacity: 0.45; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .live-badge.started::before {
+  .matchup-card.live .result-badge.started {
     animation: none;
   }
 }

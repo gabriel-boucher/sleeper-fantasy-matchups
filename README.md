@@ -1,4 +1,4 @@
-# Sleeper Fantasy Matchups
+# Sleeper Fantasy Cope Machine
 
 A web app for digging into [Sleeper](https://sleeper.com) fantasy football leagues. Enter any Sleeper username, pick one of their leagues and a season, and see how each team really did, how lucky it was, and how it would have fared with someone else's schedule.
 

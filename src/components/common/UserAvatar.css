@@ -1,0 +1,17 @@
+.user-avatar {
+  flex-shrink: 0;
+  width: var(--avatar-size, 56px);
+  height: var(--avatar-size, 56px);
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+}
+
+.user-avatar.fallback {
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--avatar-size, 56px) * 0.38);
+  font-weight: 700;
+  color: var(--text-muted);
+}

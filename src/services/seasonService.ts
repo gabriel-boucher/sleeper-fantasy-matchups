@@ -30,7 +30,23 @@ export interface Season {
   projectionSettings: ProjectionSettings | null;
 }
 
-export async function loadSeason(leagueId: string): Promise<Season> {
+// Recently loaded seasons, so Back/Forward and switching between seasons show them straight away.
+// Kept briefly since live scores refresh on their own but the rest of the season can change too.
+const SEASON_CACHE_MS = 5 * 60 * 1000;
+const seasonCache = new Map<string, { promise: Promise<Season>; loadedAt: number }>();
+
+export function loadSeason(leagueId: string): Promise<Season> {
+  const cached = seasonCache.get(leagueId);
+  if (cached && Date.now() - cached.loadedAt < SEASON_CACHE_MS) return cached.promise;
+
+  const promise = fetchSeason(leagueId);
+  seasonCache.set(leagueId, { promise, loadedAt: Date.now() });
+  // A failed load shouldn't stick, so trying again really retries
+  promise.catch(() => seasonCache.delete(leagueId));
+  return promise;
+}
+
+async function fetchSeason(leagueId: string): Promise<Season> {
   const weeks = Array.from({ length: WEEKCOUNT }, (_, i) => i + 1);
   const [leagueDto, nflState, userDtos, rosterDtos, matchupDtosByWeek, players] = await Promise.all([
     getLeague(leagueId),

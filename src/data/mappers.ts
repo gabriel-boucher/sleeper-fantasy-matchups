@@ -7,8 +7,14 @@ export function toUser(userDto: UserDto): User {
     return {
         user_id: userDto.user_id,
         display_name: userDto.display_name,
-        team_name: userDto.metadata?.team_name
+        team_name: userDto.metadata?.team_name,
+        avatarUrl: userDto.metadata?.avatar || getAvatarUrl(userDto.avatar)
     };
+}
+
+// Sleeper serves profile pictures by id from its image CDN
+export function getAvatarUrl(avatarId: string | null | undefined): string | null {
+    return avatarId ? `https://sleepercdn.com/avatars/thumbs/${encodeURIComponent(avatarId)}` : null;
 }
 
 export function toLeagues(leagueDtos: LeagueDto[]): League[] {

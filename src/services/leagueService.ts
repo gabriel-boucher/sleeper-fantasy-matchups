@@ -1,12 +1,16 @@
 import { League, UserId } from "../data/data";
 import { LeagueDto } from "../data/dto";
-import { toLeagues } from "../data/mappers";
+import { getAvatarUrl, toLeagues } from "../data/mappers";
 import { getLeague, getNflState, getUserByUsername, getUserLeagues } from "./sleeperApi";
 
 const FIRST_SEASON = 2017;
 
 export interface UserLeagues {
   userId: UserId;
+  // The searched user's Sleeper name, as Sleeper displays it
+  displayName: string;
+  // Their profile picture
+  avatarUrl: string | null;
   leagues: League[];
 }
 
@@ -18,7 +22,7 @@ export async function findUserLeagues(username: string): Promise<UserLeagues> {
   const leagues = toLeagues(await withPreviousSeasons(userLeagueDtos));
   if (leagues.length === 0) throw new Error(`${user.display_name} has no NFL leagues`);
 
-  return { userId: user.user_id, leagues };
+  return { userId: user.user_id, displayName: user.display_name, avatarUrl: getAvatarUrl(user.avatar), leagues };
 }
 
 async function getSeasons(): Promise<number[]> {

@@ -22,8 +22,12 @@ export interface PlayerDto {
 export interface UserDto {
   user_id: string;
   display_name: string;
+  // The user's profile picture id
+  avatar?: string | null;
   metadata: {
     team_name?: string;
+    // Full URL of a custom team picture for this league
+    avatar?: string;
   };
 }
 
@@ -31,6 +35,8 @@ export interface SleeperUserDto {
   user_id: string;
   username: string;
   display_name: string;
+  // Profile picture id
+  avatar?: string | null;
 }
 
 export interface LeagueDto {

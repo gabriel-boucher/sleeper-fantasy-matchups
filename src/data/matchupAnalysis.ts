@@ -10,8 +10,9 @@ export interface TeamRecord {
   pointsAgainst: number;
 }
 
+// A manager who never named their team gets Sleeper's default, "Team <username>"
 export function getTeamName(user: User): string {
-  return user.team_name || user.display_name;
+  return user.team_name?.trim() || `Team ${user.display_name}`;
 }
 
 export function getMatchupsFor(matchups: Matchup[], userId: UserId): Matchup[] {
