@@ -199,7 +199,8 @@ function Tooltip({ score, shownSeries, x, side }: { score: WeeklyScore; shownSer
 
 function ScreenReaderTable({ scores }: { scores: WeeklyScore[] }) {
   return (
-    <table className="visually-hidden">
+    <div className="visually-hidden">
+      <table>
       <caption>Weekly points</caption>
       <thead>
         <tr>
@@ -215,6 +216,7 @@ function ScreenReaderTable({ scores }: { scores: WeeklyScore[] }) {
           </tr>
         ))}
       </tbody>
-    </table>
+      </table>
+    </div>
   );
 }
