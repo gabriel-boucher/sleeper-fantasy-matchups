@@ -2,6 +2,7 @@ import { getTeamName } from '../../domain/teams';
 import { Team } from '../../types/models';
 import { formatPoints } from '../../utils/format';
 import { TeamNameLink, UsernameLink } from '../common/TeamLinks';
+import { TickingPoints } from '../common/TickingPoints';
 import { UserAvatar } from '../common/UserAvatar';
 import { Side } from './side';
 
@@ -22,7 +23,7 @@ export function TeamScore({ team, side, isAhead }: TeamScoreProps) {
         </span>
       </span>
       <span className="h2h-team-score">
-        <span className="h2h-team-points">{formatPoints(team.points)}</span>
+        <TickingPoints className="h2h-team-points" points={team.points} />
         {team.projectedPoints !== null && (
           <span className="h2h-team-projected" title="Projected points">{formatPoints(team.projectedPoints)}</span>
         )}

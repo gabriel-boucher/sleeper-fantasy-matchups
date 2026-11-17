@@ -83,7 +83,7 @@ export function LineupDialog({ matchup, isLive, median, weeks, onWeekChange, slo
           </h2>
           <div className="lineup-dialog-week">
             <WeekNavigator weeks={weeks} week={week} onChange={onWeekChange} />
-            {isLive && <span className="lineup-dialog-live">Live</span>}
+            {isLive && <span className="live-chip">Live</span>}
           </div>
           <button type="button" className="lineup-dialog-close" onClick={onClose} aria-label="Close">
             <CloseIcon />

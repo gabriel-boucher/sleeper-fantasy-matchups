@@ -1,17 +1,30 @@
 :root {
-  --bg: #f5f6f8;
+  --bg: #eef0ea;
   --surface: #ffffff;
-  --surface-muted: #f0f2f5;
-  --border: #e3e6eb;
+  --surface-muted: #f1f3ee;
+  --border: #dcdfd6;
 
-  --text: #131720;
-  --text-muted: #5d6573;
-  --text-subtle: #8a919e;
+  --text: #121812;
+  --text-muted: #556055;
+  --text-subtle: #838c82;
 
-  --accent: #2563eb;
-  --accent-hover: #1d4fd7;
-  --accent-contrast: #ffffff;
-  --focus-ring: rgba(37, 99, 235, 0.35);
+  --accent: #1d5fd6;
+  --accent-hover: #174db3;
+  --focus-ring: rgba(29, 95, 214, 0.35);
+
+  --flag: #f6b70f;
+  --flag-hover: #ffc832;
+  --flag-ink: #1a1400;
+
+  --turf: #0e4a2f;
+  --turf-stripe: rgba(255, 255, 255, 0.04);
+  --chalk: #f4f6ef;
+  --turf-line: color-mix(in srgb, var(--chalk) 20%, transparent);
+
+  --slab: #161c17;
+  --slab-text: var(--chalk);
+  --slab-text-muted: color-mix(in srgb, var(--chalk) 66%, transparent);
+  --result-ink: #ffffff;
 
   --win: #15803d;
   --win-bg: #e6f5ea;
@@ -26,6 +39,8 @@
   --chart-median: #199e70;
   --chart-grid: var(--border);
 
+  --font-display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --letter-spacing-display: 0.07em;
   --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-size-2xs: 0.6875rem;
   --font-size-xs: 0.75rem;
@@ -38,9 +53,9 @@
   --font-size-display: 2.25rem;
   --letter-spacing-caps: 0.06em;
 
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-xs: 6px;
+  --radius: 8px;
+  --radius-sm: 5px;
+  --radius-xs: 3px;
   --radius-full: 999px;
   --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.07);
   --focus-shadow: 0 0 0 3px var(--focus-ring);
@@ -70,19 +85,22 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0e1015;
-    --surface: #171a21;
-    --surface-muted: #1f232c;
-    --border: #2a2f3a;
+    --bg: #0a0e0b;
+    --surface: #121813;
+    --surface-muted: #1a211b;
+    --border: #29322b;
 
-    --text: #e9ebef;
-    --text-muted: #a0a7b3;
-    --text-subtle: #737b88;
+    --text: #e8ece6;
+    --text-muted: #9fa89e;
+    --text-subtle: #717a71;
 
-    --accent: #5b8cff;
-    --accent-hover: #7aa2ff;
-    --accent-contrast: #0e1015;
-    --focus-ring: rgba(91, 140, 255, 0.4);
+    --accent: #6b9bff;
+    --accent-hover: #8db2ff;
+    --focus-ring: rgba(107, 155, 255, 0.4);
+
+    --turf: #0c3f28;
+    --slab: #232c25;
+    --result-ink: #08110a;
 
     --win: #4ade80;
     --win-bg: rgba(74, 222, 128, 0.12);

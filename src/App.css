@@ -2,9 +2,19 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  background:
+    repeating-linear-gradient(90deg, var(--turf-stripe) 0 72px, transparent 72px 144px),
+    var(--turf);
+  color: var(--chalk);
+}
+
+.navbar::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 5px;
+  background: repeating-linear-gradient(90deg, var(--turf-line) 0 2px, transparent 2px 14px);
+  pointer-events: none;
 }
 
 .navbar-inner {
@@ -17,17 +27,11 @@
   padding: var(--space-3) var(--space-4);
 }
 
-.navbar-inner--centered {
-  justify-content: center;
-  text-align: center;
-}
-
 .navbar-title {
   flex-shrink: 0;
   margin: 0;
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 1.75rem;
+  line-height: 1.1;
   white-space: nowrap;
 }
 
@@ -37,7 +41,7 @@
 }
 
 .navbar-home:hover {
-  color: var(--accent);
+  color: #ffffff;
 }
 
 .navbar-home:focus-visible {
@@ -63,7 +67,7 @@
   }
 
   .navbar-title {
-    font-size: var(--font-size-lg);
+    font-size: 1.5rem;
   }
 
   .app {

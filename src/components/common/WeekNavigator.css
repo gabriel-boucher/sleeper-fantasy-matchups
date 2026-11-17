@@ -13,7 +13,7 @@
   height: 32px;
   background: var(--surface-muted);
   border: 1px solid var(--border);
-  border-radius: 50%;
+  border-radius: var(--radius-xs);
   font-size: var(--font-size-lg);
   line-height: 1;
   color: var(--text);
@@ -38,11 +38,15 @@
 .week-navigator-label {
   min-width: 110px;
   text-align: center;
-  font-weight: 600;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
 }
 
 .week-navigator-count {
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text-subtle);
 }

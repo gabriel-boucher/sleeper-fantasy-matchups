@@ -1,0 +1,11 @@
+.app-name {
+  font-family: var(--font-display), sans-serif;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.app-name-accent {
+  color: var(--flag);
+}

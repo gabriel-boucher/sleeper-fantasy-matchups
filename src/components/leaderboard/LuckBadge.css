@@ -1,6 +1,27 @@
 .luck-badge {
+  display: inline-flex;
   flex-shrink: 0;
-  font-size: 1rem;
-  line-height: 1;
   cursor: help;
+}
+
+.luck-icon {
+  display: block;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.luck-icon.luckiest { color: var(--win); }
+.luck-icon.unluckiest { color: var(--text-subtle); }
+
+.luck-icon-stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+}
+
+.luck-icon-stroke.rain {
+  stroke: var(--accent);
 }

@@ -7,12 +7,62 @@
 }
 
 .section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   margin: 0 0 var(--space-3);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  letter-spacing: var(--letter-spacing-caps);
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: var(--letter-spacing-display);
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text);
+}
+
+.section-title::before {
+  content: '';
+  flex-shrink: 0;
+  width: 5px;
+  height: 0.85em;
+  background: var(--flag);
+  transform: skewX(-14deg);
+}
+
+.live-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  padding: 0 var(--space-2);
+  background: var(--flag);
+  color: var(--flag-ink);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+}
+
+.live-chip::before {
+  content: '';
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  50% { opacity: 0.2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-chip::before {
+    animation: none;
+  }
 }
 
 .empty-state {
@@ -75,17 +125,40 @@
   flex-shrink: 0;
   height: var(--control-height);
   padding: 0 var(--space-5);
-  background: var(--accent);
-  color: var(--accent-contrast);
+  background: var(--flag);
+  color: var(--flag-ink);
   border: none;
   border-radius: var(--radius-sm);
-  font-weight: 600;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
 }
 
 .button:hover:not(:disabled) {
-  background: var(--accent-hover);
+  background: var(--flag-hover);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.on-turf .field-control {
+  background: rgba(4, 22, 14, 0.86);
+  border-color: color-mix(in srgb, var(--chalk) 34%, transparent);
+  color: var(--chalk);
+}
+
+.on-turf .field-control::placeholder {
+  color: color-mix(in srgb, var(--chalk) 58%, transparent);
+}
+
+.on-turf .field-control:focus-visible {
+  border-color: var(--flag);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--flag) 35%, transparent);
 }
 
 .button:focus-visible {

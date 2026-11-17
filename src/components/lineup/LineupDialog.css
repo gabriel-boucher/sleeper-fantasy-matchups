@@ -62,17 +62,6 @@ html:has(.lineup-dialog[open]) {
   min-width: 0;
 }
 
-.lineup-dialog-live {
-  padding: var(--space-0-5) var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--surface-muted);
-  color: var(--accent);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: normal;
-}
-
 .lineup-dialog-close {
   display: grid;
   place-items: center;
@@ -82,7 +71,7 @@ html:has(.lineup-dialog[open]) {
   background: none;
   border: 1px solid var(--border);
   padding: 0;
-  border-radius: 50%;
+  border-radius: var(--radius-xs);
   color: var(--text-muted);
   cursor: pointer;
 }
@@ -186,9 +175,11 @@ html:has(.lineup-dialog[open]) {
 }
 
 .h2h-team-points {
-  font-size: var(--font-size-xl);
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.5rem;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1;
+  letter-spacing: 0.02em;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -198,15 +189,19 @@ html:has(.lineup-dialog[open]) {
 }
 
 .h2h-team-projected {
-  font-size: var(--font-size-base);
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--font-size-lg);
+  line-height: 1.2;
   color: var(--text-subtle);
   font-variant-numeric: tabular-nums;
 }
 
 .h2h-vs {
   justify-self: center;
-  font-size: var(--font-size-xs);
-  font-weight: 600;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--font-size-lg);
+  font-style: italic;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--text-subtle);
 }
@@ -216,7 +211,7 @@ html:has(.lineup-dialog[open]) {
 }
 
 .lineup-section-title {
-  text-align: center;
+  justify-content: center;
 }
 
 .h2h-player-row {
@@ -467,11 +462,11 @@ html:has(.lineup-dialog[open]) {
   }
 
   .h2h-team-points {
-    font-size: var(--font-size-lg);
+    font-size: 1.75rem;
   }
 
   .h2h-team-projected {
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-base);
   }
 
   .slot-badge {

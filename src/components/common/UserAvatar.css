@@ -11,7 +11,8 @@
 .user-avatar.fallback {
   display: grid;
   place-items: center;
-  font-size: calc(var(--avatar-size, 56px) * 0.38);
+  font-family: var(--font-display), sans-serif;
+  font-size: calc(var(--avatar-size, 56px) * 0.46);
   font-weight: 700;
   color: var(--text-muted);
 }

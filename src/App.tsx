@@ -1,4 +1,5 @@
 import { MouseEvent } from 'react';
+import { AppName } from './components/common/AppName';
 import { ErrorMessage } from './components/common/StatusMessage';
 import { HomePage } from './components/home/HomePage';
 import { LeagueBrowser } from './components/league/LeagueBrowser';
@@ -25,16 +26,16 @@ function App() {
 
   return (
     <>
-      <header className="navbar">
-        <div className={isHomePage ? 'navbar-inner navbar-inner--centered' : 'navbar-inner'}>
-          <h1 className="navbar-title">
-            <a href="/" className="navbar-home" onClick={handleTitleClick}>Fantasy Cope Machine</a>
-          </h1>
-          {!isHomePage && (
+      {!isHomePage && (
+        <header className="navbar on-turf">
+          <div className="navbar-inner">
+            <h1 className="navbar-title">
+              <a href="/" className="navbar-home" onClick={handleTitleClick}><AppName /></a>
+            </h1>
             <UsernameForm key={username} initialUsername={username} loading={loading} onSubmit={searchUser} />
-          )}
-        </div>
-      </header>
+          </div>
+        </header>
+      )}
 
       <main className="app">
         {isHomePage && <HomePage loading={loading} onSearch={searchUser} />}

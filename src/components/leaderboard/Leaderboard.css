@@ -96,12 +96,14 @@
 
 .leaderboard-table thead th {
   vertical-align: middle;
-  font-size: var(--font-size-xs);
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--font-size-md);
   font-weight: 600;
-  letter-spacing: var(--letter-spacing-caps);
+  letter-spacing: var(--letter-spacing-display);
   text-transform: uppercase;
-  color: var(--text-muted);
-  background: var(--surface-muted);
+  color: var(--slab-text-muted);
+  background: var(--slab);
+  border-top: none;
 }
 
 .sort-button {
@@ -121,11 +123,11 @@
 }
 
 .sort-button:hover {
-  color: var(--text);
+  color: var(--slab-text);
 }
 
 .leaderboard-table th.sorted .sort-button {
-  color: var(--accent);
+  color: var(--flag);
 }
 
 .sort-button:focus-visible {
@@ -139,7 +141,7 @@
   flex-direction: column;
   font-size: 0.4375rem;
   line-height: 1;
-  color: var(--text-subtle);
+  color: var(--slab-text-muted);
   opacity: 0.6;
 }
 
@@ -148,7 +150,7 @@
 }
 
 .sort-indicator .active {
-  color: var(--accent);
+  color: var(--flag);
 }
 
 .leaderboard-table th.arrows-after {
@@ -182,7 +184,20 @@
 .leaderboard-table .rank {
   width: 1%;
   text-align: left;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  line-height: 1;
   color: var(--text-subtle);
+}
+
+.leaderboard-table thead .rank {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.leaderboard-table tbody tr.selected .rank {
+  color: var(--accent);
 }
 
 .leaderboard-table .actual-rank {

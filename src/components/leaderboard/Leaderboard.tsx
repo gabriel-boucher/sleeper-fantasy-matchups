@@ -14,7 +14,7 @@ import { UserId } from '../../types/models';
 import { ColumnPicker, ColumnPickerGroup } from './ColumnPicker';
 import { RankChange } from './LeaderboardCells';
 import { Column, getColumns } from './leaderboardColumns';
-import { LuckBadge } from './LuckBadge';
+import { LuckBadge, LuckIcon } from './LuckBadge';
 import { SortableHeader } from './SortableHeader';
 import './Leaderboard.css';
 
@@ -71,8 +71,8 @@ export function Leaderboard({ entries, description, viewControls, weekNavigator,
       <p className="leaderboard-description">{description}</p>
       <div className="leaderboard-legend-bar">
         <ul className="leaderboard-legend">
-          <li><span aria-hidden="true">🍀</span> Luckiest: biggest fraud</li>
-          <li><span aria-hidden="true">🌧️</span> Unluckiest: biggest cope</li>
+          <li><LuckIcon kind="luckiest" /> Luckiest: biggest fraud</li>
+          <li><LuckIcon kind="unluckiest" /> Unluckiest: biggest cope</li>
         </ul>
         <ColumnPicker
           groups={toPickerGroups(availableColumns)}

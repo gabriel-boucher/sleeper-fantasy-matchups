@@ -3,6 +3,7 @@ import { GameResult, getGameResult } from '../../domain/records';
 import { getTeamName } from '../../domain/teams';
 import { Matchup, Team } from '../../types/models';
 import { formatPoints } from '../../utils/format';
+import { TickingPoints } from '../common/TickingPoints';
 import './MatchupCard.css';
 
 const RESULT_LABELS: Record<MatchupResult, string> = {
@@ -62,8 +63,8 @@ function ResultBadge({ result }: { result: MatchupResult }) {
 function LiveBadge({ hasStarted }: { hasStarted: boolean }) {
   const status = hasStarted ? 'Live' : 'Upcoming';
   return (
-    <span className={`result-badge ${hasStarted ? 'started' : ''}`} aria-label={status} title={status}>
-      {hasStarted ? '●' : RESULT_LABELS.unplayed}
+    <span className={hasStarted ? 'live-chip' : 'result-badge'} aria-label={status} title={status}>
+      {hasStarted ? 'Live' : RESULT_LABELS.unplayed}
     </span>
   );
 }
@@ -84,7 +85,7 @@ function TeamRow({ team, isAhead }: { team: Team; isAhead: boolean }) {
   return (
     <span className={`matchup-team ${isAhead ? 'winner' : ''}`}>
       <span className="team-name">{getTeamName(team.user)}</span>
-      <span className="team-points">{formatPoints(team.points)}</span>
+      <TickingPoints className="team-points" points={team.points} />
     </span>
   );
 }
