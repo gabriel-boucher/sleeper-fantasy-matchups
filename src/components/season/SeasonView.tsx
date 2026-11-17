@@ -111,6 +111,7 @@ export function SeasonView({ loadedSeason, searchedUserId }: SeasonViewProps) {
         <LineupDialog
           matchup={lineupMatchup}
           isLive={lineupMatchup === liveMatchup}
+          median={teamSeason.weeklyMedians.get(lineupMatchup.week)}
           weeks={teamSeason.weeksWithMatchupCard}
           onWeekChange={setLineupWeek}
           slotNames={season.startingSlotNames}

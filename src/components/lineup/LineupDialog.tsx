@@ -6,13 +6,14 @@ import { useWeekLineup } from '../../hooks/useWeekLineup';
 import { BestLineupContext, Matchup, PlayerDirectory } from '../../types/models';
 import { WeekNavigator } from '../common/WeekNavigator';
 import { LineupRow, LineupSection } from './LineupSection';
-import { LineupSummary } from './LineupSummary';
+import { MatchupStats } from './MatchupStats';
 import { TeamScore } from './TeamScore';
 import './LineupDialog.css';
 
 interface LineupDialogProps {
   matchup: Matchup;
   isLive: boolean;
+  median: number | undefined;
   weeks: number[];
   onWeekChange: (week: number) => void;
   slotNames: string[];
@@ -30,7 +31,7 @@ function pairSideBySide(left: LineupPlayer[], right: LineupPlayer[], getSlot: (i
   }));
 }
 
-export function LineupDialog({ matchup, isLive, weeks, onWeekChange, slotNames, bestLineupContext, players, showNflTeams, onClose }: LineupDialogProps) {
+export function LineupDialog({ matchup, isLive, median, weeks, onWeekChange, slotNames, bestLineupContext, players, showNflTeams, onClose }: LineupDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const { week, team, opponent } = matchup;
   const result = getResult(matchup);
@@ -95,14 +96,16 @@ export function LineupDialog({ matchup, isLive, weeks, onWeekChange, slotNames, 
           <TeamScore team={opponent} side="right" isAhead={result === 'loss'} />
         </div>
 
+        <MatchupStats
+          team={team}
+          opponent={opponent}
+          teamLineup={teamLineup}
+          opponentLineup={opponentLineup}
+          median={result === 'unplayed' ? undefined : median}
+        />
+
         {starterRows.length > 0 && <LineupSection title="Starters" rows={starterRows} showNflTeams={showNflTeams} />}
         {benchRows.length > 0 && <LineupSection title="Bench" rows={benchRows} showNflTeams={showNflTeams} />}
-
-        <div className="h2h-row h2h-summaries">
-          <LineupSummary team={team} lineup={teamLineup} side="left" />
-          <span />
-          <LineupSummary team={opponent} lineup={opponentLineup} side="right" />
-        </div>
       </div>
     </dialog>
   );

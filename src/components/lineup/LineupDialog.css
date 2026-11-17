@@ -21,6 +21,15 @@
   box-shadow: 0 12px 40px rgba(16, 24, 40, 0.25);
 }
 
+html:has(.lineup-dialog[open]) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+.lineup-dialog {
+  overscroll-behavior: contain;
+}
+
 .lineup-dialog::backdrop {
   background: rgba(10, 12, 16, 0.55);
 }
@@ -350,26 +359,76 @@
 .slot-SUPER_FLEX { background: linear-gradient(90deg, var(--slot-qb), var(--slot-rb), var(--slot-wr), var(--slot-te)); }
 .slot-IDP_FLEX { background: linear-gradient(90deg, var(--slot-dl), var(--slot-lb), var(--slot-db)); }
 
-.h2h-summaries {
-  align-items: start;
-  margin-top: var(--space-5);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border);
+.h2h-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-muted);
+  border-radius: var(--radius-sm);
 }
 
-.lineup-dialog-summary {
-  margin: 0;
-  font-size: var(--font-size-sm);
+/* Values sit next to the label, like the scores sit next to "vs" */
+.h2h-stat-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 28px;
+}
+
+.h2h-stat-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-subtle);
+  white-space: nowrap;
+}
+
+.h2h-stat-median {
+  margin-left: var(--space-1);
   color: var(--text-muted);
-}
-
-.lineup-dialog-summary.right {
-  text-align: right;
-}
-
-.lineup-dialog-summary strong {
-  color: var(--text);
   font-variant-numeric: tabular-nums;
+  text-transform: none;
+}
+
+.h2h-stat-value {
+  display: flex;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.h2h-stat-value.left {
+  justify-content: flex-end;
+}
+
+.h2h-stat-value.right {
+  justify-content: flex-start;
+}
+
+.h2h-stat-pill {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 22px;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.h2h-stat-pill.win { background: var(--win-bg); color: var(--win); }
+.h2h-stat-pill.loss { background: var(--loss-bg); color: var(--loss); }
+.h2h-stat-pill.tie { background: var(--tie-bg); color: var(--tie); }
+
+.h2h-stat-perfect {
+  color: var(--win);
+}
+
+.h2h-stat-missing {
+  color: var(--text-subtle);
+  font-weight: 400;
 }
 
 @media (max-width: 560px) {
