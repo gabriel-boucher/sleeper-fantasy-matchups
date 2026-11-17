@@ -94,20 +94,30 @@ src/
     season/        Season view and team / schedule filters
     record/        Season record card, record tiles, weekly points chart
     matchups/      Weekly matchup cards and list
-    leaderboard/   All-play leaderboard, week navigator, luck badges
-  data/            Pure logic with no React or network: models, mappers, stats
-  services/        Sleeper API calls and loading of leagues, seasons and players
-  hooks/           Reusable React hooks (async loading, live refresh, element width)
+    lineup/        Head-to-head lineup dialog and player avatars
+    leaderboard/   All-play leaderboard, column picker, sortable headers, luck badges
+    home/          Home page
+  api/             Sleeper HTTP calls, response types (DTOs), image URLs and DTO-to-model mappers
+  types/           Models shared across the app
+  domain/          Pure fantasy logic with no React or network
+  services/        Loading and caching of leagues, seasons, players and projections
+  context/         React context for team and user links
+  hooks/           React hooks (async loading, live refresh, URL sync, stored preferences)
+  constants/       Shared constants (weeks, chart series, leaderboard column groups)
+  utils/           Generic helpers (math, collections, formatting, storage, URL parameters)
   styles/          Global design tokens (variables.css), reset and shared building blocks
-  utils/           URL parameter helpers
 ```
 
-Most stats live in `src/data/` as plain functions:
+Most stats live in `src/domain/` as plain functions:
 
 | File | Responsibility |
 |---|---|
-| `matchupAnalysis.ts` | Records, results, schedule swaps, best/worst schedule |
+| `records.ts` | Win/loss records: adding games, win percentage, formatting |
+| `matchups.ts` | Results, played matchups, weekly medians and median record |
+| `schedules.ts` | Schedule swaps, best/worst schedule |
 | `leaderboard.ts` | All-play ranking, real rank, luck, strength of schedule |
+| `leaderboardSort.ts` | Leaderboard sort orders and tie-breaks |
+| `projections.ts` | Projected points for lineups and matchups |
 | `lineup.ts` | Lineup slots, best possible lineup, bench points |
 | `weeklyScores.ts` | Weekly team score vs league average and median |
 | `seasonProgress.ts` | Which weeks are finished and which one is live |

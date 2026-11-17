@@ -1,24 +1,18 @@
-/* Design tokens shared by every stylesheet. Change the app's look from here. */
-
 :root {
-  /* Surfaces */
   --bg: #f5f6f8;
   --surface: #ffffff;
   --surface-muted: #f0f2f5;
   --border: #e3e6eb;
 
-  /* Text */
   --text: #131720;
   --text-muted: #5d6573;
   --text-subtle: #8a919e;
 
-  /* Brand */
   --accent: #2563eb;
   --accent-hover: #1d4fd7;
   --accent-contrast: #ffffff;
   --focus-ring: rgba(37, 99, 235, 0.35);
 
-  /* Results */
   --win: #15803d;
   --win-bg: #e6f5ea;
   --loss: #c62828;
@@ -26,13 +20,12 @@
   --tie: #8a6d0b;
   --tie-bg: #fbf3d9;
 
-  /* Chart series (validated for colorblind separation and contrast on --surface) */
   --chart-team: var(--accent);
+  --chart-opponent: #c2408d;
   --chart-average: #eb6834;
   --chart-median: #199e70;
   --chart-grid: var(--border);
 
-  /* Typography */
   --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-size-2xs: 0.6875rem;
   --font-size-xs: 0.75rem;
@@ -45,7 +38,6 @@
   --font-size-display: 2.25rem;
   --letter-spacing-caps: 0.06em;
 
-  /* Shape */
   --radius: 12px;
   --radius-sm: 8px;
   --radius-xs: 6px;
@@ -54,7 +46,6 @@
   --focus-shadow: 0 0 0 3px var(--focus-ring);
   --transition-fast: 0.15s ease;
 
-  /* Spacing scale (4px base): use for padding, margin and gap */
   --space-0-5: 2px;
   --space-1: 4px;
   --space-1-5: 6px;
@@ -70,7 +61,6 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* Layout */
   --content-max-width: 1080px;
   --control-height: 44px;
   --panel-padding: var(--space-5);
@@ -101,6 +91,7 @@
     --tie: #facc15;
     --tie-bg: rgba(250, 204, 21, 0.12);
 
+    --chart-opponent: #e066a8;
     --chart-average: #d95926;
     --chart-median: #199e70;
 

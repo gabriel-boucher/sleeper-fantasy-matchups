@@ -1,0 +1,98 @@
+.listbox {
+  position: relative;
+}
+
+.listbox-button {
+  display: flex;
+  align-items: center;
+  padding-right: var(--space-10);
+  font: inherit;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.listbox-button.open {
+  border-color: var(--accent);
+}
+
+.listbox-button-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.listbox-button-label.prompt {
+  color: var(--text-subtle);
+}
+
+.listbox::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--control-height) / 2);
+  right: 16px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--text-muted);
+  border-bottom: 2px solid var(--text-muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+  transition: transform var(--transition-fast);
+}
+
+.listbox:has(.listbox-button.open)::after {
+  transform: translateY(-30%) rotate(225deg);
+}
+
+.listbox-list {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 320px;
+  margin: 0;
+  padding: var(--space-1);
+  overflow-y: auto;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.14);
+  outline: none;
+}
+
+.listbox-option {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2-5);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+
+.listbox-option.active {
+  background: var(--surface-muted);
+}
+
+.listbox-option.selected {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.listbox-option-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.listbox-option-detail {
+  flex-shrink: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}

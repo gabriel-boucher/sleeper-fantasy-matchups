@@ -1,12 +1,10 @@
-import { League } from '../../data/data';
-import { SelectField } from '../common/SelectField';
+import { League } from '../../types/models';
+import { ListboxField } from '../common/ListboxField';
 import { UserAvatar } from '../common/UserAvatar';
 import './LeaguePicker.css';
 
 interface LeaguePickerProps {
-  // The searched Sleeper user, whose leagues these are
   displayName: string;
-  // Their team in the selected season; missing until it loads, or if they weren't in that season
   teamName?: string;
   avatarUrl: string | null;
   leagues: League[];
@@ -16,9 +14,10 @@ interface LeaguePickerProps {
   onSeasonChange: (seasonLeagueId: string) => void;
 }
 
-// Whose leagues these are (and their team) on the left, the league and season to look at on the right
 export function LeaguePicker({ displayName, teamName, avatarUrl, leagues, leagueId, seasonLeagueId, onLeagueChange, onSeasonChange }: LeaguePickerProps) {
-  const selectedLeague = leagues.find(l => l.id === leagueId);
+  const selectedLeague = leagues.find(league => league.id === leagueId);
+  const leagueOptions = leagues.map(league => ({ value: league.id, label: league.name }));
+  const seasonOptions = selectedLeague?.seasonsLatestFirst.map(s => ({ value: s.leagueId, label: s.season })) ?? [];
 
   return (
     <section className="panel league-picker" aria-label={`${displayName}'s leagues`}>
@@ -30,20 +29,20 @@ export function LeaguePicker({ displayName, teamName, avatarUrl, leagues, league
         </div>
       </div>
       <div className="field-row league-picker-fields">
-        <SelectField
+        <ListboxField
           id="league-select"
           label="League"
           value={leagueId}
-          options={leagues.map(l => ({ value: l.id, label: l.name }))}
-          placeholder="Select a league"
+          options={leagueOptions}
+          promptWhenNothingChosen="Select a league"
           onChange={onLeagueChange}
         />
-        <SelectField
+        <ListboxField
           id="season-select"
           label="Season"
           value={seasonLeagueId}
-          options={selectedLeague?.seasons.map(s => ({ value: s.league_id, label: s.season })) ?? []}
-          placeholder={selectedLeague ? undefined : 'Select a league first'}
+          options={seasonOptions}
+          promptWhenNothingChosen="Select a league first"
           disabled={!selectedLeague}
           onChange={onSeasonChange}
         />

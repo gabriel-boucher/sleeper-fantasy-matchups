@@ -9,7 +9,6 @@
   user-select: none;
 }
 
-/* The real checkbox stays focusable and clickable for keyboards and screen readers */
 .toggle-input {
   position: absolute;
   opacity: 0;

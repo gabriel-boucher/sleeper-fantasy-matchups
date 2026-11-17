@@ -1,5 +1,3 @@
-/* Top bar across the whole window: title on the left, username search on the right.
-   It stays put while scrolling. */
 .navbar {
   position: sticky;
   top: 0;
@@ -9,7 +7,6 @@
   box-shadow: var(--shadow);
 }
 
-/* Lined up with the page content below */
 .navbar-inner {
   display: flex;
   align-items: center;
@@ -20,7 +17,6 @@
   padding: var(--space-3) var(--space-4);
 }
 
-/* Home page: no search box in the bar, so the title sits in the middle */
 .navbar-inner--centered {
   justify-content: center;
   text-align: center;
@@ -50,7 +46,6 @@
   box-shadow: var(--focus-shadow);
 }
 
-/* The page column */
 .app {
   display: flex;
   flex-direction: column;
@@ -61,7 +56,6 @@
 }
 
 @media (max-width: 640px) {
-  /* Title on its own line, search full width under it */
   .navbar-inner {
     flex-direction: column;
     align-items: stretch;

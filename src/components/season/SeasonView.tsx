@@ -1,142 +1,123 @@
-import { useCallback, useMemo, useState } from 'react';
-import { UserId } from '../../data/data';
-import { getMatchupsAgainstSchedule, getMatchupsFor, getPlayedMatchups, getScheduleRange, getTeamName } from '../../data/matchupAnalysis';
-import { getWeeklyScores } from '../../data/weeklyScores';
-import { withProjections } from '../../data/projections';
-import { useLiveMatchups } from '../../hooks/useLiveMatchups';
-import { useProjections } from '../../hooks/useProjections';
-import { Season } from '../../services/seasonService';
-import { readUrlParam } from '../../utils/urlParams';
+import { useCallback, useState } from 'react';
+import { TeamActionsProvider } from '../../context/TeamActionsProvider';
+import { OWN_SCHEDULE } from '../../domain/schedules';
+import { useRegularSeason } from '../../hooks/useRegularSeason';
+import { useTeamSeason } from '../../hooks/useTeamSeason';
 import { useUrlParamsSync } from '../../hooks/useUrlParamsSync';
+import { Season, UserId } from '../../types/models';
+import { readUrlParam } from '../../utils/urlParams';
+import { Toggle } from '../common/Toggle';
 import { LeaderboardSection } from '../leaderboard/LeaderboardSection';
-import { LineupDialog } from '../matchups/LineupDialog';
+import { LineupDialog } from '../lineup/LineupDialog';
 import { RecordSummary } from '../record/RecordSummary';
-import { ScheduleRangeSummary } from '../record/ScheduleRangeSummary';
-import { TeamActionsProvider } from '../common/TeamLinks';
+import { RECORD_TILE_VARIANTS, RecordTileVariant } from '../record/recordTileVariants';
 import { TeamFilters } from './TeamFilters';
 
 interface SeasonViewProps {
-  season: Season;
-  currentUserId: UserId;
+  loadedSeason: Season;
+  searchedUserId: UserId;
 }
 
-// Restores the team and schedule from a shared link when they're in this season,
-// otherwise starts on the searched user's own team
-function getInitialTeams(season: Season, currentUserId: UserId) {
-  const isInSeason = (id: string | null): id is string => !!id && season.users.some(u => u.user_id === id);
+const NO_TEAM: UserId = '';
 
-  const linkedTeam = readUrlParam('team');
-  const userId = isInSeason(linkedTeam) ? linkedTeam : isInSeason(currentUserId) ? currentUserId : '';
-  const linkedSchedule = readUrlParam('vs');
-  const scheduleOwnerId = userId && isInSeason(linkedSchedule) && linkedSchedule !== userId ? linkedSchedule : '';
+function readTeamSelectionFromUrl(season: Season, searchedUserId: UserId) {
+  const isInSeason = (id: string | null): id is string => !!id && season.teamUsers.some(user => user.id === id);
+  const firstInSeason = (...ids: (string | null)[]) => ids.find(isInSeason);
 
-  return { userId, scheduleOwnerId };
+  const userId = firstInSeason(readUrlParam('team'), searchedUserId) ?? NO_TEAM;
+  const linkedScheduleOwnerId = readUrlParam('vs');
+  const canShowLinkedSchedule = userId !== NO_TEAM && isInSeason(linkedScheduleOwnerId) && linkedScheduleOwnerId !== userId;
+
+  return { userId, scheduleOwnerId: canShowLinkedSchedule ? linkedScheduleOwnerId : OWN_SCHEDULE };
 }
 
-export function SeasonView({ season: loadedSeason, currentUserId }: SeasonViewProps) {
-  // Projections arrive after the season; until then everything shows without them
-  const projections = useProjections(loadedSeason);
-  const season = useMemo(
-    () => (projections ? { ...loadedSeason, matchups: withProjections(loadedSeason.matchups, projections) } : loadedSeason),
-    [loadedSeason, projections]
-  );
+export function SeasonView({ loadedSeason, searchedUserId }: SeasonViewProps) {
+  const { season, liveMatchups } = useRegularSeason(loadedSeason);
 
-  const [initial] = useState(() => getInitialTeams(season, currentUserId));
-  const [userId, setUserId] = useState(initial.userId);
-  const [scheduleOwnerId, setScheduleOwnerId] = useState(initial.scheduleOwnerId);
+  const [initialSelection] = useState(() => readTeamSelectionFromUrl(season, searchedUserId));
+  const [userId, setUserId] = useState(initialSelection.userId);
+  const [scheduleOwnerId, setScheduleOwnerId] = useState(initialSelection.scheduleOwnerId);
+  const [clickedTile, setClickedTile] = useState<RecordTileVariant | null>(null);
+  const [isMedianCounted, setIsMedianCounted] = useState(season.hasMedianGame);
+  const [lineupWeek, setLineupWeek] = useState<number | null>(null);
 
   useUrlParamsSync({ team: userId, vs: scheduleOwnerId });
 
-  const matchups = useMemo(() => {
-    if (!userId) return [];
-    return scheduleOwnerId
-      ? getMatchupsAgainstSchedule(season.matchups, userId, scheduleOwnerId)
-      : getMatchupsFor(season.matchups, userId);
-  }, [season.matchups, userId, scheduleOwnerId]);
+  const teamSeason = useTeamSeason({ season, liveMatchups, userId, scheduleOwnerId, isMedianCounted });
+  const { matchups, liveMatchup, scheduleRange } = teamSeason;
+  const lineupMatchup = [liveMatchup, ...matchups].find(m => m?.week === lineupWeek) ?? null;
 
-  const refreshedLiveMatchups = useLiveMatchups(loadedSeason);
-  const liveMatchups = useMemo(
-    () => (projections ? withProjections(refreshedLiveMatchups, projections) : refreshedLiveMatchups),
-    [refreshedLiveMatchups, projections]
-  );
-  const liveMatchup = useMemo(() => {
-    if (!userId) return null;
-    const forTeam = scheduleOwnerId
-      ? getMatchupsAgainstSchedule(liveMatchups, userId, scheduleOwnerId)
-      : getMatchupsFor(liveMatchups, userId);
-    return forTeam[0] ?? null;
-  }, [liveMatchups, userId, scheduleOwnerId]);
-
-  // Week whose lineup is open; the matchup is looked up each render so live scores stay fresh
-  const [openWeek, setOpenWeek] = useState<number | null>(null);
-  const openMatchup = openWeek === null
-    ? null
-    : liveMatchup?.week === openWeek ? liveMatchup : matchups.find(m => m.week === openWeek) ?? null;
-  // The weeks the popup can step through: the same ones that have a matchup card
-  const matchupWeeks = useMemo(
-    () => [...getPlayedMatchups(matchups).map(m => m.week), ...(liveMatchup ? [liveMatchup.week] : [])],
-    [matchups, liveMatchup]
-  );
-
-  const weeklyScores = useMemo(
-    () => (userId ? getWeeklyScores(season.matchups, userId) : []),
-    [season.matchups, userId]
-  );
-
-  const scheduleRange = useMemo(
-    () => (userId ? getScheduleRange(season.matchups, season.users, userId) : null),
-    [season.matchups, season.users, userId]
-  );
-
-  const scheduleOwner = season.users.find(u => u.user_id === scheduleOwnerId);
-
-  function handleUserChange(id: UserId) {
-    setUserId(id);
-    setScheduleOwnerId('');
+  function getScheduleShownByTile(tile: RecordTileVariant): UserId {
+    if (tile === 'current' || !scheduleRange) return OWN_SCHEDULE;
+    const ownerId = scheduleRange[tile].scheduleOwner.id;
+    return ownerId === userId ? OWN_SCHEDULE : ownerId;
   }
 
-  // Clicking a team name anywhere: show that team's season (closing the popup it may have come from)
+  const showsCurrentSchedule = (tile: RecordTileVariant) => getScheduleShownByTile(tile) === scheduleOwnerId;
+  const activeTile = clickedTile && showsCurrentSchedule(clickedTile)
+    ? clickedTile
+    : RECORD_TILE_VARIANTS.find(showsCurrentSchedule) ?? null;
+
+  function selectTile(tile: RecordTileVariant) {
+    setClickedTile(tile);
+    setScheduleOwnerId(getScheduleShownByTile(tile));
+  }
+
+  function selectSchedule(ownerId: UserId) {
+    setClickedTile(null);
+    setScheduleOwnerId(ownerId);
+  }
+
   const selectTeam = useCallback((id: UserId) => {
     setUserId(id);
-    setScheduleOwnerId('');
-    setOpenWeek(null);
+    setScheduleOwnerId(OWN_SCHEDULE);
+    setClickedTile(null);
   }, []);
 
+  const selectTeamAndCloseLineup = useCallback((id: UserId) => {
+    selectTeam(id);
+    setLineupWeek(null);
+  }, [selectTeam]);
+
   return (
-    <TeamActionsProvider selectTeam={selectTeam}>
+    <TeamActionsProvider selectTeam={selectTeamAndCloseLineup}>
       <RecordSummary
-        controls={
+        teamFilters={
           <TeamFilters
-            users={season.users}
+            users={season.teamUsers}
             userId={userId}
             scheduleOwnerId={scheduleOwnerId}
-            onUserChange={handleUserChange}
-            onScheduleOwnerChange={setScheduleOwnerId}
+            recordsByScheduleOwner={teamSeason.recordsByScheduleOwner}
+            onUserChange={selectTeam}
+            onScheduleOwnerChange={selectSchedule}
           />
         }
-        matchups={userId ? matchups : null}
+        medianToggle={<Toggle label="Median" checked={isMedianCounted} onChange={setIsMedianCounted} />}
+        userId={userId}
+        matchups={userId === NO_TEAM ? null : matchups}
         liveMatchup={liveMatchup}
-        onSelectMatchup={m => setOpenWeek(m.week)}
-        weeklyScores={weeklyScores}
-        scheduleOwnerName={scheduleOwner && getTeamName(scheduleOwner)}
-        onSelectOwnSchedule={() => setScheduleOwnerId('')}
-      >
-        {scheduleRange && (
-          <ScheduleRangeSummary range={scheduleRange} userId={userId} onSelectSchedule={setScheduleOwnerId} />
-        )}
-      </RecordSummary>
-      <LeaderboardSection season={season} liveMatchups={liveMatchups} selectedUserId={userId} onSelectUser={handleUserChange} />
-      {openMatchup && (
+        onSelectMatchup={matchup => setLineupWeek(matchup.week)}
+        weeklyScores={teamSeason.weeklyScores}
+        ownScheduleRecord={teamSeason.ownScheduleRecord}
+        medianRecord={teamSeason.medianRecord}
+        weeklyMedians={teamSeason.weeklyMedians}
+        isMedianCounted={isMedianCounted}
+        scheduleRange={scheduleRange}
+        activeTile={activeTile}
+        onSelectTile={selectTile}
+      />
+      <LeaderboardSection season={season} liveMatchups={liveMatchups} selectedUserId={userId} onSelectUser={selectTeam} />
+      {lineupMatchup && (
         <LineupDialog
-          matchup={openMatchup}
-          isLive={openMatchup === liveMatchup}
-          weeks={matchupWeeks}
-          onWeekChange={setOpenWeek}
+          matchup={lineupMatchup}
+          isLive={lineupMatchup === liveMatchup}
+          weeks={teamSeason.weeksWithMatchupCard}
+          onWeekChange={setLineupWeek}
           slotNames={season.startingSlotNames}
-          slots={season.lineup?.slots ?? null}
+          bestLineupContext={season.bestLineupContext}
           players={season.players}
           showNflTeams={season.isCurrentSeason}
-          onClose={() => setOpenWeek(null)}
+          onClose={() => setLineupWeek(null)}
         />
       )}
     </TeamActionsProvider>

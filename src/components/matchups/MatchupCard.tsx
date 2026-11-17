@@ -1,7 +1,9 @@
-import { Matchup, Team } from "../../data/data";
-import { getResult, getTeamName, MatchupResult } from "../../data/matchupAnalysis";
-import { TeamNameLink } from "../common/TeamLinks";
-import "./MatchupCard.css";
+import { getResult, MatchupResult } from '../../domain/matchups';
+import { GameResult, getGameResult } from '../../domain/records';
+import { getTeamName } from '../../domain/teams';
+import { Matchup, Team } from '../../types/models';
+import { formatPoints } from '../../utils/format';
+import './MatchupCard.css';
 
 const RESULT_LABELS: Record<MatchupResult, string> = {
   win: 'W',
@@ -10,63 +12,79 @@ const RESULT_LABELS: Record<MatchupResult, string> = {
   unplayed: '–'
 };
 
+const MEDIAN_OUTCOMES: Record<GameResult, string> = {
+  win: 'won',
+  loss: 'lost',
+  tie: 'tied'
+};
+
 interface MatchupCardProps {
   matchup: Matchup;
-  // The week is still being played: show the score so far, not a result
   isLive?: boolean;
+  median?: number;
   onSelect: (matchup: Matchup) => void;
 }
 
-// Clicking the card opens the lineups; clicking a team name shows that team's season instead
-export function MatchupCard({ matchup, isLive = false, onSelect }: MatchupCardProps) {
-  // In a live week, "win"/"loss" just means who's ahead right now
+export function MatchupCard({ matchup, isLive = false, median, onSelect }: MatchupCardProps) {
+  const { week, team, opponent } = matchup;
   const result = getResult(matchup);
   const hasStarted = result !== 'unplayed';
 
   return (
     <div className={`matchup-card ${isLive ? 'live' : result}`}>
-      {/* Covers the whole card (see CSS), so the card itself stays clickable around the team names */}
       <button
         type="button"
         className="matchup-card-open"
         onClick={() => onSelect(matchup)}
         title="Show lineup"
-        aria-label={`Show week ${matchup.week} lineups: ${getTeamName(matchup.team.user)} vs ${getTeamName(matchup.opponent.user)}`}
+        aria-label={`Show week ${week} lineups: ${getTeamName(team.user)} vs ${getTeamName(opponent.user)}`}
       />
       <span className="matchup-week">
         <span className="matchup-week-label">Week</span>
-        <span className="matchup-week-number">{matchup.week}</span>
+        <span className="matchup-week-number">{week}</span>
       </span>
       <span className="matchup-teams">
-        <TeamRow team={matchup.team} isWinner={result === 'win'} />
-        <TeamRow team={matchup.opponent} isWinner={result === 'loss'} />
+        <TeamRow team={team} isAhead={result === 'win'} />
+        <TeamRow team={opponent} isAhead={result === 'loss'} />
       </span>
-      {isLive ? (
-        // Same round one-character badge as a finished week: a pulsing dot once games have started
-        <span
-          className={`result-badge ${hasStarted ? 'started' : ''}`}
-          aria-label={hasStarted ? 'Live' : 'Upcoming'}
-          title={hasStarted ? 'Live' : 'Upcoming'}
-        >
-          {hasStarted ? '●' : '–'}
-        </span>
-      ) : (
-        <span className="result-badge" aria-label={result}>{RESULT_LABELS[result]}</span>
-      )}
+      <span className="matchup-result">
+        {isLive ? <LiveBadge hasStarted={hasStarted} /> : <ResultBadge result={result} />}
+        {median !== undefined && hasStarted && <MedianValue median={median} points={team.points} />}
+      </span>
     </div>
   );
 }
 
-function TeamRow({ team, isWinner }: { team: Team; isWinner: boolean }) {
+function ResultBadge({ result }: { result: MatchupResult }) {
+  return <span className="result-badge" aria-label={result}>{RESULT_LABELS[result]}</span>;
+}
+
+function LiveBadge({ hasStarted }: { hasStarted: boolean }) {
+  const status = hasStarted ? 'Live' : 'Upcoming';
   return (
-    <span className={`matchup-team ${isWinner ? 'winner' : ''}`}>
-      <TeamNameLink user={team.user} className="team-name" />
-      {team.projectedPoints !== null && (
-        <span className="team-projected" title="Projected points">
-          {team.projectedPoints.toFixed(2)}
-        </span>
-      )}
-      <span className="team-points">{team.points.toFixed(2)}</span>
+    <span className={`result-badge ${hasStarted ? 'started' : ''}`} aria-label={status} title={status}>
+      {hasStarted ? '●' : RESULT_LABELS.unplayed}
+    </span>
+  );
+}
+
+function MedianValue({ median, points }: { median: number; points: number }) {
+  const result = getGameResult(points, median);
+  const outcome = MEDIAN_OUTCOMES[result];
+  return (
+    <span className={`matchup-median ${result}`} title={`League median this week (${outcome} against it)`}>
+      <span className="visually-hidden">Median </span>
+      {formatPoints(median)}
+      <span className="visually-hidden"> ({outcome})</span>
+    </span>
+  );
+}
+
+function TeamRow({ team, isAhead }: { team: Team; isAhead: boolean }) {
+  return (
+    <span className={`matchup-team ${isAhead ? 'winner' : ''}`}>
+      <span className="team-name">{getTeamName(team.user)}</span>
+      <span className="team-points">{formatPoints(team.points)}</span>
     </span>
   );
 }

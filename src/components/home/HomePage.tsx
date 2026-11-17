@@ -45,7 +45,7 @@ export function HomePage({ loading, onSearch }: HomePageProps) {
         <p className="home-lead">
           See any Sleeper team's weekly results, or how it would have done against someone else's schedule.
         </p>
-        <UsernameForm id="home-username-input" variant="hero" loading={loading} onSubmit={onSearch} autoFocus />
+        <UsernameForm inputId="home-username-input" variant="hero" loading={loading} onSubmit={onSearch} autoFocus />
       </section>
 
       <section className="home-features" aria-label="Features">

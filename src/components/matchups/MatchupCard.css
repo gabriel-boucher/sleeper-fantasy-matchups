@@ -22,7 +22,6 @@
   border-bottom-color: var(--text-subtle);
 }
 
-/* The "show lineup" button stretches over the whole card, behind the team names */
 .matchup-card-open {
   position: absolute;
   inset: 0;
@@ -36,12 +35,6 @@
 .matchup-card-open:focus-visible {
   outline: none;
   box-shadow: var(--focus-shadow);
-}
-
-/* Team names sit above it so they get their own clicks */
-.matchup-card .team-link {
-  position: relative;
-  z-index: 1;
 }
 
 .matchup-card.win { border-left-color: var(--win); }
@@ -98,18 +91,27 @@
   text-overflow: ellipsis;
 }
 
-.team-points {
+.matchup-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1-5);
   flex-shrink: 0;
-  font-variant-numeric: tabular-nums;
 }
 
-/* Pushed right next to the score, quieter than it */
-.team-projected {
+.matchup-median {
+  font-size: var(--font-size-2xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.matchup-median.win { color: var(--win); }
+.matchup-median.loss { color: var(--loss); }
+.matchup-median.tie { color: var(--tie); }
+
+.team-points {
   flex-shrink: 0;
-  margin-left: auto;
-  font-size: var(--font-size-xs);
-  font-weight: 400;
-  color: var(--text-subtle);
   font-variant-numeric: tabular-nums;
 }
 
@@ -130,7 +132,6 @@
 .matchup-card.loss .result-badge { background: var(--loss-bg); color: var(--loss); }
 .matchup-card.tie .result-badge { background: var(--tie-bg); color: var(--tie); }
 
-/* The week being played: blue like the card's edge, with a pulsing dot once games have kicked off */
 .matchup-card.live .result-badge.started {
   background: color-mix(in srgb, var(--accent) 16%, transparent);
   color: var(--accent);
@@ -153,7 +154,6 @@
     gap: var(--space-3);
   }
 
-  /* Leaves more room for team names */
   .matchup-team {
     gap: var(--space-2);
   }

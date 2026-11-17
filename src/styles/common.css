@@ -1,5 +1,3 @@
-/* Building blocks used across many components */
-
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -32,8 +30,6 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
-
-/* Form controls */
 
 .field-row {
   display: grid;

@@ -1,99 +1,99 @@
-import { Matchup, RosterId, User, UserId, WEEKCOUNT } from "../data/data";
-import { getStartingPositions, getStartingSlotNames, getStartingSlots, PlayerDirectory } from "../data/lineup";
-import { LineupContext, toMatchups, toRosterOwners, toStandings, toUser } from "../data/mappers";
-import { TeamRecord } from "../data/matchupAnalysis";
-import { getLastCompletedWeek, getLiveWeek } from "../data/seasonProgress";
-import { getPlayerDirectory } from "./playerService";
-import { ProjectionSettings } from "./projectionService";
-import { getLeague, getMatchups, getNflState, getRosters, getUsers } from "./sleeperApi";
+import { LeagueDto, LeagueMemberDto, MatchupDto, NflStateDto, RosterDto } from '../api/dto';
+import { toMatchups, toOfficialStandings, toRosterOwners, toTeamUsers, toUser } from '../api/mappers';
+import { getLeague, getLeagueMembers, getMatchups, getNflState, getRosters } from '../api/sleeperApi';
+import { ALL_WEEKS, WEEK_COUNT } from '../constants/weeks';
+import { getStartingPositions, getStartingSlotNames, getStartingSlots } from '../domain/lineup';
+import { getLastCompletedWeek, getLiveWeek, isCurrentSeason } from '../domain/seasonProgress';
+import { Matchup, PlayerDirectory, ProjectionSettings, Season } from '../types/models';
+import { getPlayerDirectory } from './playerService';
 
-export interface Season {
-  leagueId: string;
-  users: User[];
-  // Only weeks that are over, so in-progress games never count in stats
-  matchups: Matchup[];
-  lastRegularSeasonWeek: number;
-  // Sleeper's official records, which include median wins
-  standings: Map<UserId, TeamRecord>;
-  // The week being played right now; shown on its own and never counted in stats
-  liveWeek: number | null;
-  liveMatchups: Matchup[];
-  rosterOwners: Map<RosterId, User>;
-  // What's needed to work out best possible lineups; null if unavailable
-  lineup: LineupContext | null;
-  // Names of the starting slots in lineup order, e.g. ["QB", "RB", "RB", "FLEX"]
-  startingSlotNames: string[];
-  players: PlayerDirectory | null;
-  // Sleeper only knows players' current NFL teams, which are only right for the current season
-  isCurrentSeason: boolean;
-  // What's needed to score projections the league's way; null if the league has no scoring settings
-  projectionSettings: ProjectionSettings | null;
+const CACHE_DURATION_MS = 5 * 60 * 1000;
+const MEDIAN_GAME_ENABLED = 1;
+
+interface CachedSeason {
+  season: Promise<Season>;
+  loadedAt: number;
 }
 
-// Recently loaded seasons, so Back/Forward and switching between seasons show them straight away.
-// Kept briefly since live scores refresh on their own but the rest of the season can change too.
-const SEASON_CACHE_MS = 5 * 60 * 1000;
-const seasonCache = new Map<string, { promise: Promise<Season>; loadedAt: number }>();
+interface SeasonDtos {
+  leagueDto: LeagueDto;
+  nflState: NflStateDto;
+  memberDtos: LeagueMemberDto[];
+  rosterDtos: RosterDto[];
+  matchupDtosByWeek: MatchupDto[][];
+  players: PlayerDirectory | null;
+}
+
+const seasonCache = new Map<string, CachedSeason>();
 
 export function loadSeason(leagueId: string): Promise<Season> {
   const cached = seasonCache.get(leagueId);
-  if (cached && Date.now() - cached.loadedAt < SEASON_CACHE_MS) return cached.promise;
+  if (cached && Date.now() - cached.loadedAt < CACHE_DURATION_MS) return cached.season;
 
-  const promise = fetchSeason(leagueId);
-  seasonCache.set(leagueId, { promise, loadedAt: Date.now() });
-  // A failed load shouldn't stick, so trying again really retries
-  promise.catch(() => seasonCache.delete(leagueId));
-  return promise;
+  const season = fetchSeason(leagueId);
+  seasonCache.set(leagueId, { season, loadedAt: Date.now() });
+  season.catch(() => seasonCache.delete(leagueId));
+  return season;
+}
+
+export async function loadLiveMatchups(season: Season): Promise<Matchup[]> {
+  if (season.liveWeek === null) return [];
+  const matchupDtos = await getMatchups(season.leagueId, season.liveWeek);
+  return toMatchups(season.rosterOwners, matchupDtos, season.liveWeek, season.bestLineupContext);
 }
 
 async function fetchSeason(leagueId: string): Promise<Season> {
-  const weeks = Array.from({ length: WEEKCOUNT }, (_, i) => i + 1);
-  const [leagueDto, nflState, userDtos, rosterDtos, matchupDtosByWeek, players] = await Promise.all([
+  const [leagueDto, nflState, memberDtos, rosterDtos, matchupDtosByWeek, players] = await Promise.all([
     getLeague(leagueId),
     getNflState(),
-    getUsers(leagueId),
+    getLeagueMembers(leagueId),
     getRosters(leagueId),
-    Promise.all(weeks.map(week => getMatchups(leagueId, week))),
-    // Optional extra: without the player list the season still loads, just without names or bench points
+    Promise.all(ALL_WEEKS.map(week => getMatchups(leagueId, week))),
     getPlayerDirectory().catch(() => null)
   ]);
   if (!leagueDto) throw new Error('This season no longer exists on Sleeper');
 
-  const users = userDtos.map(toUser);
-  const rosterOwners = toRosterOwners(rosterDtos, users);
+  return toSeason(leagueId, { leagueDto, nflState, memberDtos, rosterDtos, matchupDtosByWeek, players });
+}
+
+function toSeason(leagueId: string, { leagueDto, nflState, memberDtos, rosterDtos, matchupDtosByWeek, players }: SeasonDtos): Season {
+  const members = memberDtos.map(toUser);
+  const rosterOwners = toRosterOwners(rosterDtos, members);
+  const rosterPositions = leagueDto.roster_positions ?? [];
+  const startingSlots = leagueDto.roster_positions ? getStartingSlots(leagueDto.roster_positions) : null;
+  const bestLineupContext = startingSlots && players ? { startingSlots, players } : null;
+  const matchups = matchupDtosByWeek.flatMap((matchupDtos, i) => toMatchups(rosterOwners, matchupDtos, ALL_WEEKS[i], bestLineupContext));
   const lastCompletedWeek = getLastCompletedWeek(leagueDto.season, nflState);
   const liveWeek = getLiveWeek(leagueDto.season, nflState);
-  const slots = leagueDto.roster_positions ? getStartingSlots(leagueDto.roster_positions) : null;
-  const lineup = slots && players ? { slots, players } : null;
-  const allMatchups = matchupDtosByWeek.flatMap((matchupDtos, i) => toMatchups(rosterOwners, matchupDtos, weeks[i], lineup));
-  const playoffWeekStart = leagueDto.settings?.playoff_week_start;
 
   return {
     leagueId,
-    users,
-    matchups: allMatchups.filter(m => m.week <= lastCompletedWeek),
-    lastRegularSeasonWeek: playoffWeekStart ? playoffWeekStart - 1 : WEEKCOUNT,
-    standings: toStandings(rosterDtos),
+    teamUsers: toTeamUsers(rosterOwners, members),
+    completedMatchups: matchups.filter(m => m.week <= lastCompletedWeek),
+    lastRegularSeasonWeek: getLastRegularSeasonWeek(leagueDto),
+    hasMedianGame: leagueDto.settings?.league_average_match === MEDIAN_GAME_ENABLED,
+    officialStandings: toOfficialStandings(rosterDtos, rosterOwners),
     liveWeek,
-    liveMatchups: allMatchups.filter(m => m.week === liveWeek),
+    liveMatchups: matchups.filter(m => m.week === liveWeek),
     rosterOwners,
-    lineup,
-    startingSlotNames: getStartingSlotNames(leagueDto.roster_positions ?? []),
+    bestLineupContext,
+    startingSlotNames: getStartingSlotNames(rosterPositions),
     players,
-    isCurrentSeason: Number(leagueDto.season) === Number(nflState.season),
-    projectionSettings: leagueDto.scoring_settings
-      ? {
-          season: leagueDto.season,
-          scoring: leagueDto.scoring_settings,
-          positions: getStartingPositions(leagueDto.roster_positions ?? [])
-        }
-      : null
+    isCurrentSeason: isCurrentSeason(leagueDto.season, nflState),
+    projectionSettings: toProjectionSettings(leagueDto, rosterPositions)
   };
 }
 
-// Fresh scores for the week being played
-export async function loadLiveMatchups(season: Season): Promise<Matchup[]> {
-  if (season.liveWeek === null) return [];
-  const matchupDtos = await getMatchups(season.leagueId, season.liveWeek);
-  return toMatchups(season.rosterOwners, matchupDtos, season.liveWeek, season.lineup);
+function getLastRegularSeasonWeek(leagueDto: LeagueDto): number {
+  const playoffWeekStart = leagueDto.settings?.playoff_week_start;
+  return playoffWeekStart ? playoffWeekStart - 1 : WEEK_COUNT;
+}
+
+function toProjectionSettings(leagueDto: LeagueDto, rosterPositions: string[]): ProjectionSettings | null {
+  if (!leagueDto.scoring_settings) return null;
+  return {
+    season: leagueDto.season,
+    pointsPerStat: leagueDto.scoring_settings,
+    startingPositions: getStartingPositions(rosterPositions)
+  };
 }

@@ -1,31 +1,48 @@
 import { ReactNode } from 'react';
-import { Matchup } from '../../data/data';
-import { getPlayedMatchups, getRecord, getWinPct } from '../../data/matchupAnalysis';
-import { getTotalProjection } from '../../data/projections';
-import { WeeklyScore } from '../../data/weeklyScores';
+import { getPlayedMatchups, getRecord } from '../../domain/matchups';
+import { getTotalProjection } from '../../domain/projections';
+import { addRecords, getWinPct } from '../../domain/records';
+import { ScheduleRange } from '../../domain/schedules';
+import { WeeklyScore } from '../../domain/weeklyScores';
+import { Matchup, TeamRecord, UserId } from '../../types/models';
+import { formatPercent, formatPoints } from '../../utils/format';
 import { MatchupList } from '../matchups/MatchupList';
 import { RecordTile } from './RecordTile';
+import { RecordTileVariant } from './recordTileVariants';
+import { ScheduleRangeSummary } from './ScheduleRangeSummary';
 import { WeeklyScoreChart } from './WeeklyScoreChart';
 import './RecordSummary.css';
 
-interface RecordSummaryProps {
-  controls: ReactNode;
-  matchups: Matchup[] | null;
-  liveMatchup?: Matchup | null;
+interface RecordDetailsProps {
+  userId: UserId;
+  matchups: Matchup[];
+  liveMatchup: Matchup | null;
   onSelectMatchup: (matchup: Matchup) => void;
-  // The team's own points each week, which don't depend on the schedule being viewed
   weeklyScores: WeeklyScore[];
-  scheduleOwnerName?: string;
-  onSelectOwnSchedule: () => void;
-  children?: ReactNode;
+  ownScheduleRecord: TeamRecord;
+  medianRecord: TeamRecord;
+  weeklyMedians: Map<number, number>;
+  isMedianCounted: boolean;
+  scheduleRange: ScheduleRange | null;
+  activeTile: RecordTileVariant | null;
+  onSelectTile: (tile: RecordTileVariant) => void;
 }
 
-export function RecordSummary({ controls, matchups, ...detailsProps }: RecordSummaryProps) {
+interface RecordSummaryProps extends Omit<RecordDetailsProps, 'matchups'> {
+  teamFilters: ReactNode;
+  medianToggle: ReactNode;
+  matchups: Matchup[] | null;
+}
+
+export function RecordSummary({ teamFilters, medianToggle, matchups, ...detailsProps }: RecordSummaryProps) {
   return (
     <section className="panel record-summary">
-      <h2 className="section-title">Season record</h2>
+      <div className="record-summary-header">
+        <h2 className="section-title">Season record</h2>
+        {medianToggle}
+      </div>
 
-      <div className="record-summary-controls">{controls}</div>
+      <div className="record-summary-controls">{teamFilters}</div>
 
       {matchups
         ? <RecordDetails matchups={matchups} {...detailsProps} />
@@ -34,11 +51,22 @@ export function RecordSummary({ controls, matchups, ...detailsProps }: RecordSum
   );
 }
 
-type RecordDetailsProps = Omit<RecordSummaryProps, 'controls' | 'matchups'> & { matchups: Matchup[] };
-
-function RecordDetails({ matchups, liveMatchup, onSelectMatchup, weeklyScores, scheduleOwnerName, onSelectOwnSchedule, children }: RecordDetailsProps) {
-  const record = getRecord(matchups);
-  const projected = getTotalProjection(getPlayedMatchups(matchups));
+function RecordDetails({
+  userId,
+  matchups,
+  liveMatchup,
+  onSelectMatchup,
+  weeklyScores,
+  ownScheduleRecord,
+  medianRecord,
+  weeklyMedians,
+  isMedianCounted,
+  scheduleRange,
+  activeTile,
+  onSelectTile
+}: RecordDetailsProps) {
+  const shownScheduleRecord = addRecords(getRecord(matchups), medianRecord);
+  const projectedPoints = getTotalProjection(getPlayedMatchups(matchups));
 
   return (
     <>
@@ -46,28 +74,31 @@ function RecordDetails({ matchups, liveMatchup, onSelectMatchup, weeklyScores, s
         <RecordTile
           label="Current record"
           variant="current"
-          record={record}
-          scheduleOwnerName={scheduleOwnerName}
-          onClick={onSelectOwnSchedule}
+          record={ownScheduleRecord}
+          isActive={activeTile === 'current'}
+          onClick={() => onSelectTile('current')}
         />
-        {children}
+        {scheduleRange && (
+          <ScheduleRangeSummary range={scheduleRange} userId={userId} activeTile={activeTile} onSelectTile={onSelectTile} />
+        )}
       </div>
 
       <MatchupList
         matchups={matchups}
         liveMatchup={liveMatchup}
+        weeklyMedians={weeklyMedians}
         onSelectMatchup={onSelectMatchup}
         headerContent={
           <dl className="season-stats">
-            <Stat label="W%" value={`${(getWinPct(record) * 100).toFixed(0)}%`} />
-            <Stat label="PF" value={record.pointsFor.toFixed(2)} />
-            <Stat label="PA" value={record.pointsAgainst.toFixed(2)} />
-            {projected !== null && <Stat label="PROJ" value={projected.toFixed(2)} />}
+            <Stat label="W%" value={formatPercent(getWinPct(shownScheduleRecord))} />
+            <Stat label="PF" value={formatPoints(shownScheduleRecord.pointsFor)} />
+            <Stat label="PA" value={formatPoints(shownScheduleRecord.pointsAgainst)} />
+            {projectedPoints !== null && <Stat label="PROJ" value={formatPoints(projectedPoints)} />}
           </dl>
         }
       />
 
-      {weeklyScores.length > 0 && <WeeklyScoreChart scores={weeklyScores} />}
+      {weeklyScores.length > 0 && <WeeklyScoreChart scores={weeklyScores} isMedianCounted={isMedianCounted} />}
     </>
   );
 }

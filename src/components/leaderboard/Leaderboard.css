@@ -11,6 +11,23 @@
   margin: 0;
 }
 
+.leaderboard-legend-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.leaderboard-legend-bar .leaderboard-legend {
+  margin-bottom: 0;
+}
+
+.leaderboard-legend-bar .column-picker {
+  margin-left: auto;
+}
+
 .leaderboard-controls {
   display: flex;
   flex-wrap: wrap;
@@ -48,7 +65,6 @@
 .legend-arrows .up { color: var(--win); }
 .legend-arrows .down { color: var(--loss); }
 
-/* Runs edge to edge inside the panel and scrolls sideways when it doesn't fit */
 .leaderboard-scroll {
   overflow-x: auto;
   margin: 0 calc(-1 * var(--panel-padding)) calc(-1 * var(--panel-padding));
@@ -88,12 +104,10 @@
   background: var(--surface-muted);
 }
 
-/* Clickable column headers: arrows on the left, lit on the sorted column (both columns of a wins/losses pair) */
 .sort-button {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  /* Centered in the header row like the plain titles, rather than sitting on the text baseline */
   vertical-align: middle;
   line-height: 1;
   padding: 0;
@@ -110,7 +124,6 @@
   color: var(--text);
 }
 
-/* The column (or wins/losses pair) the table is sorted by, in the same blue as its lit arrow */
 .leaderboard-table th.sorted .sort-button {
   color: var(--accent);
 }
@@ -121,7 +134,6 @@
   box-shadow: var(--focus-shadow);
 }
 
-/* Up and down arrows stacked; the active one is lit */
 .sort-indicator {
   display: inline-flex;
   flex-direction: column;
@@ -139,13 +151,10 @@
   color: var(--accent);
 }
 
-/* A wins/losses pair: the shared arrows sit halfway between the two titles (placed from script),
-   so both titles stay lined up with their numbers */
 .leaderboard-table th.arrows-after {
   position: relative;
 }
 
-/* A box of its own so its size changes can be watched */
 .sort-label {
   display: inline-block;
 }
@@ -153,9 +162,7 @@
 .leaderboard-table th.arrows-after .sort-indicator {
   position: absolute;
   top: 50%;
-  /* Fallback until measured: on the line between the two columns */
   left: 100%;
-  /* It reaches into the next header cell, so it's drawn above that cell's background */
   z-index: 1;
   transform: translate(-50%, -50%);
 }
@@ -164,7 +171,6 @@
   opacity: 1;
 }
 
-/* The T of the all-play columns, e.g. W with a small T */
 .leaderboard-table sub {
   margin-left: 1px;
   font-size: 0.7em;
@@ -200,8 +206,6 @@
   text-overflow: ellipsis;
 }
 
-/* Stat columns (W_T onwards) spread out to share the width, instead of Team taking all of it.
-   The spacing shrinks on narrower windows so team names keep their room. */
 .leaderboard-table th.team ~ th,
 .leaderboard-table th.team ~ td {
   padding-left: clamp(var(--space-2), 2vw - 4px, var(--space-6));
@@ -279,13 +283,11 @@
     font-size: var(--font-size-sm);
   }
 
-  /* No room to spread out here; the table scrolls sideways instead */
   .leaderboard-table th.team ~ th,
   .leaderboard-table th.team ~ td {
     padding-left: var(--space-1-5);
   }
 
-  /* Keep names readable; the table scrolls sideways inside its card instead */
   .leaderboard-table .team {
     min-width: 112px;
     max-width: 112px;

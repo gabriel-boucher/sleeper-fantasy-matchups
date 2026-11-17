@@ -1,13 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Matchup, UserId } from '../../data/data';
-import { getAllPlayLeaderboard, getLeaderboardWeeks, withLiveResults } from '../../data/leaderboard';
-import { Season } from '../../services/seasonService';
-import { readUrlParam } from '../../utils/urlParams';
+import { getAllPlayLeaderboard, getLeaderboardWeeks, withLiveResults } from '../../domain/leaderboard';
 import { useUrlParamsSync } from '../../hooks/useUrlParamsSync';
+import { Matchup, Season, UserId } from '../../types/models';
+import { readUrlParam } from '../../utils/urlParams';
 import { Segment, SegmentedControl } from '../common/SegmentedControl';
 import { Toggle } from '../common/Toggle';
-import { Leaderboard } from './Leaderboard';
 import { WeekNavigator } from '../common/WeekNavigator';
+import { Leaderboard } from './Leaderboard';
 
 type LeaderboardView = 'season' | 'week';
 
@@ -16,75 +15,92 @@ const VIEWS: Segment<LeaderboardView>[] = [
   { value: 'week', label: 'Week by week' }
 ];
 
+const LIVE_WEEK_INCLUDED_PARAM = '1';
+const FIRST_WEEK = 1;
+const NO_WEEK = 0;
+
 interface LeaderboardSectionProps {
   season: Season;
-  // The week being played, with its latest scores
   liveMatchups: Matchup[];
   selectedUserId: UserId;
   onSelectUser: (userId: UserId) => void;
 }
 
+function getIncludableLiveWeek(season: Season, liveMatchups: Matchup[]): number | null {
+  const { liveWeek, lastRegularSeasonWeek } = season;
+  const isRegularSeasonWeekInProgress = liveWeek !== null && liveWeek <= lastRegularSeasonWeek && liveMatchups.length > 0;
+  return isRegularSeasonWeekInProgress ? liveWeek : null;
+}
+
+function readWeekFromUrl(weeks: number[]): number | null {
+  const linkedWeek = Number(readUrlParam('week'));
+  return weeks.includes(linkedWeek) ? linkedWeek : null;
+}
+
 export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSelectUser }: LeaderboardSectionProps) {
-  // Only a regular-season week in progress can be added; playoffs aren't part of the leaderboard
-  const liveWeek = season.liveWeek !== null && season.liveWeek <= season.lastRegularSeasonWeek && liveMatchups.length > 0
-    ? season.liveWeek
-    : null;
-  const [includeLive, setIncludeLive] = useState(() => readUrlParam('live') === '1');
-  const isLiveIncluded = includeLive && liveWeek !== null;
+  const { completedMatchups, teamUsers, lastRegularSeasonWeek, officialStandings, hasMedianGame } = season;
+
+  const liveWeek = getIncludableLiveWeek(season, liveMatchups);
+  const [wantsLiveWeek, setWantsLiveWeek] = useState(() => readUrlParam('live') === LIVE_WEEK_INCLUDED_PARAM);
+  const isLiveWeekIncluded = wantsLiveWeek && liveWeek !== null;
 
   const matchups = useMemo(
-    () => (isLiveIncluded ? [...season.matchups, ...liveMatchups] : season.matchups),
-    [isLiveIncluded, season.matchups, liveMatchups]
+    () => (isLiveWeekIncluded ? [...completedMatchups, ...liveMatchups] : completedMatchups),
+    [isLiveWeekIncluded, completedMatchups, liveMatchups]
   );
-  const weeks = useMemo(() => getLeaderboardWeeks(matchups, season.lastRegularSeasonWeek), [matchups, season]);
+  const weeks = useMemo(() => getLeaderboardWeeks(matchups, lastRegularSeasonWeek), [matchups, lastRegularSeasonWeek]);
+  const latestWeek = weeks[weeks.length - 1] ?? NO_WEEK;
 
-  const [initialWeek] = useState(() => {
-    // A shared link with a valid `week` opens straight on that week
-    const linkedWeek = Number(readUrlParam('week'));
-    return weeks.includes(linkedWeek) ? linkedWeek : null;
+  const [linkedWeek] = useState(() => readWeekFromUrl(weeks));
+  const [view, setView] = useState<LeaderboardView>(linkedWeek ? 'week' : 'season');
+  const [selectedWeek, setSelectedWeek] = useState(linkedWeek ?? latestWeek);
+  const week = weeks.includes(selectedWeek) ? selectedWeek : latestWeek;
+
+  useUrlParamsSync({
+    week: view === 'week' ? String(week) : null,
+    live: isLiveWeekIncluded ? LIVE_WEEK_INCLUDED_PARAM : null
   });
-  const [view, setView] = useState<LeaderboardView>(initialWeek ? 'week' : 'season');
-  // Starts on the latest week so switching views shows the most recent results
-  const [selectedWeek, setSelectedWeek] = useState(initialWeek ?? weeks[weeks.length - 1] ?? 0);
-  // Turning the live week off while viewing it falls back to the latest finished week
-  const week = weeks.includes(selectedWeek) ? selectedWeek : weeks[weeks.length - 1] ?? 0;
-
-  useUrlParamsSync({ week: view === 'week' ? String(week) : null, live: isLiveIncluded ? '1' : null });
 
   const entries = useMemo(() => {
-    if (view === 'week') return getAllPlayLeaderboard(matchups, season.users, { from: week, to: week });
-    const standings = isLiveIncluded ? withLiveResults(season.standings, liveMatchups) : season.standings;
-    return getAllPlayLeaderboard(matchups, season.users, { from: 1, to: season.lastRegularSeasonWeek }, standings);
-  }, [view, week, matchups, season, isLiveIncluded, liveMatchups]);
-
-  // Stays on the week being viewed; only leaving the live week itself moves back to the latest finished week
-  function handleIncludeLiveChange(include: boolean) {
-    setIncludeLive(include);
-    if (!include && week === liveWeek) {
-      setSelectedWeek(weeks.filter(w => w !== liveWeek).at(-1) ?? 0);
+    if (view === 'week') {
+      return getAllPlayLeaderboard(matchups, teamUsers, { from: week, to: week }, { hasMedianGame });
     }
+    const standings = isLiveWeekIncluded ? withLiveResults(officialStandings, liveMatchups, hasMedianGame) : officialStandings;
+    return getAllPlayLeaderboard(
+      matchups,
+      teamUsers,
+      { from: FIRST_WEEK, to: lastRegularSeasonWeek },
+      { officialStandings: standings, hasMedianGame }
+    );
+  }, [view, week, matchups, teamUsers, lastRegularSeasonWeek, officialStandings, hasMedianGame, isLiveWeekIncluded, liveMatchups]);
+
+  function changeLiveWeekInclusion(isIncluded: boolean) {
+    setWantsLiveWeek(isIncluded);
+    const isLeavingViewedWeek = !isIncluded && week === liveWeek;
+    if (isLeavingViewedWeek) setSelectedWeek(weeks.filter(w => w !== liveWeek).at(-1) ?? NO_WEEK);
   }
 
   if (weeks.length === 0) return null;
 
-  const isViewingLiveWeek = isLiveIncluded && (view === 'season' || week === liveWeek);
-  const description = view === 'season'
+  const isShowingLiveResults = isLiveWeekIncluded && (view === 'season' || week === liveWeek);
+  const viewDescription = view === 'season'
     ? "What each team's record would be if it played everyone, every week of the regular season."
     : `Every team against every other score from week ${week}. Real is that week's actual results.`;
+  const description = isShowingLiveResults ? `${viewDescription} Week ${liveWeek} is still being played.` : viewDescription;
 
   return (
     <Leaderboard
       entries={entries}
-      description={isViewingLiveWeek ? `${description} Week ${liveWeek} is still being played.` : description}
-      controls={
+      description={description}
+      viewControls={
         <div className="leaderboard-controls">
           {liveWeek !== null && (
-            <Toggle label={`Week ${liveWeek}`} checked={isLiveIncluded} onChange={handleIncludeLiveChange} />
+            <Toggle label={`Week ${liveWeek}`} checked={isLiveWeekIncluded} onChange={changeLiveWeekInclusion} />
           )}
           <SegmentedControl label="Leaderboard view" segments={VIEWS} value={view} onChange={setView} />
         </div>
       }
-      toolbar={view === 'week' && <WeekNavigator weeks={weeks} week={week} onChange={setSelectedWeek} />}
+      weekNavigator={view === 'week' && <WeekNavigator weeks={weeks} week={week} onChange={setSelectedWeek} />}
       selectedUserId={selectedUserId}
       onSelectUser={onSelectUser}
     />

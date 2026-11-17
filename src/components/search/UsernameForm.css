@@ -1,4 +1,3 @@
-/* Compact search for the nav bar */
 .search-form {
   flex: 1;
   max-width: 420px;
@@ -24,7 +23,6 @@
   }
 }
 
-/* Large search on the home page */
 .search-form--hero {
   width: 100%;
   max-width: 520px;

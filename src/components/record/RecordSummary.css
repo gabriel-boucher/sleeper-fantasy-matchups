@@ -1,11 +1,23 @@
+.record-summary-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.record-summary-header .section-title {
+  margin: 0;
+}
+
 .record-summary-controls {
   margin-bottom: var(--space-5);
 }
 
-/* Current record gets a wider column than the best/worst tiles beside it */
 .record-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-3);
 }
 
@@ -13,7 +25,6 @@
   grid-column: 1 / -1;
 }
 
-/* One compact line: "Win % 65% | Points for 3035.00 | Points against 2805.64" */
 .season-stats {
   display: flex;
   flex-wrap: wrap;
@@ -47,10 +58,9 @@
 
 @media (max-width: 640px) {
   .record-row {
-    grid-template-columns: 1fr;
+    gap: var(--space-2);
   }
 
-  /* Stats wrap here, so spacing replaces the dividers to keep wrapped lines aligned */
   .season-stats {
     column-gap: var(--space-4);
   }

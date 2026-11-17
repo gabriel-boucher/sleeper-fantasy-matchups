@@ -1,3 +1,4 @@
+import { formatCount } from '../../utils/format';
 import './LuckBadge.css';
 
 const BADGES = {
@@ -6,15 +7,15 @@ const BADGES = {
 };
 
 interface LuckBadgeProps {
-  kind: 'luckiest' | 'unluckiest';
-  // Spots gained in all-play compared to the real standings
-  rankChange: number;
+  kind: keyof typeof BADGES;
+  spotsGainedInAllPlay: number;
 }
 
-export function LuckBadge({ kind, rankChange }: LuckBadgeProps) {
+export function LuckBadge({ kind, spotsGainedInAllPlay }: LuckBadgeProps) {
   const { icon, label } = BADGES[kind];
-  const spots = Math.abs(rankChange);
-  const description = `${label}: ${spots} spot${spots > 1 ? 's' : ''} ${rankChange > 0 ? 'lower' : 'higher'} in the real standings than in all-play`;
+  const spots = formatCount(Math.abs(spotsGainedInAllPlay), 'spot');
+  const realRankComparedToAllPlay = spotsGainedInAllPlay > 0 ? 'lower' : 'higher';
+  const description = `${label}: ${spots} ${realRankComparedToAllPlay} in the real standings than in all-play`;
 
   return (
     <span className="luck-badge" role="img" title={description} aria-label={description}>

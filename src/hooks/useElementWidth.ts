@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 
-// Tracks an element's rendered width so drawings like charts can fit it exactly
 export function useElementWidth<T extends HTMLElement>() {
   const ref = useRef<T>(null);
   const [width, setWidth] = useState(0);

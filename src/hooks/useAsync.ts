@@ -12,27 +12,27 @@ interface Result<K, T> {
   error?: string;
 }
 
-// Runs `load(key)` whenever `key` changes; a null key means nothing to load.
-// `load` must be stable (e.g. a module-level function) to avoid refetching on every render.
-export function useAsync<K, T>(key: K | null, load: (key: K) => Promise<T>): AsyncState<T> {
+const UNKNOWN_ERROR_MESSAGE = 'An error occurred';
+
+export function useAsync<K, T>(key: K | null, loadWithStableIdentity: (key: K) => Promise<T>): AsyncState<T> {
   const [result, setResult] = useState<Result<K, T> | null>(null);
 
   useEffect(() => {
     if (key === null) return;
-    let ignore = false;
+    let isStale = false;
 
-    load(key).then(
-      data => { if (!ignore) setResult({ key, data }); },
-      err => { if (!ignore) setResult({ key, error: err instanceof Error ? err.message : 'An error occurred' }); }
+    loadWithStableIdentity(key).then(
+      data => { if (!isStale) setResult({ key, data }); },
+      error => { if (!isStale) setResult({ key, error: error instanceof Error ? error.message : UNKNOWN_ERROR_MESSAGE }); }
     );
 
-    return () => { ignore = true; };
-  }, [key, load]);
+    return () => { isStale = true; };
+  }, [key, loadWithStableIdentity]);
 
-  const current = result?.key === key ? result : null;
+  const resultForKey = result?.key === key ? result : null;
   return {
-    data: current?.data ?? null,
-    loading: key !== null && current === null,
-    error: current?.error ?? null
+    data: resultForKey?.data ?? null,
+    loading: key !== null && resultForKey === null,
+    error: resultForKey?.error ?? null
   };
 }

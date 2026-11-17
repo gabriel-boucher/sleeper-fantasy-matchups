@@ -1,6 +1,9 @@
 .record-tile {
   --tile-color: var(--border);
+  --tile-duration: 0.28s;
+  --tile-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -8,37 +11,59 @@
   padding: var(--space-3) var(--space-3-5);
   background: var(--surface-muted);
   border: 1px solid transparent;
-  border-left: 4px solid var(--tile-color);
   border-radius: var(--radius-sm);
+  overflow: hidden;
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--tile-duration) var(--tile-ease),
+    transform var(--tile-duration) var(--tile-ease);
+}
+
+.record-tile.current { --tile-color: var(--accent); }
+.record-tile.best { --tile-color: var(--win); }
+.record-tile.worst { --tile-color: var(--loss); }
+
+.record-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--tile-color);
+  transform: scaleY(0);
+  transition: transform var(--tile-duration) var(--tile-ease);
+}
+
+.record-tile.active::before {
+  transform: scaleY(1);
+}
+
+.record-tile > span {
+  transition: transform var(--tile-duration) var(--tile-ease);
+}
+
+.record-tile.active > span {
+  transform: translateX(var(--space-1));
+}
+
+.record-tile.active {
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
 }
 
 .record-tile:hover {
-  border-top-color: var(--border);
-  border-right-color: var(--border);
-  border-bottom-color: var(--border);
+  border-color: var(--border);
+}
+
+.record-tile:active {
+  transform: scale(0.98);
+  transition-duration: 0.08s;
 }
 
 .record-tile:focus-visible {
   outline: none;
   box-shadow: var(--focus-shadow);
-}
-
-.record-tile.best { --tile-color: var(--win); }
-.record-tile.worst { --tile-color: var(--loss); }
-
-.record-tile.current {
-  --tile-color: var(--accent);
-
-  justify-content: center;
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--accent);
-}
-
-.record-tile.current:hover {
-  border-color: var(--accent-hover);
 }
 
 .record-tile-label {
@@ -55,11 +80,6 @@
   color: var(--tile-color);
 }
 
-.record-tile.current .record-tile-value {
-  font-size: var(--font-size-display);
-  line-height: 1.1;
-}
-
 .record-tile-schedule {
   max-width: 100%;
   font-size: var(--font-size-sm);
@@ -67,4 +87,32 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .record-tile,
+  .record-tile::before,
+  .record-tile > span {
+    transition: none;
+  }
+
+  .record-tile.active,
+  .record-tile:active {
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .record-tile {
+    padding: var(--space-2-5) var(--space-3);
+  }
+
+  .record-tile-label,
+  .record-tile-schedule {
+    font-size: var(--font-size-xs);
+  }
+
+  .record-tile-value {
+    font-size: var(--font-size-lg);
+  }
 }

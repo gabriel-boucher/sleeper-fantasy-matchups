@@ -1,76 +1,90 @@
 import { KeyboardEvent, PointerEvent, useState } from 'react';
-import { WeeklyScore } from '../../data/weeklyScores';
+import { WeeklyScore } from '../../domain/weeklyScores';
 import { useElementWidth } from '../../hooks/useElementWidth';
+import { useShownChartSeries } from '../../hooks/useShownChartSeries';
+import { getReadableAxisScale } from '../../utils/chartScale';
+import { formatPoints } from '../../utils/format';
+import { SERIES, Series, SERIES_KEYS_BACK_TO_FRONT, SeriesKey } from '../../constants/weeklyChartSeries';
 import './WeeklyScoreChart.css';
 
 const HEIGHT = 200;
-// Room for y-axis ticks on the left, the team's end label on the right and week numbers below
 const MARGIN = { top: 12, right: 52, bottom: 24, left: 40 };
 const Y_TICK_COUNT = 4;
-const MIN_X_LABEL_GAP = 28;
-
-const SERIES = [
-  { key: 'team', label: 'Team', className: 'team' },
-  { key: 'average', label: 'League avg', className: 'average' },
-  { key: 'median', label: 'League median', className: 'median' }
-] as const;
+const MIN_WEEK_LABEL_GAP = 28;
+const DOT_RADIUS = 4;
+const AXIS_LABEL_GAP = 8;
+const WEEK_LABEL_OFFSET_FROM_BOTTOM = 6;
+const HIT_AREA_OVERFLOW = 12;
 
 interface WeeklyScoreChartProps {
   scores: WeeklyScore[];
+  isMedianCounted: boolean;
 }
 
-export function WeeklyScoreChart({ scores }: WeeklyScoreChartProps) {
+interface LegendProps {
+  shownSeries: Series[];
+  isShown: (key: SeriesKey) => boolean;
+  onToggle: (key: SeriesKey) => void;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+export function WeeklyScoreChart({ scores, isMedianCounted }: WeeklyScoreChartProps) {
   const [containerRef, width] = useElementWidth<HTMLDivElement>();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const { shownSeries, isShown, toggleSeries } = useShownChartSeries(isMedianCounted);
 
   const plotWidth = Math.max(width - MARGIN.left - MARGIN.right, 0);
   const plotHeight = HEIGHT - MARGIN.top - MARGIN.bottom;
-  const values = scores.flatMap(s => [s.team, s.average, s.median]);
-  const { min, max, ticks } = getNiceScale(Math.min(...values), Math.max(...values), Y_TICK_COUNT);
+  const plotRight = MARGIN.left + plotWidth;
+  const plotBottom = MARGIN.top + plotHeight;
 
-  // Positioned by week number, so a missed week (bye, elimination) leaves a visible gap
+  const shownValues = scores.flatMap(score => shownSeries.map(series => score[series.key]));
+  const { min, max, ticks } = getReadableAxisScale(Math.min(...shownValues), Math.max(...shownValues), Y_TICK_COUNT);
+
+  const lastIndex = scores.length - 1;
   const firstWeek = scores[0].week;
-  const weekSpan = scores[scores.length - 1].week - firstWeek;
-  const x = (index: number) =>
+  const lastWeek = scores[lastIndex].week;
+  const weekSpan = lastWeek - firstWeek;
+
+  const getX = (index: number) =>
     MARGIN.left + (weekSpan === 0 ? plotWidth / 2 : ((scores[index].week - firstWeek) * plotWidth) / weekSpan);
-  const y = (value: number) => MARGIN.top + plotHeight - ((value - min) / (max - min)) * plotHeight;
-  const path = (key: typeof SERIES[number]['key']) =>
-    scores.map((s, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(s[key])}`).join(' ');
+  const getY = (value: number) => plotBottom - ((value - min) / (max - min)) * plotHeight;
+  const getLinePath = (key: SeriesKey) =>
+    scores.map((score, i) => `${i === 0 ? 'M' : 'L'}${getX(i)},${getY(score[key])}`).join(' ');
 
-  // Skip week labels on narrow charts so they never overlap
-  const labelEvery = Math.max(1, Math.ceil(MIN_X_LABEL_GAP / (plotWidth / Math.max(weekSpan, 1))));
-  const last = scores.length - 1;
-  const active = activeIndex === null ? null : scores[activeIndex];
-  // The latest week is always labeled; others are spaced out and kept clear of it
-  const isWeekLabeled = (week: number, index: number) =>
-    index === last || ((week - firstWeek) % labelEvery === 0 && scores[last].week - week >= labelEvery);
+  const weekWidth = plotWidth / Math.max(weekSpan, 1);
+  const weeksPerLabel = Math.max(1, Math.ceil(MIN_WEEK_LABEL_GAP / weekWidth));
+  const isWeekLabeled = (week: number, index: number) => {
+    const isOnLabelStep = (week - firstWeek) % weeksPerLabel === 0;
+    const isClearOfLastLabel = lastWeek - week >= weeksPerLabel;
+    return index === lastIndex || (isOnLabelStep && isClearOfLastLabel);
+  };
 
-  // Snaps to the week nearest the pointer
-  function handlePointerMove(e: PointerEvent<SVGRectElement>) {
+  const activeScore = activeIndex === null ? null : scores[activeIndex];
+  const activeX = activeIndex === null ? 0 : getX(activeIndex);
+
+  function activateWeekNearestPointer(e: PointerEvent<SVGRectElement>) {
     const pointerX = e.clientX - e.currentTarget.ownerSVGElement!.getBoundingClientRect().left;
-    const nearest = scores.reduce((best, _, i) => (Math.abs(x(i) - pointerX) < Math.abs(x(best) - pointerX) ? i : best), 0);
-    setActiveIndex(nearest);
+    const distanceFromPointer = (index: number) => Math.abs(getX(index) - pointerX);
+    const nearestIndex = scores.reduce((nearest, _, i) => (distanceFromPointer(i) < distanceFromPointer(nearest) ? i : nearest), 0);
+    setActiveIndex(nearestIndex);
   }
 
-  function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+  function stepWeekWithArrowKeys(e: KeyboardEvent<HTMLDivElement>) {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     e.preventDefault();
     const step = e.key === 'ArrowLeft' ? -1 : 1;
-    setActiveIndex(index => Math.min(Math.max((index ?? last) + step, 0), last));
+    setActiveIndex(index => clamp((index ?? lastIndex) + step, 0, lastIndex));
   }
 
   return (
     <section className="weekly-chart-section">
       <div className="weekly-chart-header">
         <h3 className="section-title">Weekly points</h3>
-        <ul className="weekly-chart-legend">
-          {SERIES.map(series => (
-            <li key={series.key}>
-              <span className={`weekly-chart-key ${series.className}`} aria-hidden="true" />
-              {series.label}
-            </li>
-          ))}
-        </ul>
+        <Legend shownSeries={shownSeries} isShown={isShown} onToggle={toggleSeries} />
       </div>
 
       <div
@@ -79,105 +93,128 @@ export function WeeklyScoreChart({ scores }: WeeklyScoreChartProps) {
         tabIndex={0}
         role="group"
         aria-label="Weekly points chart. Use the left and right arrow keys to read each week."
-        onKeyDown={handleKeyDown}
-        onFocus={() => setActiveIndex(index => index ?? last)}
+        onKeyDown={stepWeekWithArrowKeys}
+        onFocus={() => setActiveIndex(index => index ?? lastIndex)}
         onBlur={() => setActiveIndex(null)}
       >
         {width > 0 && (
           <svg width={width} height={HEIGHT} aria-hidden="true">
             {ticks.map(tick => (
               <g key={tick}>
-                <line className="weekly-chart-grid" x1={MARGIN.left} x2={MARGIN.left + plotWidth} y1={y(tick)} y2={y(tick)} />
-                <text className="weekly-chart-axis" x={MARGIN.left - 8} y={y(tick)} textAnchor="end" dominantBaseline="middle">
+                <line className="weekly-chart-grid" x1={MARGIN.left} x2={plotRight} y1={getY(tick)} y2={getY(tick)} />
+                <text className="weekly-chart-axis" x={MARGIN.left - AXIS_LABEL_GAP} y={getY(tick)} textAnchor="end" dominantBaseline="middle">
                   {tick}
                 </text>
               </g>
             ))}
 
-            {scores.map((s, i) => isWeekLabeled(s.week, i) && (
-              <text key={s.week} className="weekly-chart-axis" x={x(i)} y={HEIGHT - 6} textAnchor="middle">
-                {s.week}
+            {scores.map((score, i) => isWeekLabeled(score.week, i) && (
+              <text key={score.week} className="weekly-chart-axis" x={getX(i)} y={HEIGHT - WEEK_LABEL_OFFSET_FROM_BOTTOM} textAnchor="middle">
+                {score.week}
               </text>
             ))}
 
-            {active && <line className="weekly-chart-crosshair" x1={x(activeIndex!)} x2={x(activeIndex!)} y1={MARGIN.top} y2={MARGIN.top + plotHeight} />}
+            {activeScore && <line className="weekly-chart-crosshair" x1={activeX} x2={activeX} y1={MARGIN.top} y2={plotBottom} />}
 
-            {/* Reference lines first so the team's line sits on top */}
-            <path className="weekly-chart-line median" d={path('median')} />
-            <path className="weekly-chart-line average" d={path('average')} />
-            <path className="weekly-chart-line team" d={path('team')} />
-
-            {scores.map((s, i) => (
-              <circle key={s.week} className="weekly-chart-dot team" cx={x(i)} cy={y(s.team)} r={4} />
+            {SERIES_KEYS_BACK_TO_FRONT.filter(isShown).map(key => (
+              <path key={key} className={`weekly-chart-line ${key}`} d={getLinePath(key)} />
             ))}
 
-            {active && SERIES.filter(series => series.key !== 'team').map(series => (
-              <circle key={series.key} className={`weekly-chart-dot ${series.className}`} cx={x(activeIndex!)} cy={y(active[series.key])} r={4} />
+            {isShown('team') && scores.map((score, i) => (
+              <circle key={score.week} className="weekly-chart-dot team" cx={getX(i)} cy={getY(score.team)} r={DOT_RADIUS} />
             ))}
 
-            <text className="weekly-chart-end-label" x={x(last) + 8} y={y(scores[last].team)} dominantBaseline="middle">
-              {scores[last].team.toFixed(1)}
-            </text>
+            {activeScore && shownSeries.filter(series => series.key !== 'team').map(series => (
+              <circle key={series.key} className={`weekly-chart-dot ${series.key}`} cx={activeX} cy={getY(activeScore[series.key])} r={DOT_RADIUS} />
+            ))}
+
+            {isShown('team') && (
+              <text className="weekly-chart-end-label" x={getX(lastIndex) + AXIS_LABEL_GAP} y={getY(scores[lastIndex].team)} dominantBaseline="middle">
+                {scores[lastIndex].team.toFixed(1)}
+              </text>
+            )}
 
             <rect
               className="weekly-chart-hit-area"
-              x={MARGIN.left - 12}
+              x={MARGIN.left - HIT_AREA_OVERFLOW}
               y={MARGIN.top}
-              width={plotWidth + 24}
+              width={plotWidth + 2 * HIT_AREA_OVERFLOW}
               height={plotHeight}
-              onPointerMove={handlePointerMove}
+              onPointerMove={activateWeekNearestPointer}
               onPointerLeave={() => setActiveIndex(null)}
             />
           </svg>
         )}
 
-        {active && (
-          <div
-            className={`weekly-chart-tooltip ${x(activeIndex!) > width / 2 ? 'left' : 'right'}`}
-            style={{ left: x(activeIndex!) }}
-          >
-            <div className="weekly-chart-tooltip-title">Week {active.week}</div>
-            {SERIES.map(series => (
-              <div key={series.key} className="weekly-chart-tooltip-row">
-                <span className={`weekly-chart-key ${series.className}`} aria-hidden="true" />
-                <strong>{active[series.key].toFixed(2)}</strong>
-                <span>{series.label}</span>
-              </div>
-            ))}
-          </div>
+        {activeScore && (
+          <Tooltip score={activeScore} shownSeries={shownSeries} x={activeX} side={activeX > width / 2 ? 'left' : 'right'} />
         )}
       </div>
 
-      {/* The same numbers for screen readers */}
-      <table className="visually-hidden">
-        <caption>Weekly points</caption>
-        <thead>
-          <tr>
-            <th scope="col">Week</th>
-            {SERIES.map(series => <th key={series.key} scope="col">{series.label}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {scores.map(s => (
-            <tr key={s.week}>
-              <th scope="row">{s.week}</th>
-              {SERIES.map(series => <td key={series.key}>{s[series.key].toFixed(2)}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <ScreenReaderTable scores={scores} />
     </section>
   );
 }
 
-// Rounds the axis out to clean steps (e.g. 100, 125, 150) so tick labels are easy to read
-function getNiceScale(dataMin: number, dataMax: number, tickCount: number) {
-  const range = Math.max(dataMax - dataMin, 1);
-  const roughStep = range / tickCount;
-  const magnitude = 10 ** Math.floor(Math.log10(roughStep));
-  const step = [1, 2, 2.5, 5, 10].map(m => m * magnitude).find(s => s >= roughStep)!;
-  const min = Math.floor(dataMin / step) * step;
-  const max = Math.ceil(dataMax / step) * step;
-  const ticks = Array.from({ length: Math.round((max - min) / step) + 1 }, (_, i) => min + i * step);
-  return { min, max: max === min ? min + step : max, ticks };
+function Legend({ shownSeries, isShown, onToggle }: LegendProps) {
+  return (
+    <ul className="weekly-chart-legend">
+      {SERIES.map(series => {
+        const shown = isShown(series.key);
+        const isOnlySeriesShown = shown && shownSeries.length === 1;
+        return (
+          <li key={series.key}>
+            <button
+              type="button"
+              className={`weekly-chart-toggle ${shown ? '' : 'off'}`}
+              aria-pressed={shown}
+              disabled={isOnlySeriesShown}
+              title={isOnlySeriesShown ? 'At least one line stays shown' : `${shown ? 'Hide' : 'Show'} ${series.label}`}
+              onClick={() => onToggle(series.key)}
+            >
+              <span className={`weekly-chart-key ${series.key}`} aria-hidden="true" />
+              {series.label}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function Tooltip({ score, shownSeries, x, side }: { score: WeeklyScore; shownSeries: Series[]; x: number; side: 'left' | 'right' }) {
+  return (
+    <div className={`weekly-chart-tooltip ${side}`} style={{ left: x }}>
+      <div className="weekly-chart-tooltip-title">Week {score.week}</div>
+      {shownSeries.map(series => (
+        <div key={series.key} className="weekly-chart-tooltip-row">
+          <span className={`weekly-chart-key ${series.key}`} aria-hidden="true" />
+          <strong>{formatPoints(score[series.key])}</strong>
+          <span>{series.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ScreenReaderTable({ scores }: { scores: WeeklyScore[] }) {
+  return (
+    <table className="visually-hidden">
+      <caption>Weekly points</caption>
+      <thead>
+        <tr>
+          <th scope="col">Week</th>
+          {SERIES.map(series => <th key={series.key} scope="col">{series.label}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {scores.map(score => (
+          <tr key={score.week}>
+            <th scope="row">{score.week}</th>
+            {SERIES.map(series => <td key={series.key}>{formatPoints(score[series.key])}</td>)}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
 }
