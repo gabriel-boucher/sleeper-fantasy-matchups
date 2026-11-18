@@ -31,8 +31,8 @@ export function hasAnyPoints(scores: number[]): boolean {
   return scores.some(points => points > 0);
 }
 
-function isUnplayed({ team, opponent }: Matchup): boolean {
-  return team.points === 0 && opponent.points === 0;
+function isUnplayed({ isFinal, team, opponent }: Matchup): boolean {
+  return !isFinal && team.points === 0 && opponent.points === 0;
 }
 
 export function getResult(matchup: Matchup): MatchupResult {

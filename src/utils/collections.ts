@@ -9,6 +9,18 @@ export function groupBy<T, K>(items: T[], getKey: (item: T) => K): Map<K, T[]> {
   return groups;
 }
 
+export function range(first: number, last: number): number[] {
+  return Array.from({ length: Math.max(last - first + 1, 0) }, (_, i) => first + i);
+}
+
+export function toMapKeepingFirst<K, V>(entries: (readonly [K, V])[]): Map<K, V> {
+  const map = new Map<K, V>();
+  entries.forEach(([key, value]) => {
+    if (!map.has(key)) map.set(key, value);
+  });
+  return map;
+}
+
 export function toggleInSet<T>(set: ReadonlySet<T>, item: T): Set<T> {
   const next = new Set(set);
   if (next.has(item)) next.delete(item);

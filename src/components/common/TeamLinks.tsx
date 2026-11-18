@@ -44,13 +44,14 @@ export function TeamNameLink({ user, className = '' }: TeamLinkProps) {
 export function UsernameLink({ user, className = '' }: TeamLinkProps) {
   const { switchUser } = useTeamActions();
   const usernameClassName = `username ${className}`;
-  if (user.isOrphan) return <span className={usernameClassName}>No manager</span>;
+  const { managerId } = user;
+  if (managerId === null) return <span className={usernameClassName}>No manager</span>;
 
   const username = `@${user.displayName}`;
   if (!switchUser) return <span className={usernameClassName}>{username}</span>;
 
   return (
-    <LinkButton className={usernameClassName} title={`Look up ${user.displayName}'s leagues`} onClick={() => switchUser(user.id)}>
+    <LinkButton className={usernameClassName} title={`Look up ${user.displayName}'s leagues`} onClick={() => switchUser(managerId)}>
       {username}
     </LinkButton>
   );

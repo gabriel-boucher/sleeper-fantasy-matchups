@@ -5,10 +5,10 @@ export type PlayerId = string;
 
 export interface User {
   id: UserId;
+  managerId: UserId | null;
   displayName: string;
   teamName?: string;
   avatarUrl: string | null;
-  isOrphan?: boolean;
 }
 
 export type PlayerPoints = Record<PlayerId, number>;
@@ -32,6 +32,7 @@ export interface Team {
 
 export interface Matchup {
   week: number;
+  isFinal: boolean;
   team: Team;
   opponent: Team;
 }
@@ -72,9 +73,18 @@ export type PlayerDirectory = Map<PlayerId, PlayerInfo>;
 
 export type EligiblePositions = string[];
 
+export type StartingSlot = EligiblePositions | null;
+
 export interface BestLineupContext {
-  startingSlots: EligiblePositions[];
+  startingSlots: StartingSlot[];
   players: PlayerDirectory;
+}
+
+export interface LeagueRules {
+  startWeek: number;
+  regularSeasonEnd: number | null;
+  isBestBall: boolean;
+  hasMedianGame: boolean;
 }
 
 export interface ProjectionSettings {
@@ -86,9 +96,11 @@ export interface ProjectionSettings {
 export interface Season {
   leagueId: string;
   teamUsers: User[];
+  teamIdsByManagerId: Map<UserId, UserId>;
   completedMatchups: Matchup[];
   lastRegularSeasonWeek: number;
   hasMedianGame: boolean;
+  hasHeadToHead: boolean;
   officialStandings: Map<UserId, TeamRecord>;
   liveWeek: number | null;
   liveMatchups: Matchup[];

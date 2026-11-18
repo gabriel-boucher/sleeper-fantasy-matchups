@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { TeamActionsProvider } from '../../context/TeamActionsProvider';
 import { OWN_SCHEDULE } from '../../domain/schedules';
+import { findManagedTeam } from '../../domain/teams';
 import { useRegularSeason } from '../../hooks/useRegularSeason';
 import { useTeamSeason } from '../../hooks/useTeamSeason';
 import { useUrlParamsSync } from '../../hooks/useUrlParamsSync';
@@ -24,7 +25,8 @@ function readTeamSelectionFromUrl(season: Season, searchedUserId: UserId) {
   const isInSeason = (id: string | null): id is string => !!id && season.teamUsers.some(user => user.id === id);
   const firstInSeason = (...ids: (string | null)[]) => ids.find(isInSeason);
 
-  const userId = firstInSeason(readUrlParam('team'), searchedUserId) ?? NO_TEAM;
+  const searchedTeamId = findManagedTeam(season, searchedUserId)?.id ?? null;
+  const userId = firstInSeason(readUrlParam('team'), searchedTeamId) ?? NO_TEAM;
   const linkedScheduleOwnerId = readUrlParam('vs');
   const canShowLinkedSchedule = userId !== NO_TEAM && isInSeason(linkedScheduleOwnerId) && linkedScheduleOwnerId !== userId;
 

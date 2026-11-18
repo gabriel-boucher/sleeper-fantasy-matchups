@@ -1,6 +1,7 @@
 import { getBestLineup } from '../domain/lineup';
+import { getTeamName } from '../domain/teams';
 import { BestLineupContext, League, LeagueSeason, Matchup, RosterId, Team, TeamRecord, TeamRoster, User, UserId } from '../types/models';
-import { groupBy } from '../utils/collections';
+import { groupBy, toMapKeepingFirst } from '../utils/collections';
 import { LeagueDto, LeagueMemberDto, MatchupDto, RosterDto } from './dto';
 import { getAvatarUrl } from './sleeperCdn';
 
@@ -9,6 +10,7 @@ const HUNDREDTHS_PER_POINT = 100;
 export function toUser(memberDto: LeagueMemberDto): User {
   return {
     id: memberDto.user_id,
+    managerId: memberDto.user_id,
     displayName: memberDto.display_name,
     teamName: memberDto.metadata?.team_name,
     avatarUrl: memberDto.metadata?.avatar || getAvatarUrl(memberDto.avatar)
@@ -46,28 +48,52 @@ function toSeasonsLatestFirst(latest: LeagueDto, leaguesById: Map<string, League
 
 export function toRosterOwners(rosterDtos: RosterDto[], members: User[]): Map<RosterId, User> {
   const membersById = new Map(members.map(member => [member.id, member]));
-
-  return new Map(rosterDtos.map(({ roster_id, owner_id }) => {
+  const rosterCountByOwnerId = new Map<UserId, number>();
+  return new Map(sortByRosterId(rosterDtos).map(({ roster_id, owner_id }) => {
     const owner = owner_id ? membersById.get(owner_id) : undefined;
-    return [roster_id, owner ?? toOrphanedTeamUser(roster_id)];
+    if (!owner) return [roster_id, toOrphanedTeamUser(roster_id)];
+
+    const rosterNumber = (rosterCountByOwnerId.get(owner.id) ?? 0) + 1;
+    rosterCountByOwnerId.set(owner.id, rosterNumber);
+    return [roster_id, rosterNumber === 1 ? owner : toExtraTeamUser(owner, roster_id, rosterNumber)];
   }));
+}
+
+function sortByRosterId(rosterDtos: RosterDto[]): RosterDto[] {
+  return [...rosterDtos].sort((a, b) => a.roster_id - b.roster_id);
+}
+
+function toExtraTeamUser(owner: User, rosterId: RosterId, rosterNumber: number): User {
+  return {
+    ...owner,
+    id: `${owner.id}-roster-${rosterId}`,
+    teamName: `${getTeamName(owner)} (${rosterNumber})`
+  };
 }
 
 function toOrphanedTeamUser(rosterId: RosterId): User {
   return {
     id: `orphan-${rosterId}`,
+    managerId: null,
     displayName: '',
     teamName: `Orphaned team ${rosterId}`,
-    avatarUrl: null,
-    isOrphan: true
+    avatarUrl: null
   };
 }
 
 export function toTeamUsers(rosterOwners: Map<RosterId, User>, members: User[]): User[] {
-  const owners = new Set(rosterOwners.values());
-  const membersWithTeam = members.filter(member => owners.has(member));
-  const orphanedTeams = [...owners].filter(owner => owner.isOrphan);
-  return [...membersWithTeam, ...orphanedTeams];
+  const teams = new Set(rosterOwners.values());
+  const membersWithTeam = members.filter(member => teams.has(member));
+  const otherTeams = [...teams].filter(team => !membersWithTeam.includes(team));
+  return [...membersWithTeam, ...otherTeams];
+}
+
+export function toTeamIdsByManagerId(rosterDtos: RosterDto[], rosterOwners: Map<RosterId, User>): Map<UserId, UserId> {
+  const rosters = sortByRosterId(rosterDtos);
+  const getTeamId = (rosterDto: RosterDto) => rosterOwners.get(rosterDto.roster_id)!.id;
+  const ownerLinks = rosters.flatMap(r => (r.owner_id ? [[r.owner_id, getTeamId(r)] as const] : []));
+  const coOwnerLinks = rosters.flatMap(r => (r.co_owners ?? []).map(id => [id, getTeamId(r)] as const));
+  return toMapKeepingFirst([...ownerLinks, ...coOwnerLinks]);
 }
 
 export function toOfficialStandings(rosterDtos: RosterDto[], rosterOwners: Map<RosterId, User>): Map<UserId, TeamRecord> {
@@ -104,7 +130,7 @@ function toRoster(matchupDto: MatchupDto): TeamRoster | null {
 
 function toBestPoints(roster: TeamRoster | null, scoredPoints: number, context: BestLineupContext | null): number | null {
   if (!context || !roster) return null;
-  const best = getBestLineup(context.startingSlots, roster.players, roster.playerPoints, context.players);
+  const best = getBestLineup(context.startingSlots, roster, context.players);
   return Math.max(best.points, scoredPoints);
 }
 
@@ -122,7 +148,7 @@ function toTeam(user: User, matchupDto: MatchupDto, context: BestLineupContext |
 export function toMatchups(
   rosterOwners: Map<RosterId, User>,
   matchupDtos: MatchupDto[],
-  week: number,
+  { week, isFinal }: Pick<Matchup, 'week' | 'isFinal'>,
   context: BestLineupContext | null = null
 ): Matchup[] {
   const scheduledTeams = matchupDtos.flatMap(matchupDto => {
@@ -136,7 +162,7 @@ export function toMatchups(
     const teams = scheduled.map(({ team }) => team);
     return teams.flatMap(team => {
       const opponent = teams.find(other => other.user.id !== team.user.id);
-      return opponent ? [{ week, team, opponent }] : [];
+      return opponent ? [{ week, isFinal, team, opponent }] : [];
     });
   });
 }

@@ -1,4 +1,4 @@
-import { BestLineupContext, EligiblePositions, Matchup, PlayerDirectory, PlayerId, PlayerInfo, PlayerPoints, TeamRoster } from '../types/models';
+import { BestLineupContext, EligiblePositions, Matchup, PlayerDirectory, PlayerId, PlayerInfo, StartingSlot, TeamRoster } from '../types/models';
 import { sumBy } from '../utils/math';
 
 export const BENCH_SLOT = 'BN';
@@ -70,29 +70,34 @@ export function getStartingSlotNames(rosterPositions: string[]): string[] {
   return rosterPositions.filter(slot => !NON_STARTING_SLOTS.includes(slot));
 }
 
-export function getStartingSlots(rosterPositions: string[]): EligiblePositions[] | null {
-  const slotNames = getStartingSlotNames(rosterPositions);
-  const hasUnknownSlot = slotNames.some(slot => !SLOT_ELIGIBILITY[slot]);
-  return hasUnknownSlot ? null : slotNames.map(slot => SLOT_ELIGIBILITY[slot]);
+export function getStartingSlots(rosterPositions: string[]): StartingSlot[] {
+  return getStartingSlotNames(rosterPositions).map(slot => SLOT_ELIGIBILITY[slot] ?? null);
 }
 
 export function getStartingPositions(rosterPositions: string[]): string[] {
-  return [...new Set(getStartingSlotNames(rosterPositions).flatMap(slot => SLOT_ELIGIBILITY[slot] ?? []))];
+  return [...new Set(getStartingSlotNames(rosterPositions).flatMap(slot => SLOT_ELIGIBILITY[slot] ?? [slot]))];
 }
 
-export function getBestLineup(
-  startingSlots: EligiblePositions[],
-  playerIds: PlayerId[],
-  playerPoints: PlayerPoints,
-  players: PlayerDirectory
-): BestLineup {
-  const availableBestFirst = playerIds
-    .filter(id => players.has(id))
-    .map(id => ({ id, points: playerPoints[id] ?? 0, positions: players.get(id)!.positions }))
-    .sort((a, b) => b.points - a.points);
-  const strictestSlotsFirst = [...startingSlots].sort((a, b) => a.length - b.length);
+function getLockedStarters(startingSlots: StartingSlot[], starters: PlayerId[]): PlayerId[] {
+  return startingSlots.flatMap((slot, i) => {
+    const starter = starters[i];
+    return slot === null && starter && starter !== EMPTY_SLOT_PLAYER_ID ? [starter] : [];
+  });
+}
 
-  const best: BestLineup = { points: 0, playerIds: new Set() };
+export function getBestLineup(startingSlots: StartingSlot[], roster: TeamRoster, players: PlayerDirectory): BestLineup {
+  const getPoints = (id: PlayerId) => roster.playerPoints[id] ?? 0;
+  const lockedStarters = getLockedStarters(startingSlots, roster.starters);
+  const best: BestLineup = { points: sumBy(lockedStarters, getPoints), playerIds: new Set(lockedStarters) };
+
+  const availableBestFirst = roster.players
+    .filter(id => players.has(id) && !best.playerIds.has(id))
+    .map(id => ({ id, points: getPoints(id), positions: players.get(id)!.positions }))
+    .sort((a, b) => b.points - a.points);
+  const strictestSlotsFirst = startingSlots
+    .filter((slot): slot is EligiblePositions => slot !== null)
+    .sort((a, b) => a.length - b.length);
+
   strictestSlotsFirst.forEach(eligiblePositions => {
     const index = availableBestFirst.findIndex(player => player.positions.some(p => eligiblePositions.includes(p)));
     if (index === -1) return;
@@ -118,7 +123,7 @@ export function getWeekLineup(
   context: BestLineupContext | null,
   players: PlayerDirectory | null
 ): WeekLineup {
-  const best = context ? getBestLineup(context.startingSlots, roster.players, roster.playerPoints, context.players) : null;
+  const best = context ? getBestLineup(context.startingSlots, roster, context.players) : null;
   const toLineupPlayer = (id: PlayerId, slot: string | null): LineupPlayer => ({
     id,
     slot,

@@ -50,6 +50,6 @@ export function TeamFilters({ users, userId, scheduleOwnerId, recordsByScheduleO
 }
 
 function ManagedBy({ user }: { user: User }) {
-  if (user.isOrphan) return <UsernameLink user={user} />;
+  if (user.managerId === null) return <UsernameLink user={user} />;
   return <>Managed by <UsernameLink user={user} /></>;
 }

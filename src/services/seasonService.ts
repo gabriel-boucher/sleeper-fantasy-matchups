@@ -1,26 +1,29 @@
-import { LeagueDto, LeagueMemberDto, MatchupDto, NflStateDto, RosterDto } from '../api/dto';
-import { toMatchups, toOfficialStandings, toRosterOwners, toTeamUsers, toUser } from '../api/mappers';
+import { LeagueDto, LeagueMemberDto, MatchupDtosByWeek, NflStateDto, RosterDto } from '../api/dto';
+import { getLastScheduledWeek, hasHeadToHead, toLeagueRules } from '../api/leagueFormat';
+import { toMatchups, toOfficialStandings, toRosterOwners, toTeamIdsByManagerId, toTeamUsers, toUser } from '../api/mappers';
 import { getLeague, getLeagueMembers, getMatchups, getNflState, getRosters } from '../api/sleeperApi';
-import { ALL_WEEKS, WEEK_COUNT } from '../constants/weeks';
+import { DEFAULT_WEEK_COUNT } from '../constants/weeks';
 import { getStartingPositions, getStartingSlotNames, getStartingSlots } from '../domain/lineup';
-import { getLastCompletedWeek, getLiveWeek, isCurrentSeason } from '../domain/seasonProgress';
-import { Matchup, PlayerDirectory, ProjectionSettings, Season } from '../types/models';
+import { getLastCompletedWeek, getLiveWeek, getWeekCount, isCurrentSeason } from '../domain/seasonProgress';
+import { BestLineupContext, LeagueRules, Matchup, PlayerDirectory, ProjectionSettings, Season } from '../types/models';
+import { range } from '../utils/collections';
 import { getPlayerDirectory } from './playerService';
 
 const CACHE_DURATION_MS = 5 * 60 * 1000;
-const MEDIAN_GAME_ENABLED = 1;
 
 interface CachedSeason {
   season: Promise<Season>;
   loadedAt: number;
 }
 
-interface SeasonDtos {
+interface SeasonData {
   leagueDto: LeagueDto;
+  rules: LeagueRules;
   nflState: NflStateDto;
+  weekCount: number;
   memberDtos: LeagueMemberDto[];
   rosterDtos: RosterDto[];
-  matchupDtosByWeek: MatchupDto[][];
+  matchupDtosByWeek: MatchupDtosByWeek;
   players: PlayerDirectory | null;
 }
 
@@ -39,39 +42,52 @@ export function loadSeason(leagueId: string): Promise<Season> {
 export async function loadLiveMatchups(season: Season): Promise<Matchup[]> {
   if (season.liveWeek === null) return [];
   const matchupDtos = await getMatchups(season.leagueId, season.liveWeek);
-  return toMatchups(season.rosterOwners, matchupDtos, season.liveWeek, season.bestLineupContext);
+  return toMatchups(season.rosterOwners, matchupDtos, { week: season.liveWeek, isFinal: false }, season.bestLineupContext);
 }
 
 async function fetchSeason(leagueId: string): Promise<Season> {
-  const [leagueDto, nflState, memberDtos, rosterDtos, matchupDtosByWeek, players] = await Promise.all([
+  const [leagueDto, nflState, memberDtos, rosterDtos, defaultWeeks, players] = await Promise.all([
     getLeague(leagueId),
     getNflState(),
     getLeagueMembers(leagueId),
     getRosters(leagueId),
-    Promise.all(ALL_WEEKS.map(week => getMatchups(leagueId, week))),
+    fetchMatchupWeeks(leagueId, range(1, DEFAULT_WEEK_COUNT)),
     getPlayerDirectory().catch(() => null)
   ]);
   if (!leagueDto) throw new Error('This season no longer exists on Sleeper');
 
-  return toSeason(leagueId, { leagueDto, nflState, memberDtos, rosterDtos, matchupDtosByWeek, players });
+  const rules = toLeagueRules(leagueDto);
+  const weekCount = getWeekCount(leagueDto.season, nflState, rules.regularSeasonEnd);
+  const extraWeeks = await fetchMatchupWeeks(leagueId, range(DEFAULT_WEEK_COUNT + 1, weekCount));
+  const matchupDtosByWeek = new Map([...defaultWeeks, ...extraWeeks].filter(([week]) => week >= rules.startWeek));
+
+  return toSeason(leagueId, { leagueDto, rules, nflState, weekCount, memberDtos, rosterDtos, matchupDtosByWeek, players });
 }
 
-function toSeason(leagueId: string, { leagueDto, nflState, memberDtos, rosterDtos, matchupDtosByWeek, players }: SeasonDtos): Season {
+async function fetchMatchupWeeks(leagueId: string, weeks: number[]): Promise<MatchupDtosByWeek> {
+  return new Map(await Promise.all(weeks.map(async week => [week, await getMatchups(leagueId, week)] as const)));
+}
+
+function toSeason(leagueId: string, data: SeasonData): Season {
+  const { leagueDto, rules, nflState, weekCount, memberDtos, rosterDtos, matchupDtosByWeek, players } = data;
   const members = memberDtos.map(toUser);
   const rosterOwners = toRosterOwners(rosterDtos, members);
   const rosterPositions = leagueDto.roster_positions ?? [];
-  const startingSlots = leagueDto.roster_positions ? getStartingSlots(leagueDto.roster_positions) : null;
-  const bestLineupContext = startingSlots && players ? { startingSlots, players } : null;
-  const matchups = matchupDtosByWeek.flatMap((matchupDtos, i) => toMatchups(rosterOwners, matchupDtos, ALL_WEEKS[i], bestLineupContext));
-  const lastCompletedWeek = getLastCompletedWeek(leagueDto.season, nflState);
-  const liveWeek = getLiveWeek(leagueDto.season, nflState);
+  const bestLineupContext = toBestLineupContext(leagueDto, rules, players);
+  const lastCompletedWeek = getLastCompletedWeek(leagueDto.season, nflState, weekCount);
+  const liveWeek = getLiveWeek(leagueDto.season, nflState, weekCount);
+  const matchups = [...matchupDtosByWeek].flatMap(([week, matchupDtos]) =>
+    toMatchups(rosterOwners, matchupDtos, { week, isFinal: week <= lastCompletedWeek }, bestLineupContext)
+  );
 
   return {
     leagueId,
     teamUsers: toTeamUsers(rosterOwners, members),
-    completedMatchups: matchups.filter(m => m.week <= lastCompletedWeek),
-    lastRegularSeasonWeek: getLastRegularSeasonWeek(leagueDto),
-    hasMedianGame: leagueDto.settings?.league_average_match === MEDIAN_GAME_ENABLED,
+    teamIdsByManagerId: toTeamIdsByManagerId(rosterDtos, rosterOwners),
+    completedMatchups: matchups.filter(m => m.isFinal),
+    lastRegularSeasonWeek: rules.regularSeasonEnd ?? getLastScheduledWeek(matchupDtosByWeek) ?? weekCount,
+    hasMedianGame: rules.hasMedianGame,
+    hasHeadToHead: hasHeadToHead(matchupDtosByWeek),
     officialStandings: toOfficialStandings(rosterDtos, rosterOwners),
     liveWeek,
     liveMatchups: matchups.filter(m => m.week === liveWeek),
@@ -84,9 +100,9 @@ function toSeason(leagueId: string, { leagueDto, nflState, memberDtos, rosterDto
   };
 }
 
-function getLastRegularSeasonWeek(leagueDto: LeagueDto): number {
-  const playoffWeekStart = leagueDto.settings?.playoff_week_start;
-  return playoffWeekStart ? playoffWeekStart - 1 : WEEK_COUNT;
+function toBestLineupContext(leagueDto: LeagueDto, rules: LeagueRules, players: PlayerDirectory | null): BestLineupContext | null {
+  if (!leagueDto.roster_positions || rules.isBestBall || !players) return null;
+  return { startingSlots: getStartingSlots(leagueDto.roster_positions), players };
 }
 
 function toProjectionSettings(leagueDto: LeagueDto, rosterPositions: string[]): ProjectionSettings | null {

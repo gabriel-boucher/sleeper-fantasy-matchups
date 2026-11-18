@@ -4,7 +4,7 @@ import { getProjectedPoints } from '../domain/projections';
 import { Matchup, PlayerId, PlayerProjections, ProjectionSettings, Season, WeeklyProjections } from '../types/models';
 import { readStoredJson, writeStoredJson } from '../utils/storage';
 
-const STORAGE_PREFIX = 'sleeper-projections:';
+const STORAGE_PREFIX = 'sleeper-projections-v2:';
 const POINTS_PRECISION = 100;
 
 type StoredProjections = Record<string, PlayerProjections>;

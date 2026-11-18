@@ -7,6 +7,8 @@ export interface MatchupDto {
   starters?: string[] | null;
 }
 
+export type MatchupDtosByWeek = Map<number, MatchupDto[]>;
+
 export interface PlayerDto {
   fantasy_positions?: string[] | null;
   full_name?: string | null;
@@ -41,13 +43,16 @@ export interface LeagueDto {
   scoring_settings?: Record<string, number> | null;
   settings?: {
     playoff_week_start?: number;
+    start_week?: number;
     league_average_match?: number;
+    best_ball?: number;
   };
 }
 
 export interface RosterDto {
   roster_id: number;
   owner_id: string | null;
+  co_owners?: string[] | null;
   settings?: {
     wins?: number;
     losses?: number;
