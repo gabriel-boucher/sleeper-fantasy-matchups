@@ -1,10 +1,11 @@
-import { LeagueDto } from '../api/dto';
-import { toLeagues } from '../api/mappers';
-import { getLeague, getNflState, getUser, getUserLeagues } from '../api/sleeperApi';
-import { getAvatarUrl } from '../api/sleeperCdn';
+import { getLeague, getNflState, getUser, getUserLeagues } from '../api/sleeper/sleeperApi';
+import { getAvatarUrl } from '../api/sleeper/sleeperCdn';
+import { LeagueDto } from '../api/sleeper/sleeperDto';
+import { toLeagues } from '../api/sleeper/sleeperMappers';
+import { FIRST_SLEEPER_SEASON } from '../constants/seasons';
 import { UserId, UserLeagues } from '../types/models';
+import { range } from '../utils/collections';
 
-const FIRST_SLEEPER_SEASON = 2017;
 const NO_PREVIOUS_LEAGUE_ID = '0';
 
 export async function findUserLeagues(username: string): Promise<UserLeagues> {
@@ -27,7 +28,7 @@ export async function findUsername(userId: UserId): Promise<string> {
 async function getAllSeasons(): Promise<number[]> {
   const state = await getNflState();
   const latestSeason = Math.max(Number(state.season), Number(state.league_season));
-  return Array.from({ length: latestSeason - FIRST_SLEEPER_SEASON + 1 }, (_, i) => FIRST_SLEEPER_SEASON + i);
+  return range(FIRST_SLEEPER_SEASON, latestSeason);
 }
 
 async function getLeaguesForAllSeasons(userId: UserId): Promise<LeagueDto[]> {

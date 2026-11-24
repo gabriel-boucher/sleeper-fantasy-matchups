@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { TeamActionsProvider } from '../../context/TeamActionsProvider';
 import { OWN_SCHEDULE } from '../../domain/schedules';
 import { findManagedTeam } from '../../domain/teams';
+import { useMidGameInjuries } from '../../hooks/useMidGameInjuries';
 import { useRegularSeason } from '../../hooks/useRegularSeason';
 import { useTeamSeason } from '../../hooks/useTeamSeason';
 import { useUrlParamsSync } from '../../hooks/useUrlParamsSync';
@@ -48,6 +49,8 @@ export function SeasonView({ loadedSeason, searchedUserId }: SeasonViewProps) {
   const teamSeason = useTeamSeason({ season, liveMatchups, userId, scheduleOwnerId, isMedianCounted });
   const { matchups, liveMatchup, scheduleRange } = teamSeason;
   const lineupMatchup = [liveMatchup, ...matchups].find(m => m?.week === lineupWeek) ?? null;
+  const lineupWeeks = useMemo(() => (lineupWeek === null ? [] : [lineupWeek]), [lineupWeek]);
+  const { data: lineupInjuries } = useMidGameInjuries(season, lineupWeeks, lineupMatchup !== null);
 
   function getScheduleShownByTile(tile: RecordTileVariant): UserId {
     if (tile === 'current' || !scheduleRange) return OWN_SCHEDULE;
@@ -119,6 +122,7 @@ export function SeasonView({ loadedSeason, searchedUserId }: SeasonViewProps) {
           slotNames={season.startingSlotNames}
           bestLineupContext={season.bestLineupContext}
           players={season.players}
+          injuredStarterIds={lineupInjuries?.get(lineupMatchup.week) ?? null}
           showNflTeams={season.isCurrentSeason}
           onClose={() => setLineupWeek(null)}
         />

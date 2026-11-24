@@ -1,13 +1,8 @@
-import { LeagueDto, LeagueMemberDto, MatchupDto, NflStateDto, PlayerDto, ProjectionDto, RosterDto, SleeperUserDto } from './dto';
+import { LeagueDto, LeagueMemberDto, MatchupDto, NflStateDto, PlayerDto, ProjectionDto, RosterDto, SleeperUserDto } from './sleeperDto';
+import { fetchJson } from '../http';
 
 const API_URL = 'https://api.sleeper.app/v1';
 const PROJECTIONS_URL = 'https://api.sleeper.com/projections/nfl';
-
-async function fetchJson<T>(url: string, errorMessage: string): Promise<T> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(errorMessage);
-  return response.json();
-}
 
 async function fetchList<T>(url: string, errorMessage: string): Promise<T[]> {
   return (await fetchJson<T[] | null>(url, errorMessage)) ?? [];

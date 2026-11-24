@@ -5,6 +5,7 @@ export const COLUMN_GROUPS = [
   { key: 'pointsAgainst', label: 'Points against' },
   { key: 'projected', label: 'Projected points' },
   { key: 'bench', label: 'Bench points' },
+  { key: 'injuries', label: 'Points lost to injuries' },
   { key: 'scheduleStrength', label: 'Strength of schedule' }
 ] as const;
 
@@ -13,6 +14,6 @@ export type ColumnGroupKey = ColumnGroup['key'];
 
 export const COLUMN_GROUP_KEYS = COLUMN_GROUPS.map(group => group.key);
 
-export const COLUMN_GROUPS_HIDDEN_BY_DEFAULT: ColumnGroupKey[] = ['actualRecord', 'bench'];
+export const COLUMN_GROUPS_HIDDEN_BY_DEFAULT: ColumnGroupKey[] = ['actualRecord', 'bench', 'injuries'];
 
 export const HIDDEN_COLUMN_GROUPS_STORAGE_KEY = 'leaderboard.hiddenColumns';

@@ -1,17 +1,20 @@
-import { PlayerDto } from '../api/dto';
-import { getAllPlayers } from '../api/sleeperApi';
-import { PlayerDirectory, PlayerId, PlayerInfo } from '../types/models';
+import { getPlayerIdsCsv } from '../api/playerIds/playerIdsApi';
+import { toEspnIdsBySleeperId } from '../api/playerIds/playerIdsMappers';
+import { getPublishedPlayers } from '../api/publishedData/publishedDataApi';
+import { PublishedPlayers } from '../api/publishedData/publishedDataDto';
+import { toPlayerDirectory, toPublishedPlayers } from '../api/publishedData/publishedDataMappers';
+import { getAllPlayers } from '../api/sleeper/sleeperApi';
+import { PlayerDirectory } from '../types/models';
 import { readStoredJson, writeStoredJson } from '../utils/storage';
 
-const STORAGE_KEY = 'sleeper-players';
-const MAX_AGE_MS = 24 * 60 * 60 * 1000;
-
-type CompactPlayer = [name: string, positions: string[], nflTeam: string | null];
-type CompactPlayers = Record<PlayerId, CompactPlayer>;
+const STORAGE_KEY = 'sleeper-players-v2';
+const DAY_MS = 24 * 60 * 60 * 1000;
+const STORED_MAX_AGE_MS = DAY_MS;
+const PUBLISHED_MAX_AGE_MS = 3 * DAY_MS;
 
 interface StoredPlayers {
   savedAt: number;
-  players: CompactPlayers;
+  players: PublishedPlayers;
 }
 
 let pendingDirectory: Promise<PlayerDirectory> | null = null;
@@ -26,34 +29,20 @@ export function getPlayerDirectory(): Promise<PlayerDirectory> {
 
 async function loadPlayerDirectory(): Promise<PlayerDirectory> {
   const stored = readStoredJson<StoredPlayers>(STORAGE_KEY);
-  if (stored && isFresh(stored)) return toDirectory(stored.players);
+  if (stored && Date.now() - stored.savedAt < STORED_MAX_AGE_MS) return toPlayerDirectory(stored.players);
 
-  const players = toCompactPlayers(await getAllPlayers());
+  const players = (await loadPublishedPlayers()) ?? (await loadPlayersFromSleeper());
   writeStoredJson(STORAGE_KEY, { savedAt: Date.now(), players });
-  return toDirectory(players);
+  return toPlayerDirectory(players);
 }
 
-function isFresh(stored: StoredPlayers): boolean {
-  return Date.now() - stored.savedAt < MAX_AGE_MS;
+async function loadPublishedPlayers(): Promise<PublishedPlayers | null> {
+  const published = await getPublishedPlayers().catch(() => null);
+  const isRecent = !!published && Date.now() - Date.parse(published.updatedAt) < PUBLISHED_MAX_AGE_MS;
+  return isRecent ? published.players : null;
 }
 
-function toCompactPlayers(playerDtos: Record<PlayerId, PlayerDto>): CompactPlayers {
-  const players: CompactPlayers = {};
-  Object.entries(playerDtos).forEach(([id, player]) => {
-    if (player.fantasy_positions?.length) {
-      players[id] = [getPlayerName(player, id), player.fantasy_positions, player.team ?? null];
-    }
-  });
-  return players;
-}
-
-function getPlayerName(player: PlayerDto, id: PlayerId): string {
-  const firstAndLastName = [player.first_name, player.last_name].filter(Boolean).join(' ');
-  return player.full_name || firstAndLastName || id;
-}
-
-function toDirectory(players: CompactPlayers): PlayerDirectory {
-  return new Map(Object.entries(players).map(([id, [name, positions, nflTeam]]): [PlayerId, PlayerInfo] =>
-    [id, { name, positions, nflTeam }]
-  ));
+async function loadPlayersFromSleeper(): Promise<PublishedPlayers> {
+  const [playerDtos, playerIdsCsv] = await Promise.all([getAllPlayers(), getPlayerIdsCsv().catch(() => '')]);
+  return toPublishedPlayers(playerDtos, toEspnIdsBySleeperId(playerIdsCsv));
 }

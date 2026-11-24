@@ -78,8 +78,28 @@ Then open http://localhost:5173.
 | `npm run build` | Type-checks and builds to `dist/` |
 | `npm run preview` | Serves the production build locally |
 | `npm run lint` | Runs ESLint |
+| `npm run publish-data -- <dir>` | Writes the published player list and injury files to `<dir>` (default `data-out`). Add `--injuries-only` to keep the existing player list, or `--until-done` to keep going past the 50-week batch limit |
+| `npm run download-data` | Writes every season to `data-out`, batch after batch, until nothing is missing |
 
 The build is fully static, so `dist/` can be hosted anywhere: Vercel, Netlify, GitHub Pages and so on.
+
+## Published data
+A GitHub Action (`.github/workflows/publish-data.yml`) runs `scripts/publishData.ts` and force-pushes the result as a single commit to the `data` branch:
+
+- every day at 10:17 UTC, refreshing players and injuries;
+- every 30 minutes during NFL game windows from September to January (Thursday, Sunday and Monday nights, Sunday afternoons, Thanksgiving afternoons and late-season Saturdays), refreshing injuries only with `--injuries-only`;
+- on demand from the Actions tab.
+
+Week files whose injuries did not change are not rewritten, and the push is skipped when no file changed.
+
+| File | Contents |
+|---|---|
+| `players.json` | Every Sleeper player with fantasy positions: name, positions, NFL team and ESPN id |
+| `injuries/{season}/week-{n}.json` | Sleeper ids of players who left a game injured that week, from ESPN play-by-play and game recaps, for every season since 2017. `complete` is true once every game is final |
+
+Each run downloads at most 50 weeks from ESPN to stay under its rate limit: the current season first, then past seasons from newest to oldest. A first run on an empty branch therefore needs about four daily runs to fill every season. Weeks that are complete with the current `INJURY_PARSER_VERSION` are skipped; bumping that version regenerates every week over the following runs.
+
+The app reads these files from `raw.githubusercontent.com` (override with `VITE_DATA_URL`). When a file is missing, older than three days (players) or not complete (injuries), it falls back to calling Sleeper, the DynastyProcess id table and ESPN directly.
 
 > **Windows tip:** if the dev server stops picking up file changes, restart it, or turn on polling in `vite.config.ts` with `server: { watch: { usePolling: true } }`.
 
@@ -97,10 +117,15 @@ src/
     lineup/        Head-to-head lineup dialog and player avatars
     leaderboard/   All-play leaderboard, column picker, sortable headers, luck badges
     home/          Home page
-  api/             Sleeper HTTP calls, response types (DTOs), image URLs and DTO-to-model mappers
+  api/             One folder per external source, each with its HTTP calls (*Api), response types (*Dto) and mappers (*Mappers)
+    sleeper/       Sleeper leagues, players, projections and images
+    espn/          ESPN games, play-by-play and recaps, and injury parsing
+    playerIds/     DynastyProcess table linking ESPN and Sleeper player ids
+    publishedData/ Files published to the data branch by the GitHub Action
   types/           Models shared across the app
   domain/          Pure fantasy logic with no React or network
-  services/        Loading and caching of leagues, seasons, players and projections
+  services/        Loading and caching of leagues, seasons, players, projections and injuries
+scripts/           Node scripts run by the GitHub Action (publishData.ts and its lib/ modules)
   context/         React context for team and user links
   hooks/           React hooks (async loading, live refresh, URL sync, stored preferences)
   constants/       Shared constants (weeks, chart series, leaderboard column groups)
@@ -121,6 +146,7 @@ Most stats live in `src/domain/` as plain functions:
 | `lineup.ts` | Lineup slots, best possible lineup, bench points |
 | `weeklyScores.ts` | Weekly team score vs league average and median |
 | `seasonProgress.ts` | Which weeks are finished and which one is live |
+| `injuries.ts` | Starters who left their game injured |
 
 ### Styling
 All colors, font sizes, spacing (`--space-*`, a 4px scale), radii and chart colors are CSS variables in `src/styles/variables.css`, with dark mode values that follow the system setting. Change the look from there.
@@ -129,5 +155,7 @@ All colors, font sizes, spacing (`--space-*`, a 4px scale), radii and chart colo
 - [React 19](https://react.dev) and TypeScript
 - [Vite 8](https://vite.dev)
 - [Sleeper API](https://docs.sleeper.com) (public, read-only)
+- ESPN's public site API (undocumented) for play-by-play and game recaps
+- [DynastyProcess player ids](https://github.com/dynastyprocess/data) to link ESPN and Sleeper players
 
 This project isn't affiliated with Sleeper.

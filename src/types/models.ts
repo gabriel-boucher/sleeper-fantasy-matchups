@@ -67,6 +67,7 @@ export interface PlayerInfo {
   name: string;
   positions: string[];
   nflTeam: string | null;
+  espnId: string | null;
 }
 
 export type PlayerDirectory = Map<PlayerId, PlayerInfo>;
@@ -79,6 +80,8 @@ export interface BestLineupContext {
   startingSlots: StartingSlot[];
   players: PlayerDirectory;
 }
+
+export type WeeklyInjuries = Map<number, ReadonlySet<PlayerId>>;
 
 export interface LeagueRules {
   startWeek: number;
@@ -95,6 +98,7 @@ export interface ProjectionSettings {
 
 export interface Season {
   leagueId: string;
+  nflSeason: string;
   teamUsers: User[];
   teamIdsByManagerId: Map<UserId, UserId>;
   completedMatchups: Matchup[];

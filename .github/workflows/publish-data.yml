@@ -1,0 +1,78 @@
+name: Publish data
+
+on:
+  schedule:
+    - cron: '17 10 * * *'
+    - cron: '*/30 17-23 * 9-12,1 0'
+    - cron: '*/30 0-5 * 9-12,1 1'
+    - cron: '*/30 0-5 * 9-12,1 2'
+    - cron: '*/30 17-23 * 11 4'
+    - cron: '*/30 0-5 * 9-12,1 5'
+    - cron: '*/30 17-23 * 12,1 6'
+    - cron: '*/30 0-5 * 12,1 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-data
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATA_BRANCH: data
+      OUTPUT_DIR: data-out
+      DAILY_SCHEDULE: '17 10 * * *'
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Check out previously published data
+        id: previous-data
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: ${{ env.DATA_BRANCH }}
+          path: ${{ env.OUTPUT_DIR }}
+
+      - name: Start without previous data
+        if: steps.previous-data.outcome != 'success'
+        run: rm -rf "$OUTPUT_DIR" && mkdir -p "$OUTPUT_DIR"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Publish players and injuries
+        if: github.event_name != 'schedule' || github.event.schedule == env.DAILY_SCHEDULE
+        run: npm run publish-data -- "$OUTPUT_DIR"
+
+      - name: Publish injuries only
+        if: github.event_name == 'schedule' && github.event.schedule != env.DAILY_SCHEDULE
+        run: npm run publish-data -- "$OUTPUT_DIR" --injuries-only
+
+      - name: Push to the data branch
+        working-directory: ${{ env.OUTPUT_DIR }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -d .git ] && [ -z "$(git status --porcelain)" ]; then
+            echo "No changes to publish"
+            exit 0
+          fi
+          rm -rf .git
+          git init --quiet --initial-branch "$DATA_BRANCH"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit --quiet --message "Publish data $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push --force --quiet "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:$DATA_BRANCH"

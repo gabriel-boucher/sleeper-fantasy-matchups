@@ -1,5 +1,6 @@
-import { Matchup, TeamRecord, User, UserId } from '../types/models';
+import { Matchup, TeamRecord, User, UserId, WeeklyInjuries } from '../types/models';
 import { sumBy } from '../utils/math';
+import { getInjuryLoss, InjuryLoss } from './injuries';
 import { BenchStats, getBenchStats } from './lineup';
 import { getMatchupsFor, getMedianRecord, getPlayedMatchups, getRecord, getRegularSeasonMatchups, getWeeks, groupByWeek, hasAnyPoints } from './matchups';
 import { getTotalProjection } from './projections';
@@ -14,6 +15,7 @@ export interface LeaderboardEntry {
   scheduleStrength: ScheduleStrength;
   bench: BenchStats | null;
   projectedPoints: number | null;
+  injuryLoss: InjuryLoss | null;
 }
 
 export interface ScheduleStrength {
@@ -35,6 +37,7 @@ export interface WeekRange {
 interface LeaderboardOptions {
   officialStandings?: Map<UserId, TeamRecord>;
   hasMedianGame?: boolean;
+  injuries?: WeeklyInjuries | null;
 }
 
 export function getLeaderboardWeeks(matchups: Matchup[], lastRegularSeasonWeek: number): number[] {
@@ -63,7 +66,7 @@ export function getAllPlayLeaderboard(
   matchups: Matchup[],
   users: User[],
   weeks: WeekRange,
-  { officialStandings = new Map(), hasMedianGame = false }: LeaderboardOptions = {}
+  { officialStandings = new Map(), hasMedianGame = false, injuries = null }: LeaderboardOptions = {}
 ): LeaderboardEntry[] {
   const inRange = matchups.filter(m => m.week >= weeks.from && m.week <= weeks.to);
   const allPlayRecords = getAllPlayRecords(inRange, users);
@@ -81,7 +84,8 @@ export function getAllPlayLeaderboard(
         headToHead,
         actual: official && getGamesPlayed(official) > 0 ? official : withMedianGames,
         bench: getBenchStats(playedMatchups),
-        projectedPoints: getTotalProjection(playedMatchups)
+        projectedPoints: getTotalProjection(playedMatchups),
+        injuryLoss: injuries ? getInjuryLoss(playedMatchups, injuries) : null
       };
     })
     .filter(team => getGamesPlayed(team.allPlay) > 0);
@@ -94,13 +98,14 @@ export function getAllPlayLeaderboard(
   const leagueAverage = getAveragePointsPerGame(teams.map(team => team.headToHead));
 
   return teams
-    .map(({ user, allPlay, headToHead, actual, bench, projectedPoints }) => ({
+    .map(({ user, allPlay, headToHead, actual, bench, projectedPoints, injuryLoss }) => ({
       user,
       allPlayRecord: { ...allPlay, pointsFor: headToHead.pointsFor, pointsAgainst: headToHead.pointsAgainst },
       actualRecord: actual,
       scheduleStrength: getScheduleStrength(headToHead, leagueAverage),
       bench,
-      projectedPoints
+      projectedPoints,
+      injuryLoss
     }))
     .sort((a, b) => b.allPlayRecord.wins - a.allPlayRecord.wins || b.allPlayRecord.pointsFor - a.allPlayRecord.pointsFor)
     .map((entry, i) => ({ ...entry, allPlayRank: i + 1, actualRank: actualRanks.get(entry.user.id)! }));

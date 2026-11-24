@@ -1,8 +1,8 @@
-import { getBestLineup } from '../domain/lineup';
-import { getTeamName } from '../domain/teams';
-import { BestLineupContext, League, LeagueSeason, Matchup, RosterId, Team, TeamRecord, TeamRoster, User, UserId } from '../types/models';
-import { groupBy, toMapKeepingFirst } from '../utils/collections';
-import { LeagueDto, LeagueMemberDto, MatchupDto, RosterDto } from './dto';
+import { getBestLineup } from '../../domain/lineup';
+import { getTeamName } from '../../domain/teams';
+import { BestLineupContext, League, LeagueSeason, Matchup, RosterId, Team, TeamRecord, TeamRoster, User, UserId } from '../../types/models';
+import { groupBy, toMapKeepingFirst } from '../../utils/collections';
+import { LeagueDto, LeagueMemberDto, MatchupDto, RosterDto } from './sleeperDto';
 import { getAvatarUrl } from './sleeperCdn';
 
 const HUNDREDTHS_PER_POINT = 100;

@@ -1,4 +1,4 @@
-import { NflStateDto } from '../api/dto';
+import { NflStateDto } from '../api/sleeper/sleeperDto';
 import { DEFAULT_WEEK_COUNT } from '../constants/weeks';
 
 export function isCurrentSeason(leagueSeason: string, state: NflStateDto): boolean {

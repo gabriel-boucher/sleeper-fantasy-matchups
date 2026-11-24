@@ -1,4 +1,4 @@
-import { getProjections } from '../api/sleeperApi';
+import { getProjections } from '../api/sleeper/sleeperApi';
 import { getWeeks } from '../domain/matchups';
 import { getProjectedPoints } from '../domain/projections';
 import { Matchup, PlayerId, PlayerProjections, ProjectionSettings, Season, WeeklyProjections } from '../types/models';

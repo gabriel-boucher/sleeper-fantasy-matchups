@@ -1,5 +1,5 @@
-import { LeagueRules } from '../types/models';
-import { LeagueDto, MatchupDto, MatchupDtosByWeek } from './dto';
+import { LeagueRules } from '../../types/models';
+import { LeagueDto, MatchupDto, MatchupDtosByWeek } from './sleeperDto';
 
 const SETTING_ENABLED = 1;
 const FIRST_WEEK = 1;

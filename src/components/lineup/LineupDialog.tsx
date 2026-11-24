@@ -3,7 +3,7 @@ import { BENCH_SLOT, LineupPlayer } from '../../domain/lineup';
 import { getResult } from '../../domain/matchups';
 import { getTeamName } from '../../domain/teams';
 import { useWeekLineup } from '../../hooks/useWeekLineup';
-import { BestLineupContext, Matchup, PlayerDirectory } from '../../types/models';
+import { BestLineupContext, Matchup, PlayerDirectory, PlayerId } from '../../types/models';
 import { WeekNavigator } from '../common/WeekNavigator';
 import { LineupRow, LineupSection } from './LineupSection';
 import { MatchupStats } from './MatchupStats';
@@ -19,6 +19,7 @@ interface LineupDialogProps {
   slotNames: string[];
   bestLineupContext: BestLineupContext | null;
   players: PlayerDirectory | null;
+  injuredStarterIds: ReadonlySet<PlayerId> | null;
   showNflTeams: boolean;
   onClose: () => void;
 }
@@ -31,7 +32,7 @@ function pairSideBySide(left: LineupPlayer[], right: LineupPlayer[], getSlot: (i
   }));
 }
 
-export function LineupDialog({ matchup, isLive, median, weeks, onWeekChange, slotNames, bestLineupContext, players, showNflTeams, onClose }: LineupDialogProps) {
+export function LineupDialog({ matchup, isLive, median, weeks, onWeekChange, slotNames, bestLineupContext, players, injuredStarterIds, showNflTeams, onClose }: LineupDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const { week, team, opponent } = matchup;
   const result = getResult(matchup);
@@ -104,7 +105,9 @@ export function LineupDialog({ matchup, isLive, median, weeks, onWeekChange, slo
           median={result === 'unplayed' ? undefined : median}
         />
 
-        {starterRows.length > 0 && <LineupSection title="Starters" rows={starterRows} showNflTeams={showNflTeams} />}
+        {starterRows.length > 0 && (
+          <LineupSection title="Starters" rows={starterRows} showNflTeams={showNflTeams} injuredPlayerIds={injuredStarterIds} />
+        )}
         {benchRows.length > 0 && <LineupSection title="Bench" rows={benchRows} showNflTeams={showNflTeams} />}
       </div>
     </dialog>

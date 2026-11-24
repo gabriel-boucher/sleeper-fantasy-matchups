@@ -15,6 +15,7 @@ export interface PlayerDto {
   first_name?: string | null;
   last_name?: string | null;
   team?: string | null;
+  espn_id?: string | number | null;
 }
 
 export interface LeagueMemberDto {

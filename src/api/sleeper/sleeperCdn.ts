@@ -1,5 +1,5 @@
-import { isTeamDefense } from '../domain/lineup';
-import { PlayerId } from '../types/models';
+import { isTeamDefense } from '../../domain/lineup';
+import { PlayerId } from '../../types/models';
 
 const CDN_URL = 'https://sleepercdn.com';
 

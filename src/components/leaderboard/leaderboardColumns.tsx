@@ -3,7 +3,7 @@ import { ColumnGroupKey } from '../../constants/leaderboardColumnGroups';
 import { LeaderboardEntry } from '../../domain/leaderboard';
 import { byRecord, byValue, SortableColumn, SortOrder } from '../../domain/leaderboardSort';
 import { formatPoints } from '../../utils/format';
-import { BenchValue, ProjectedPointsValue, ScheduleStrengthValue } from './LeaderboardCells';
+import { BenchValue, InjuryLossValue, ProjectedPointsValue, ScheduleStrengthValue } from './LeaderboardCells';
 
 export interface Column extends SortableColumn {
   key: string;
@@ -20,7 +20,11 @@ function sortedByOwnValue(key: string, value: SortOrder['value']): SortableColum
   return { sortKey: key, sortOrders: byValue(value), showsSortArrows: true };
 }
 
-export function getColumns(entries: LeaderboardEntry[]): Column[] {
+export interface ColumnLoadingState {
+  isLoadingInjuries: boolean;
+}
+
+export function getColumns(entries: LeaderboardEntry[], { isLoadingInjuries }: ColumnLoadingState): Column[] {
   const hasAllPlayTies = entries.some(e => e.allPlayRecord.ties > 0);
   const hasActualTies = entries.some(e => e.actualRecord.ties > 0);
   const hasBench = entries.some(e => e.bench !== null);
@@ -114,6 +118,14 @@ export function getColumns(entries: LeaderboardEntry[]): Column[] {
       title: 'Points left on the bench: best possible lineup minus points actually scored',
       ...sortedByOwnValue('bench', e => e.bench?.pointsLeft ?? null),
       render: e => <BenchValue bench={e.bench} />
+    },
+    {
+      key: 'injuries',
+      group: 'injuries',
+      label: 'Inj',
+      title: 'Points lost to injuries: projection minus points scored, for starters who got hurt mid-game and did not return (from ESPN play-by-play)',
+      ...sortedByOwnValue('injuries', e => e.injuryLoss?.pointsLost ?? null),
+      render: e => <InjuryLossValue injuryLoss={e.injuryLoss} isLoading={isLoadingInjuries} />
     },
     {
       key: 'scheduleStrength',

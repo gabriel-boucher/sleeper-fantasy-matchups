@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getPlayerImageUrl } from '../../api/sleeperCdn';
+import { getPlayerImageUrl } from '../../api/sleeper/sleeperCdn';
 import { isTeamDefense } from '../../domain/lineup';
 import { PlayerId, PlayerInfo } from '../../types/models';
 import { getInitials } from '../../utils/format';

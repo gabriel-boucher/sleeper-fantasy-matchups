@@ -1,9 +1,10 @@
+import { Spinner } from './Spinner';
 import './StatusMessage.css';
 
 export function LoadingMessage({ text }: { text: string }) {
   return (
     <div className="status-message" role="status">
-      <span className="spinner" aria-hidden="true" />
+      <Spinner />
       {text}
     </div>
   );

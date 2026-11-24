@@ -1,0 +1,1 @@
+export const FIRST_SLEEPER_SEASON = 2017;

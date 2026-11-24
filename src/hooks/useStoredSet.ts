@@ -7,7 +7,13 @@ function readStoredSet<K extends string>(storageKey: string, allowedKeys: readon
   return new Set(Array.isArray(stored) ? allowedKeys.filter(key => stored.includes(key)) : defaultKeys);
 }
 
-export function useStoredSet<K extends string>(storageKey: string, allowedKeys: readonly K[], defaultKeys: readonly K[] = []) {
+export interface StoredSet<K extends string> {
+  keys: ReadonlySet<K>;
+  toggle: (key: K) => void;
+  clear: () => void;
+}
+
+export function useStoredSet<K extends string>(storageKey: string, allowedKeys: readonly K[], defaultKeys: readonly K[] = []): StoredSet<K> {
   const [keys, setKeys] = useState(() => readStoredSet(storageKey, allowedKeys, defaultKeys));
 
   useEffect(() => {

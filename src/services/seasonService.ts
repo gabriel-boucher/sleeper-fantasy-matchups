@@ -1,7 +1,7 @@
-import { LeagueDto, LeagueMemberDto, MatchupDtosByWeek, NflStateDto, RosterDto } from '../api/dto';
-import { getLastScheduledWeek, hasHeadToHead, toLeagueRules } from '../api/leagueFormat';
-import { toMatchups, toOfficialStandings, toRosterOwners, toTeamIdsByManagerId, toTeamUsers, toUser } from '../api/mappers';
-import { getLeague, getLeagueMembers, getMatchups, getNflState, getRosters } from '../api/sleeperApi';
+import { getLastScheduledWeek, hasHeadToHead, toLeagueRules } from '../api/sleeper/leagueFormat';
+import { getLeague, getLeagueMembers, getMatchups, getNflState, getRosters } from '../api/sleeper/sleeperApi';
+import { LeagueDto, LeagueMemberDto, MatchupDtosByWeek, NflStateDto, RosterDto } from '../api/sleeper/sleeperDto';
+import { toMatchups, toOfficialStandings, toRosterOwners, toTeamIdsByManagerId, toTeamUsers, toUser } from '../api/sleeper/sleeperMappers';
 import { DEFAULT_WEEK_COUNT } from '../constants/weeks';
 import { getStartingPositions, getStartingSlotNames, getStartingSlots } from '../domain/lineup';
 import { getLastCompletedWeek, getLiveWeek, getWeekCount, isCurrentSeason } from '../domain/seasonProgress';
@@ -82,6 +82,7 @@ function toSeason(leagueId: string, data: SeasonData): Season {
 
   return {
     leagueId,
+    nflSeason: leagueDto.season,
     teamUsers: toTeamUsers(rosterOwners, members),
     teamIdsByManagerId: toTeamIdsByManagerId(rosterDtos, rosterOwners),
     completedMatchups: matchups.filter(m => m.isFinal),

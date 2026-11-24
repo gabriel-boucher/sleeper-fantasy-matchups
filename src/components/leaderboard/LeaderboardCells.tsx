@@ -1,6 +1,8 @@
 import { ScheduleStrength } from '../../domain/leaderboard';
+import { InjuryLoss } from '../../domain/injuries';
 import { BenchStats } from '../../domain/lineup';
 import { formatCount, formatPercent, formatPoints } from '../../utils/format';
+import { Spinner } from '../common/Spinner';
 
 const UNKNOWN_VALUE = '–';
 
@@ -11,6 +13,17 @@ export function UnknownValue({ reason }: { reason: string }) {
 export function ProjectedPointsValue({ projectedPoints }: { projectedPoints: number | null }) {
   if (projectedPoints === null) return <UnknownValue reason="Projections unavailable" />;
   return <>{formatPoints(projectedPoints)}</>;
+}
+
+export function InjuryLossValue({ injuryLoss, isLoading }: { injuryLoss: InjuryLoss | null; isLoading: boolean }) {
+  if (isLoading) return <Spinner size="small" label="Loading injury data" />;
+  if (injuryLoss === null) return <UnknownValue reason="Injury data or projections unavailable" />;
+
+  return (
+    <span className="bench-value" title={`${formatCount(injuryLoss.injuredStarters, 'starter')} left their game injured`}>
+      {formatPoints(injuryLoss.pointsLost)}
+    </span>
+  );
 }
 
 export function BenchValue({ bench }: { bench: BenchStats | null }) {

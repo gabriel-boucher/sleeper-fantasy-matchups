@@ -1,5 +1,12 @@
 import { useMemo, useState } from 'react';
+import {
+  COLUMN_GROUP_KEYS,
+  COLUMN_GROUPS_HIDDEN_BY_DEFAULT,
+  HIDDEN_COLUMN_GROUPS_STORAGE_KEY
+} from '../../constants/leaderboardColumnGroups';
 import { getAllPlayLeaderboard, getLeaderboardWeeks, withLiveResults } from '../../domain/leaderboard';
+import { useMidGameInjuries } from '../../hooks/useMidGameInjuries';
+import { useStoredSet } from '../../hooks/useStoredSet';
 import { useUrlParamsSync } from '../../hooks/useUrlParamsSync';
 import { Matchup, Season, UserId } from '../../types/models';
 import { readUrlParam } from '../../utils/urlParams';
@@ -61,18 +68,21 @@ export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSel
     live: isLiveWeekIncluded ? LIVE_WEEK_INCLUDED_PARAM : null
   });
 
+  const hiddenGroups = useStoredSet(HIDDEN_COLUMN_GROUPS_STORAGE_KEY, COLUMN_GROUP_KEYS, COLUMN_GROUPS_HIDDEN_BY_DEFAULT);
+  const { data: injuries, loading: isLoadingInjuries } = useMidGameInjuries(season, weeks, !hiddenGroups.keys.has('injuries'));
+
   const entries = useMemo(() => {
     if (view === 'week') {
-      return getAllPlayLeaderboard(matchups, teamUsers, { from: week, to: week }, { hasMedianGame });
+      return getAllPlayLeaderboard(matchups, teamUsers, { from: week, to: week }, { hasMedianGame, injuries });
     }
     const standings = isLiveWeekIncluded ? withLiveResults(officialStandings, liveMatchups, hasMedianGame) : officialStandings;
     return getAllPlayLeaderboard(
       matchups,
       teamUsers,
       { from: FIRST_WEEK, to: lastRegularSeasonWeek },
-      { officialStandings: standings, hasMedianGame }
+      { officialStandings: standings, hasMedianGame, injuries }
     );
-  }, [view, week, matchups, teamUsers, lastRegularSeasonWeek, officialStandings, hasMedianGame, isLiveWeekIncluded, liveMatchups]);
+  }, [view, week, matchups, teamUsers, lastRegularSeasonWeek, officialStandings, hasMedianGame, injuries, isLiveWeekIncluded, liveMatchups]);
 
   function changeLiveWeekInclusion(isIncluded: boolean) {
     setWantsLiveWeek(isIncluded);
@@ -101,6 +111,8 @@ export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSel
         </div>
       }
       weekNavigator={view === 'week' && <WeekNavigator weeks={weeks} week={week} onChange={setSelectedWeek} />}
+      hiddenGroups={hiddenGroups}
+      isLoadingInjuries={isLoadingInjuries}
       selectedUserId={selectedUserId}
       onSelectUser={onSelectUser}
     />

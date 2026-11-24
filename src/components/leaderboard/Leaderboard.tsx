@@ -1,15 +1,9 @@
 import { ReactNode, useMemo, useState } from 'react';
-import {
-  COLUMN_GROUP_KEYS,
-  COLUMN_GROUPS,
-  COLUMN_GROUPS_HIDDEN_BY_DEFAULT,
-  ColumnGroupKey,
-  HIDDEN_COLUMN_GROUPS_STORAGE_KEY
-} from '../../constants/leaderboardColumnGroups';
+import { COLUMN_GROUPS, ColumnGroupKey } from '../../constants/leaderboardColumnGroups';
 import { getLuckExtremes, getSpotsGainedInAllPlay, LeaderboardEntry, LuckExtremes } from '../../domain/leaderboard';
 import { DEFAULT_SORT, getNextSort, sortEntries } from '../../domain/leaderboardSort';
 import { getTeamName } from '../../domain/teams';
-import { useStoredSet } from '../../hooks/useStoredSet';
+import { StoredSet } from '../../hooks/useStoredSet';
 import { UserId } from '../../types/models';
 import { ColumnPicker, ColumnPickerGroup } from './ColumnPicker';
 import { RankChange } from './LeaderboardCells';
@@ -23,6 +17,8 @@ interface LeaderboardProps {
   description: string;
   viewControls?: ReactNode;
   weekNavigator?: ReactNode;
+  hiddenGroups: StoredSet<ColumnGroupKey>;
+  isLoadingInjuries: boolean;
   selectedUserId: UserId;
   onSelectUser: (userId: UserId) => void;
 }
@@ -47,11 +43,19 @@ function toPickerGroups(columns: Column[]): ColumnPickerGroup[] {
   });
 }
 
-export function Leaderboard({ entries, description, viewControls, weekNavigator, selectedUserId, onSelectUser }: LeaderboardProps) {
+export function Leaderboard({
+  entries,
+  description,
+  viewControls,
+  weekNavigator,
+  hiddenGroups,
+  isLoadingInjuries,
+  selectedUserId,
+  onSelectUser
+}: LeaderboardProps) {
   const [sort, setSort] = useState(DEFAULT_SORT);
-  const hiddenGroups = useStoredSet(HIDDEN_COLUMN_GROUPS_STORAGE_KEY, COLUMN_GROUP_KEYS, COLUMN_GROUPS_HIDDEN_BY_DEFAULT);
 
-  const availableColumns = useMemo(() => getColumns(entries), [entries]);
+  const availableColumns = useMemo(() => getColumns(entries, { isLoadingInjuries }), [entries, isLoadingInjuries]);
   const columnsLeftShown = availableColumns.filter(column => !hiddenGroups.keys.has(column.group));
   const isEveryAvailableColumnHidden = columnsLeftShown.length === 0;
   const columns = isEveryAvailableColumnHidden ? availableColumns : columnsLeftShown;

@@ -321,6 +321,7 @@ html:has(.lineup-dialog[open]) {
 
 .lineup-tag-badge.start { background: var(--win-bg); color: var(--win); }
 .lineup-tag-badge.sit { background: var(--loss-bg); color: var(--loss); }
+.lineup-tag-badge.injured { background: var(--tie-bg); color: var(--tie); }
 
 .slot-badge {
   justify-self: center;
