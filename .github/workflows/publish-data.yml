@@ -60,6 +60,10 @@ jobs:
         if: github.event_name == 'schedule' && github.event.schedule != env.DAILY_SCHEDULE
         run: npm run publish-data -- "$OUTPUT_DIR" --injuries-only
 
+      - name: Disable Vercel deployments for the data branch
+        run: |
+          echo '{ "git": { "deploymentEnabled": false } }' > "$OUTPUT_DIR/vercel.json"
+
       - name: Push to the data branch
         working-directory: ${{ env.OUTPUT_DIR }}
         env:
