@@ -11,7 +11,7 @@ const PLAY_INJURY_PATTERN = /\b([A-Z]{2,3})-([A-Z][A-Za-z]*\.(?:(?!\s[A-Z]{2,3}-
 const RECAP_INJURY_SECTION_START = /<hl2>\s*Injur[^<]*<\/hl2>|\bINJUR(?:Y REPORT|IES)\b:?/;
 const RECAP_INJURY_SECTION_END = /<hl2>|\bUP NEXT\b|---/;
 const RECAP_PLAYER_LINK = /<a\s[^>]*\/player\/_\/id\/(\d+)[^>]*>[\s\S]*?<\/a>/gi;
-const RECAP_PLAYER_MARKER = /\{\{(\d+)\}\}/g;
+const RECAP_PLAYER_MARKER = /\{\{(\d+)}}/g;
 const SENTENCE_BREAK = /(?<=[.!?])\s+(?=[A-Z{])/;
 const LEFT_GAME_PHRASES = /\b(left|exited|departed|went out|carted|helped off|limped off|walked off|went to the locker room|went down|did not return|didn't return|ruled out|hurt|injured|injuring|suffered|lost|concussion protocol)\b/i;
 const DID_NOT_LEAVE_GAME_PHRASES = /\b(briefly|but returned|later returned|returned to the game|returned after|came back|re-?entered|inactive|missed|missing|sat out|did not play|didn't play|did not make the trip|didn't make the trip|(?:placed|put|moved) on injured reserve|played without|were without|was without|pregame|warmups|before kickoff|no injuries)\b/i;
