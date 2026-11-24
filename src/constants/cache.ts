@@ -1,0 +1,1 @@
+export const LEAGUE_DATA_CACHE_DURATION_MS = 5 * 60 * 1000;

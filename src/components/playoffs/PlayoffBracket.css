@@ -1,0 +1,234 @@
+.playoff-navigator-label {
+  min-width: 140px;
+}
+
+.playoff-scroll {
+  overflow-x: auto;
+  margin: var(--space-4) calc(-1 * var(--panel-padding)) 0;
+  padding: 0 var(--panel-padding);
+}
+
+.playoff-grid {
+  display: grid;
+  gap: var(--space-3) var(--space-4);
+}
+
+.playoff-cell {
+  align-self: center;
+  min-width: 0;
+}
+
+.playoff-placements {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-self: start;
+  margin-top: var(--space-3);
+}
+
+.playoff-round-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.playoff-round-weeks {
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-subtle);
+}
+
+.playoff-match-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.playoff-place {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-subtle);
+}
+
+.playoff-live {
+  align-self: flex-start;
+}
+
+.playoff-match {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.playoff-row,
+.playoff-bye,
+.playoff-standing {
+  --avatar-size: 22px;
+  display: flex;
+  align-items: center;
+  padding: var(--space-1-5) var(--space-2-5);
+  font-size: var(--font-size-sm);
+}
+
+.playoff-row,
+.playoff-bye {
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.playoff-standing {
+  gap: var(--space-1-5);
+}
+
+.playoff-row + .playoff-row,
+.playoff-standing + .playoff-standing {
+  border-top: 1px solid var(--border);
+}
+
+.playoff-row.won {
+  font-weight: 700;
+}
+
+.playoff-row.lost {
+  color: var(--text-subtle);
+}
+
+.playoff-row.selected,
+.playoff-bye.selected,
+.playoff-standing.selected {
+  background: var(--surface-muted);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.playoff-bye {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+}
+
+.playoff-bye-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-subtle);
+}
+
+.playoff-team {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  min-width: 0;
+}
+
+.playoff-seed {
+  flex-shrink: 0;
+  min-width: 1.1em;
+  font-size: var(--font-size-2xs);
+  font-weight: 600;
+  color: var(--text-subtle);
+  text-align: right;
+}
+
+.playoff-team-name {
+  min-width: 0;
+}
+
+.playoff-tbd {
+  font-style: italic;
+  color: var(--text-subtle);
+}
+
+.playoff-points {
+  flex-shrink: 0;
+}
+
+.playoff-seed-change {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-0-5);
+  flex-shrink: 0;
+  font-size: var(--font-size-2xs);
+  font-weight: 600;
+}
+
+.playoff-seed-change [aria-hidden] {
+  font-size: 0.5625rem;
+}
+
+.playoff-seed-change.up { color: var(--win); }
+.playoff-seed-change.down { color: var(--loss); }
+
+.playoff-champion {
+  --avatar-size: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1-5);
+  padding: var(--space-4) var(--space-3);
+  background: color-mix(in srgb, var(--flag) 16%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--flag) 55%, var(--border));
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.playoff-end {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.playoff-standings {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.playoff-standing-place {
+  flex-shrink: 0;
+  min-width: 2.2em;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-subtle);
+}
+
+.playoff-champion.last-place {
+  background: color-mix(in srgb, var(--loss) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--loss) 45%, var(--border));
+}
+
+.playoff-champion.pending {
+  background: var(--surface-muted);
+  border-color: var(--border);
+}
+
+.playoff-trophy {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.playoff-champion-name {
+  max-width: 100%;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.playoff-champion-seed {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}

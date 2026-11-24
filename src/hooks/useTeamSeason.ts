@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { getMatchupsFor, getMedianRecord, getPlayedMatchups, getRecord, getWeeklyMedians } from '../domain/matchups';
 import { addRecords, createEmptyRecord, getGamesPlayed } from '../domain/records';
 import { getMatchupsOnSchedule, getRecordsOnAllSchedulesBestFirst, getScheduleRange } from '../domain/schedules';
-import { getWeeklyScores } from '../domain/weeklyScores';
 import { Matchup, Season, TeamRecord, UserId } from '../types/models';
 
 interface TeamSeasonOptions {
@@ -30,8 +29,6 @@ export function useTeamSeason({ season, liveMatchups, userId, scheduleOwnerId, i
     () => [...getPlayedMatchups(matchups).map(m => m.week), ...(liveMatchup ? [liveMatchup.week] : [])],
     [matchups, liveMatchup]
   );
-
-  const weeklyScores = useMemo(() => getWeeklyScores(completedMatchups, matchups), [completedMatchups, matchups]);
 
   const medianRecord = useMemo(
     () => (isMedianCounted && userId ? getMedianRecord(completedMatchups, userId, lastRegularSeasonWeek) : createEmptyRecord()),
@@ -65,7 +62,6 @@ export function useTeamSeason({ season, liveMatchups, userId, scheduleOwnerId, i
     matchups,
     liveMatchup,
     weeksWithMatchupCard,
-    weeklyScores,
     medianRecord,
     weeklyMedians,
     ownScheduleRecord,

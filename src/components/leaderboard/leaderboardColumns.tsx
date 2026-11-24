@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { ColumnGroupKey } from '../../constants/leaderboardColumnGroups';
 import { LeaderboardEntry } from '../../domain/leaderboard';
-import { byRecord, byValue, SortableColumn, SortOrder } from '../../domain/leaderboardSort';
+import { byRecord, byValue, DEFAULT_SORT, Sort, SortableColumn, SortOrder } from '../../domain/leaderboardSort';
 import { formatPoints } from '../../utils/format';
 import { BenchValue, InjuryLossValue, ProjectedPointsValue, ScheduleStrengthValue } from './LeaderboardCells';
 
@@ -22,6 +22,27 @@ function sortedByOwnValue(key: string, value: SortOrder['value']): SortableColum
 
 export interface ColumnLoadingState {
   isLoadingInjuries: boolean;
+}
+
+export interface ColumnState {
+  availableColumns: Column[];
+  columns: Column[];
+  activeSort: Sort;
+  isEveryAvailableColumnHidden: boolean;
+}
+
+export function getColumnState(
+  entries: LeaderboardEntry[],
+  loadingState: ColumnLoadingState,
+  hiddenGroups: ReadonlySet<ColumnGroupKey>,
+  sort: Sort
+): ColumnState {
+  const availableColumns = getColumns(entries, loadingState);
+  const columnsLeftShown = availableColumns.filter(column => !hiddenGroups.has(column.group));
+  const isEveryAvailableColumnHidden = columnsLeftShown.length === 0;
+  const columns = isEveryAvailableColumnHidden ? availableColumns : columnsLeftShown;
+  const isSortColumnShown = columns.some(column => column.sortKey === sort.key);
+  return { availableColumns, columns, activeSort: isSortColumnShown ? sort : DEFAULT_SORT, isEveryAvailableColumnHidden };
 }
 
 export function getColumns(entries: LeaderboardEntry[], { isLoadingInjuries }: ColumnLoadingState): Column[] {

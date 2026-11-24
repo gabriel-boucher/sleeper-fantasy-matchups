@@ -4,7 +4,11 @@ import {
   COLUMN_GROUPS_HIDDEN_BY_DEFAULT,
   HIDDEN_COLUMN_GROUPS_STORAGE_KEY
 } from '../../constants/leaderboardColumnGroups';
+import { FIRST_WEEK } from '../../constants/weeks';
 import { getAllPlayLeaderboard, getLeaderboardWeeks, withLiveResults } from '../../domain/leaderboard';
+import { DEFAULT_SORT } from '../../domain/leaderboardSort';
+import { getTeamName } from '../../domain/teams';
+import { getWeeklyMetric, getWeeklyMetricScores } from '../../domain/weeklyMetrics';
 import { useMidGameInjuries } from '../../hooks/useMidGameInjuries';
 import { useStoredSet } from '../../hooks/useStoredSet';
 import { useUrlParamsSync } from '../../hooks/useUrlParamsSync';
@@ -14,6 +18,8 @@ import { Segment, SegmentedControl } from '../common/SegmentedControl';
 import { Toggle } from '../common/Toggle';
 import { WeekNavigator } from '../common/WeekNavigator';
 import { Leaderboard } from './Leaderboard';
+import { getColumnState } from './leaderboardColumns';
+import { WeeklyTrendChart } from './WeeklyTrendChart';
 
 type LeaderboardView = 'season' | 'week';
 
@@ -23,7 +29,6 @@ const VIEWS: Segment<LeaderboardView>[] = [
 ];
 
 const LIVE_WEEK_INCLUDED_PARAM = '1';
-const FIRST_WEEK = 1;
 const NO_WEEK = 0;
 
 interface LeaderboardSectionProps {
@@ -70,6 +75,7 @@ export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSel
 
   const hiddenGroups = useStoredSet(HIDDEN_COLUMN_GROUPS_STORAGE_KEY, COLUMN_GROUP_KEYS, COLUMN_GROUPS_HIDDEN_BY_DEFAULT);
   const { data: injuries, loading: isLoadingInjuries } = useMidGameInjuries(season, weeks, !hiddenGroups.keys.has('injuries'));
+  const [sort, setSort] = useState(DEFAULT_SORT);
 
   const entries = useMemo(() => {
     if (view === 'week') {
@@ -84,6 +90,17 @@ export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSel
     );
   }, [view, week, matchups, teamUsers, lastRegularSeasonWeek, officialStandings, hasMedianGame, injuries, isLiveWeekIncluded, liveMatchups]);
 
+  const columnState = useMemo(
+    () => getColumnState(entries, { isLoadingInjuries }, hiddenGroups.keys, sort),
+    [entries, isLoadingInjuries, hiddenGroups.keys, sort]
+  );
+  const metric = getWeeklyMetric(columnState.activeSort);
+  const selectedUser = teamUsers.find(user => user.id === selectedUserId) ?? null;
+  const trendScores = useMemo(
+    () => (selectedUser ? getWeeklyMetricScores(matchups, selectedUser.id, metric, { hasMedianGame, injuries }) : []),
+    [selectedUser, matchups, metric, hasMedianGame, injuries]
+  );
+
   function changeLiveWeekInclusion(isIncluded: boolean) {
     setWantsLiveWeek(isIncluded);
     const isLeavingViewedWeek = !isIncluded && week === liveWeek;
@@ -92,29 +109,31 @@ export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSel
 
   if (weeks.length === 0) return null;
 
-  const isShowingLiveResults = isLiveWeekIncluded && (view === 'season' || week === liveWeek);
-  const viewDescription = view === 'season'
-    ? "What each team's record would be if it played everyone, every week of the regular season."
-    : `Every team against every other score from week ${week}. Real is that week's actual results.`;
-  const description = isShowingLiveResults ? `${viewDescription} Week ${liveWeek} is still being played.` : viewDescription;
-
   return (
     <Leaderboard
       entries={entries}
-      description={description}
       viewControls={
-        <div className="leaderboard-controls">
+        <>
           {liveWeek !== null && (
             <Toggle label={`Week ${liveWeek}`} checked={isLiveWeekIncluded} onChange={changeLiveWeekInclusion} />
           )}
           <SegmentedControl label="Leaderboard view" segments={VIEWS} value={view} onChange={setView} />
-        </div>
+        </>
       }
       weekNavigator={view === 'week' && <WeekNavigator weeks={weeks} week={week} onChange={setSelectedWeek} />}
       hiddenGroups={hiddenGroups}
-      isLoadingInjuries={isLoadingInjuries}
+      columnState={columnState}
+      onSortChange={setSort}
       selectedUserId={selectedUserId}
       onSelectUser={onSelectUser}
+      footer={selectedUser && trendScores.length > 0 && (
+        <WeeklyTrendChart
+          scores={trendScores}
+          metric={metric}
+          teamName={getTeamName(selectedUser)}
+          isMedianShownByDefault={hasMedianGame}
+        />
+      )}
     />
   );
 }

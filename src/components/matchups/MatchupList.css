@@ -1,22 +1,3 @@
-.matchup-section {
-  margin-top: var(--space-5);
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--border);
-}
-
-.matchup-section-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  margin-bottom: var(--space-3);
-}
-
-.matchup-section-header .section-title {
-  margin: 0;
-}
-
 .matchup-list {
   --matchup-rows: 1;
   display: grid;

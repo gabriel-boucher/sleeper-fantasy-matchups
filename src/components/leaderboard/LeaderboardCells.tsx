@@ -1,13 +1,11 @@
 import { ScheduleStrength } from '../../domain/leaderboard';
 import { InjuryLoss } from '../../domain/injuries';
 import { BenchStats } from '../../domain/lineup';
-import { formatCount, formatPercent, formatPoints } from '../../utils/format';
+import { formatCount, formatPercent, formatPoints, formatSignedTenths, MISSING_VALUE, roundToTenths } from '../../utils/format';
 import { Spinner } from '../common/Spinner';
 
-const UNKNOWN_VALUE = '–';
-
 export function UnknownValue({ reason }: { reason: string }) {
-  return <span className="bench-value unknown" title={reason}>{UNKNOWN_VALUE}</span>;
+  return <span className="bench-value unknown" title={reason}>{MISSING_VALUE}</span>;
 }
 
 export function ProjectedPointsValue({ projectedPoints }: { projectedPoints: number | null }) {
@@ -41,23 +39,22 @@ export function BenchValue({ bench }: { bench: BenchStats | null }) {
 
 export function ScheduleStrengthValue({ strength }: { strength: ScheduleStrength }) {
   const { difference, opponentAverage, leagueAverage } = strength;
-  const rounded = Number(difference.toFixed(1));
+  const rounded = roundToTenths(difference);
   const difficulty = rounded > 0 ? 'harder' : rounded < 0 ? 'easier' : 'even';
-  const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : '';
 
   return (
     <span
       className={`schedule-strength ${difficulty}`}
       title={`Opponents averaged ${formatPoints(opponentAverage)} pts per game (league average ${formatPoints(leagueAverage)})`}
     >
-      {sign}{Math.abs(rounded).toFixed(1)}
+      {formatSignedTenths(difference)}
     </span>
   );
 }
 
 export function RankChange({ spotsAboveRealRank }: { spotsAboveRealRank: number }) {
   if (spotsAboveRealRank === 0) {
-    return <span className="rank-change-badge same" title="Same as the real standings">{UNKNOWN_VALUE}</span>;
+    return <span className="rank-change-badge same" title="Same as the real standings">{MISSING_VALUE}</span>;
   }
 
   const isHigher = spotsAboveRealRank > 0;

@@ -10,7 +10,6 @@ No account or API key needed. Everything comes from Sleeper's public API.
 - **Current, best and worst record.** The team's real record next to the best and worst it would have had against every other team's schedule. Click a tile to view those matchups.
 - **Against another schedule.** Replay the team's weekly scores against any other team's opponents.
 - **Weekly matchups.** Every game with scores and W/L, filling the first column top to bottom, then the second. The week in progress appears as a **Live** card that refreshes every minute and never counts in any stats.
-- **Weekly points chart.** The team's score each week against the league average and median. Hover or use the arrow keys to read each week.
 
 ### All-play leaderboard
 Ranks every team as if it had played every other team every week, in two views:
@@ -30,6 +29,9 @@ Columns:
 | **Bench** | Points left on the bench: best possible lineup minus points actually scored. Hover for manager efficiency |
 
 The biggest climb from real rank to all-play rank gets 🌧️ (unluckiest), and the biggest drop gets 🍀 (luckiest).
+
+### All-play chart
+A chart under the leaderboard that follows whichever column the leaderboard is sorted by: all-play wins per week for **W<sub>T</sub>**, wins per week for **W**, points for per week for **PF**, and so on. It shows the selected team, its opponent each week, and the league average and median. Hover or use the arrow keys to read each week.
 
 ### Shareable links
 The current view is kept in the URL, so a link reopens exactly the same page:
@@ -108,14 +110,15 @@ The app reads these files from `raw.githubusercontent.com` (override with `VITE_
 ```
 src/
   components/      React components, grouped by feature, each with its own CSS
-    common/        Shared controls (select, segmented toggle, status messages)
+    common/        Shared controls (panel, section, select, segmented toggle, step navigator, status messages)
     search/        Username form
     league/        League and season pickers
     season/        Season view and team / schedule filters
-    record/        Season record card, record tiles, weekly points chart
+    record/        Season record card and record tiles
     matchups/      Weekly matchup cards and list
     lineup/        Head-to-head lineup dialog and player avatars
-    leaderboard/   All-play leaderboard, column picker, sortable headers, luck badges
+    leaderboard/   All-play leaderboard, column picker, sortable headers, luck badges, weekly trend chart
+    playoffs/      Playoff and toilet bowl brackets
     home/          Home page
   api/             One folder per external source, each with its HTTP calls (*Api), response types (*Dto) and mappers (*Mappers)
     sleeper/       Sleeper leagues, players, projections and images
@@ -124,13 +127,13 @@ src/
     publishedData/ Files published to the data branch by the GitHub Action
   types/           Models shared across the app
   domain/          Pure fantasy logic with no React or network
-  services/        Loading and caching of leagues, seasons, players, projections and injuries
-scripts/           Node scripts run by the GitHub Action (publishData.ts and its lib/ modules)
+  services/        Loading and caching of leagues, seasons, brackets, players, projections and injuries
   context/         React context for team and user links
-  hooks/           React hooks (async loading, live refresh, URL sync, stored preferences)
-  constants/       Shared constants (weeks, chart series, leaderboard column groups)
-  utils/           Generic helpers (math, collections, formatting, storage, URL parameters)
+  hooks/           React hooks (async loading, live refresh, playoff brackets, URL sync, stored preferences)
+  constants/       Shared constants (weeks, playoff places, cache duration, chart series, leaderboard column groups)
+  utils/           Generic helpers (math, collections, formatting, expiring cache, storage, URL parameters)
   styles/          Global design tokens (variables.css), reset and shared building blocks
+scripts/           Node scripts run by the GitHub Action (publishData.ts and its lib/ modules)
 ```
 
 Most stats live in `src/domain/` as plain functions:
@@ -144,7 +147,12 @@ Most stats live in `src/domain/` as plain functions:
 | `leaderboardSort.ts` | Leaderboard sort orders and tie-breaks |
 | `projections.ts` | Projected points for lineups and matchups |
 | `lineup.ts` | Lineup slots, best possible lineup, bench points |
-| `weeklyScores.ts` | Weekly team score vs league average and median |
+| `weeklyMetrics.ts` | Weekly value of the sorted leaderboard stat vs opponent, league average and median |
+| `weeklyPoints.ts` | Points per team per week, including live scores |
+| `playoffs.ts` | Playoff bracket results, byes and final standings |
+| `bracketSeeding.ts` | Bracket seeds and standings order |
+| `bracketLayout.ts` | Grid rows of each bracket match and bye |
+| `projectedBracket.ts` | Bracket built from the current standings before the playoffs start |
 | `seasonProgress.ts` | Which weeks are finished and which one is live |
 | `injuries.ts` | Starters who left their game injured |
 

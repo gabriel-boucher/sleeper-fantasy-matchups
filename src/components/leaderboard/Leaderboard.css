@@ -1,44 +1,8 @@
-.leaderboard-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  margin-bottom: var(--space-3);
-}
-
-.leaderboard-header .section-title {
-  margin: 0;
-}
-
-.leaderboard-legend-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  margin-bottom: var(--space-4);
-}
-
-.leaderboard-legend-bar .leaderboard-legend {
-  margin-bottom: 0;
-}
-
-.leaderboard-legend-bar .column-picker {
-  margin-left: auto;
-}
-
 .leaderboard-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-4);
-}
-
-.leaderboard-description {
-  margin: 0 0 var(--space-2);
-  font-size: var(--font-size-md);
-  color: var(--text-muted);
 }
 
 .leaderboard-legend {
@@ -67,7 +31,10 @@
 
 .leaderboard-scroll {
   overflow-x: auto;
-  margin: 0 calc(-1 * var(--panel-padding)) calc(-1 * var(--panel-padding));
+}
+
+.leaderboard-scroll:not(:last-child) tbody tr:last-child > * {
+  border-bottom: 1px solid var(--border);
 }
 
 .leaderboard-table {
@@ -86,12 +53,20 @@
 
 .leaderboard-table th:first-child,
 .leaderboard-table td:first-child {
-  padding-left: var(--panel-padding);
+  padding-left: var(--space-3);
 }
 
 .leaderboard-table th:last-child,
 .leaderboard-table td:last-child {
-  padding-right: var(--panel-padding);
+  padding-right: var(--space-3);
+}
+
+.leaderboard-table thead th:first-child {
+  border-top-left-radius: var(--radius-sm);
+}
+
+.leaderboard-table thead th:last-child {
+  border-top-right-radius: var(--radius-sm);
 }
 
 .leaderboard-table thead th {

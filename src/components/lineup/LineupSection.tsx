@@ -1,6 +1,6 @@
 import { getLineupAdvice, getSlotAbbreviation, isEmptySlot, LineupAdvice, LineupPlayer } from '../../domain/lineup';
 import { PlayerId } from '../../types/models';
-import { formatPoints } from '../../utils/format';
+import { formatPoints, MISSING_VALUE } from '../../utils/format';
 import { EmptyPlayerAvatar, PlayerAvatar } from './PlayerAvatar';
 import { Side } from './side';
 
@@ -35,8 +35,6 @@ const ADVICE_LABELS: Record<LineupAdvice, string> = {
   start: 'Should start'
 };
 
-const NO_POINTS = '–';
-
 export function LineupSection({ title, rows, showNflTeams, injuredPlayerIds = null }: LineupSectionProps) {
   return (
     <section className="lineup-section">
@@ -69,7 +67,7 @@ function PlayerCell({ lineupPlayer, side, showNflTeam, injuredPlayerIds }: Playe
           />
         )}
       <span className="h2h-player-points">
-        <span className="h2h-player-actual">{isEmptySlot(lineupPlayer) ? NO_POINTS : formatPoints(lineupPlayer.points)}</span>
+        <span className="h2h-player-actual">{isEmptySlot(lineupPlayer) ? MISSING_VALUE : formatPoints(lineupPlayer.points)}</span>
         {lineupPlayer.projected !== null && (
           <span className="h2h-player-projected" title="Projected points">{formatPoints(lineupPlayer.projected)}</span>
         )}

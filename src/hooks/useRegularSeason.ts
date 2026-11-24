@@ -10,7 +10,13 @@ function toProjectedRegularSeason(matchups: Matchup[], lastRegularSeasonWeek: nu
   return projections ? withProjections(regularSeason, projections) : regularSeason;
 }
 
-export function useRegularSeason(loadedSeason: Season): { season: Season; liveMatchups: Matchup[] } {
+interface RegularSeason {
+  season: Season;
+  liveMatchups: Matchup[];
+  allLiveMatchups: Matchup[];
+}
+
+export function useRegularSeason(loadedSeason: Season): RegularSeason {
   const projections = useProjections(loadedSeason);
   const refreshedLiveMatchups = useLiveMatchups(loadedSeason);
   const { lastRegularSeasonWeek } = loadedSeason;
@@ -28,5 +34,5 @@ export function useRegularSeason(loadedSeason: Season): { season: Season; liveMa
     [refreshedLiveMatchups, lastRegularSeasonWeek, projections]
   );
 
-  return { season, liveMatchups };
+  return { season, liveMatchups, allLiveMatchups: refreshedLiveMatchups };
 }

@@ -1,20 +1,23 @@
 import { getLastScheduledWeek, hasHeadToHead, toLeagueRules } from '../api/sleeper/leagueFormat';
 import { getLeague, getLeagueMembers, getMatchups, getNflState, getRosters } from '../api/sleeper/sleeperApi';
 import { LeagueDto, LeagueMemberDto, MatchupDtosByWeek, NflStateDto, RosterDto } from '../api/sleeper/sleeperDto';
-import { toMatchups, toOfficialStandings, toRosterOwners, toTeamIdsByManagerId, toTeamUsers, toUser } from '../api/sleeper/sleeperMappers';
-import { DEFAULT_WEEK_COUNT } from '../constants/weeks';
+import {
+  toMatchups,
+  toOfficialStandings,
+  toRosterOwners,
+  toTeamIdsByManagerId,
+  toTeamUsers,
+  toUser,
+  toWeeklyPoints
+} from '../api/sleeper/sleeperMappers';
+import { LEAGUE_DATA_CACHE_DURATION_MS } from '../constants/cache';
+import { DEFAULT_WEEK_COUNT, FIRST_WEEK } from '../constants/weeks';
 import { getStartingPositions, getStartingSlotNames, getStartingSlots } from '../domain/lineup';
 import { getLastCompletedWeek, getLiveWeek, getWeekCount, isCurrentSeason } from '../domain/seasonProgress';
 import { BestLineupContext, LeagueRules, Matchup, PlayerDirectory, ProjectionSettings, Season } from '../types/models';
 import { range } from '../utils/collections';
+import { withExpiringCache } from '../utils/expiringCache';
 import { getPlayerDirectory } from './playerService';
-
-const CACHE_DURATION_MS = 5 * 60 * 1000;
-
-interface CachedSeason {
-  season: Promise<Season>;
-  loadedAt: number;
-}
 
 interface SeasonData {
   leagueDto: LeagueDto;
@@ -27,17 +30,7 @@ interface SeasonData {
   players: PlayerDirectory | null;
 }
 
-const seasonCache = new Map<string, CachedSeason>();
-
-export function loadSeason(leagueId: string): Promise<Season> {
-  const cached = seasonCache.get(leagueId);
-  if (cached && Date.now() - cached.loadedAt < CACHE_DURATION_MS) return cached.season;
-
-  const season = fetchSeason(leagueId);
-  seasonCache.set(leagueId, { season, loadedAt: Date.now() });
-  season.catch(() => seasonCache.delete(leagueId));
-  return season;
-}
+export const loadSeason = withExpiringCache(fetchSeason, LEAGUE_DATA_CACHE_DURATION_MS);
 
 export async function loadLiveMatchups(season: Season): Promise<Matchup[]> {
   if (season.liveWeek === null) return [];
@@ -51,7 +44,7 @@ async function fetchSeason(leagueId: string): Promise<Season> {
     getNflState(),
     getLeagueMembers(leagueId),
     getRosters(leagueId),
-    fetchMatchupWeeks(leagueId, range(1, DEFAULT_WEEK_COUNT)),
+    fetchMatchupWeeks(leagueId, range(FIRST_WEEK, DEFAULT_WEEK_COUNT)),
     getPlayerDirectory().catch(() => null)
   ]);
   if (!leagueDto) throw new Error('This season no longer exists on Sleeper');
@@ -86,7 +79,10 @@ function toSeason(leagueId: string, data: SeasonData): Season {
     teamUsers: toTeamUsers(rosterOwners, members),
     teamIdsByManagerId: toTeamIdsByManagerId(rosterDtos, rosterOwners),
     completedMatchups: matchups.filter(m => m.isFinal),
+    completedWeeklyPoints: toWeeklyPoints(rosterOwners, matchupDtosByWeek, lastCompletedWeek),
     lastRegularSeasonWeek: rules.regularSeasonEnd ?? getLastScheduledWeek(matchupDtosByWeek) ?? weekCount,
+    playoffRoundType: rules.playoffRoundType,
+    playoffTeamCount: rules.playoffTeamCount,
     hasMedianGame: rules.hasMedianGame,
     hasHeadToHead: hasHeadToHead(matchupDtosByWeek),
     officialStandings: toOfficialStandings(rosterDtos, rosterOwners),

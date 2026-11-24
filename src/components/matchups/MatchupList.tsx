@@ -1,6 +1,7 @@
 import { CSSProperties, ReactNode } from 'react';
 import { getPlayedMatchups } from '../../domain/matchups';
 import { Matchup } from '../../types/models';
+import { Section } from '../common/Section';
 import { MatchupCard } from './MatchupCard';
 import './MatchupList.css';
 
@@ -20,11 +21,7 @@ export function MatchupList({ matchups, liveMatchup, weeklyMedians, headerConten
   const rowsFilledColumnByColumn = { '--matchup-rows': Math.ceil(cardCount / COLUMN_COUNT) } as CSSProperties;
 
   return (
-    <section className="matchup-section">
-      <div className="matchup-section-header">
-        <h3 className="section-title">Weekly matchups</h3>
-        {headerContent}
-      </div>
+    <Section title="Weekly matchups" actions={headerContent}>
       {cardCount === 0 ? (
         <p className="empty-state">No games played yet this season.</p>
       ) : (
@@ -42,6 +39,6 @@ export function MatchupList({ matchups, liveMatchup, weeklyMedians, headerConten
           )}
         </div>
       )}
-    </section>
+    </Section>
   );
 }

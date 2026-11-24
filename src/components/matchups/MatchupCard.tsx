@@ -2,7 +2,7 @@ import { getResult, MatchupResult } from '../../domain/matchups';
 import { GameResult, getGameResult } from '../../domain/records';
 import { getTeamName } from '../../domain/teams';
 import { Matchup, Team } from '../../types/models';
-import { formatPoints } from '../../utils/format';
+import { formatPoints, MISSING_VALUE } from '../../utils/format';
 import { TickingPoints } from '../common/TickingPoints';
 import './MatchupCard.css';
 
@@ -10,7 +10,7 @@ const RESULT_LABELS: Record<MatchupResult, string> = {
   win: 'W',
   loss: 'L',
   tie: 'T',
-  unplayed: '–'
+  unplayed: MISSING_VALUE
 };
 
 const MEDIAN_OUTCOMES: Record<GameResult, string> = {

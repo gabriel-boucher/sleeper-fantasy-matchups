@@ -1,0 +1,8 @@
+.panel-section {
+  padding-top: var(--space-5);
+}
+
+.panel-section.with-divider {
+  margin-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}

@@ -1,20 +1,50 @@
-.weekly-chart-section {
-  margin-top: var(--space-5);
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--border);
+.weekly-chart-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-4);
 }
 
-.weekly-chart-header {
+.weekly-chart-controls {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  margin-bottom: var(--space-2);
+  flex-direction: column;
 }
 
-.weekly-chart-header .section-title {
+.weekly-chart-controls .toggle,
+.weekly-chart-controls .weekly-chart-toggle {
+  width: 100%;
   margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 0;
+}
+
+.weekly-chart-controls .weekly-chart-legend {
+  flex-direction: column;
+  gap: 0;
+}
+
+@media (max-width: 640px) {
+  .weekly-chart-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .weekly-chart-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .weekly-chart-controls .toggle,
+  .weekly-chart-controls .weekly-chart-toggle {
+    width: auto;
+    padding: var(--space-1) var(--space-1-5);
+  }
+
+  .weekly-chart-controls .weekly-chart-legend {
+    flex-direction: row;
+    gap: var(--space-1) var(--space-2);
+  }
 }
 
 .weekly-chart-legend {

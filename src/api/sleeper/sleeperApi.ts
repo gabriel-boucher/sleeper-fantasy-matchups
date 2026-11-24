@@ -1,4 +1,4 @@
-import { LeagueDto, LeagueMemberDto, MatchupDto, NflStateDto, PlayerDto, ProjectionDto, RosterDto, SleeperUserDto } from './sleeperDto';
+import { BracketMatchDto, LeagueDto, LeagueMemberDto, MatchupDto, NflStateDto, PlayerDto, ProjectionDto, RosterDto, SleeperUserDto } from './sleeperDto';
 import { fetchJson } from '../http';
 
 const API_URL = 'https://api.sleeper.app/v1';
@@ -26,6 +26,14 @@ export function getLeague(leagueId: string): Promise<LeagueDto | null> {
 
 export function getMatchups(leagueId: string, week: number): Promise<MatchupDto[]> {
   return fetchList(`${API_URL}/league/${leagueId}/matchups/${week}`, 'Failed to fetch matchups');
+}
+
+export function getWinnersBracket(leagueId: string): Promise<BracketMatchDto[]> {
+  return fetchList(`${API_URL}/league/${leagueId}/winners_bracket`, 'Failed to fetch playoff bracket');
+}
+
+export function getLosersBracket(leagueId: string): Promise<BracketMatchDto[]> {
+  return fetchList(`${API_URL}/league/${leagueId}/losers_bracket`, 'Failed to fetch toilet bowl bracket');
 }
 
 export function getRosters(leagueId: string): Promise<RosterDto[]> {

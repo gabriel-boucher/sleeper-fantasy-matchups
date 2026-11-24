@@ -11,6 +11,7 @@ import { readUrlParam } from '../../utils/urlParams';
 import { Toggle } from '../common/Toggle';
 import { LeaderboardSection } from '../leaderboard/LeaderboardSection';
 import { LineupDialog } from '../lineup/LineupDialog';
+import { PlayoffBracket } from '../playoffs/PlayoffBracket';
 import { RecordSummary } from '../record/RecordSummary';
 import { RECORD_TILE_VARIANTS, RecordTileVariant } from '../record/recordTileVariants';
 import { TeamFilters } from './TeamFilters';
@@ -35,7 +36,7 @@ function readTeamSelectionFromUrl(season: Season, searchedUserId: UserId) {
 }
 
 export function SeasonView({ loadedSeason, searchedUserId }: SeasonViewProps) {
-  const { season, liveMatchups } = useRegularSeason(loadedSeason);
+  const { season, liveMatchups, allLiveMatchups } = useRegularSeason(loadedSeason);
 
   const [initialSelection] = useState(() => readTeamSelectionFromUrl(season, searchedUserId));
   const [userId, setUserId] = useState(initialSelection.userId);
@@ -102,14 +103,13 @@ export function SeasonView({ loadedSeason, searchedUserId }: SeasonViewProps) {
         matchups={userId === NO_TEAM ? null : matchups}
         liveMatchup={liveMatchup}
         onSelectMatchup={matchup => setLineupWeek(matchup.week)}
-        weeklyScores={teamSeason.weeklyScores}
         ownScheduleRecord={teamSeason.ownScheduleRecord}
         medianRecord={teamSeason.medianRecord}
         weeklyMedians={teamSeason.weeklyMedians}
-        isMedianCounted={isMedianCounted}
         scheduleRange={scheduleRange}
         activeTile={activeTile}
         onSelectTile={selectTile}
+        footer={<PlayoffBracket season={season} liveMatchups={allLiveMatchups} selectedUserId={userId} />}
       />
       <LeaderboardSection season={season} liveMatchups={liveMatchups} selectedUserId={userId} onSelectUser={selectTeam} />
       {lineupMatchup && (

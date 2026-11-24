@@ -1,24 +1,26 @@
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { COLUMN_GROUPS, ColumnGroupKey } from '../../constants/leaderboardColumnGroups';
 import { getLuckExtremes, getSpotsGainedInAllPlay, LeaderboardEntry, LuckExtremes } from '../../domain/leaderboard';
-import { DEFAULT_SORT, getNextSort, sortEntries } from '../../domain/leaderboardSort';
+import { getNextSort, Sort, sortEntries } from '../../domain/leaderboardSort';
 import { getTeamName } from '../../domain/teams';
 import { StoredSet } from '../../hooks/useStoredSet';
 import { UserId } from '../../types/models';
+import { Panel } from '../common/Panel';
 import { ColumnPicker, ColumnPickerGroup } from './ColumnPicker';
 import { RankChange } from './LeaderboardCells';
-import { Column, getColumns } from './leaderboardColumns';
+import { Column, ColumnState } from './leaderboardColumns';
 import { LuckBadge, LuckIcon } from './LuckBadge';
 import { SortableHeader } from './SortableHeader';
 import './Leaderboard.css';
 
 interface LeaderboardProps {
   entries: LeaderboardEntry[];
-  description: string;
   viewControls?: ReactNode;
   weekNavigator?: ReactNode;
+  footer?: ReactNode;
   hiddenGroups: StoredSet<ColumnGroupKey>;
-  isLoadingInjuries: boolean;
+  columnState: ColumnState;
+  onSortChange: (sort: Sort) => void;
   selectedUserId: UserId;
   onSelectUser: (userId: UserId) => void;
 }
@@ -45,46 +47,40 @@ function toPickerGroups(columns: Column[]): ColumnPickerGroup[] {
 
 export function Leaderboard({
   entries,
-  description,
   viewControls,
   weekNavigator,
+  footer,
   hiddenGroups,
-  isLoadingInjuries,
+  columnState,
+  onSortChange,
   selectedUserId,
   onSelectUser
 }: LeaderboardProps) {
-  const [sort, setSort] = useState(DEFAULT_SORT);
-
-  const availableColumns = useMemo(() => getColumns(entries, { isLoadingInjuries }), [entries, isLoadingInjuries]);
-  const columnsLeftShown = availableColumns.filter(column => !hiddenGroups.keys.has(column.group));
-  const isEveryAvailableColumnHidden = columnsLeftShown.length === 0;
-  const columns = isEveryAvailableColumnHidden ? availableColumns : columnsLeftShown;
-
-  const isSortColumnShown = columns.some(column => column.sortKey === sort.key);
-  const activeSort = isSortColumnShown ? sort : DEFAULT_SORT;
+  const { availableColumns, columns, activeSort, isEveryAvailableColumnHidden } = columnState;
   const sortOrder = availableColumns.find(column => column.sortKey === activeSort.key)?.sortOrders[activeSort.direction];
   const sortedEntries = useMemo(() => sortEntries(entries, sortOrder), [entries, sortOrder]);
   const luckExtremes = getLuckExtremes(entries);
 
   return (
-    <section className="panel leaderboard">
-      <div className="leaderboard-header">
-        <h2 className="section-title">All-play leaderboard</h2>
-        {viewControls}
-      </div>
-      <p className="leaderboard-description">{description}</p>
-      <div className="leaderboard-legend-bar">
-        <ul className="leaderboard-legend">
-          <li><LuckIcon kind="luckiest" /> Luckiest: biggest fraud</li>
-          <li><LuckIcon kind="unluckiest" /> Unluckiest: biggest cope</li>
-        </ul>
-        <ColumnPicker
-          groups={toPickerGroups(availableColumns)}
-          hiddenKeys={isEveryAvailableColumnHidden ? NOTHING_HIDDEN : hiddenGroups.keys}
-          onToggle={hiddenGroups.toggle}
-          onShowAll={hiddenGroups.clear}
-        />
-      </div>
+    <Panel
+      title="All-play leaderboard"
+      className="leaderboard"
+      actions={
+        <div className="leaderboard-controls">
+          {viewControls}
+          <ColumnPicker
+            groups={toPickerGroups(availableColumns)}
+            hiddenKeys={isEveryAvailableColumnHidden ? NOTHING_HIDDEN : hiddenGroups.keys}
+            onToggle={hiddenGroups.toggle}
+            onShowAll={hiddenGroups.clear}
+          />
+        </div>
+      }
+    >
+      <ul className="leaderboard-legend">
+        <li><LuckIcon kind="luckiest" /> Luckiest: biggest fraud</li>
+        <li><LuckIcon kind="unluckiest" /> Unluckiest: biggest cope</li>
+      </ul>
 
       {weekNavigator}
 
@@ -97,7 +93,7 @@ export function Leaderboard({
               <th scope="col" className="rank-change"><span className="visually-hidden">Real rank minus row position</span></th>
               <th scope="col" className="team">Team</th>
               {columns.map(column => (
-                <SortableHeader key={column.key} column={column} sort={activeSort} onSort={() => setSort(getNextSort(activeSort, column))} />
+                <SortableHeader key={column.key} column={column} sort={activeSort} onSort={() => onSortChange(getNextSort(activeSort, column))} />
               ))}
             </tr>
           </thead>
@@ -116,7 +112,8 @@ export function Leaderboard({
           </tbody>
         </table>
       </div>
-    </section>
+      {footer}
+    </Panel>
   );
 }
 

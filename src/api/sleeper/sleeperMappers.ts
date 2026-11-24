@@ -1,8 +1,8 @@
 import { getBestLineup } from '../../domain/lineup';
 import { getTeamName } from '../../domain/teams';
-import { BestLineupContext, League, LeagueSeason, Matchup, RosterId, Team, TeamRecord, TeamRoster, User, UserId } from '../../types/models';
+import { BestLineupContext, League, LeagueSeason, Matchup, RosterId, Team, TeamRecord, TeamRoster, User, UserId, WeeklyPoints } from '../../types/models';
 import { groupBy, toMapKeepingFirst } from '../../utils/collections';
-import { LeagueDto, LeagueMemberDto, MatchupDto, RosterDto } from './sleeperDto';
+import { LeagueDto, LeagueMemberDto, MatchupDto, MatchupDtosByWeek, RosterDto } from './sleeperDto';
 import { getAvatarUrl } from './sleeperCdn';
 
 const HUNDREDTHS_PER_POINT = 100;
@@ -165,4 +165,15 @@ export function toMatchups(
       return opponent ? [{ week, isFinal, team, opponent }] : [];
     });
   });
+}
+
+export function toWeeklyPoints(rosterOwners: Map<RosterId, User>, matchupDtosByWeek: MatchupDtosByWeek, lastCompletedWeek: number): WeeklyPoints {
+  const completedWeeks = [...matchupDtosByWeek].filter(([week]) => week <= lastCompletedWeek);
+  return new Map(completedWeeks.map(([week, matchupDtos]) => [
+    week,
+    new Map(matchupDtos.flatMap(matchupDto => {
+      const user = rosterOwners.get(matchupDto.roster_id);
+      return user ? [[user.id, matchupDto.points] as const] : [];
+    }))
+  ]));
 }

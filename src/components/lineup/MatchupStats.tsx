@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { WeekLineup } from '../../domain/lineup';
 import { GameResult, getGameResult } from '../../domain/records';
 import { Team } from '../../types/models';
-import { formatPoints } from '../../utils/format';
+import { formatPoints, MISSING_VALUE } from '../../utils/format';
 
 interface MatchupStatsProps {
   team: Team;
@@ -31,8 +31,6 @@ const MEDIAN_RESULT_NAMES: Record<GameResult, string> = {
 };
 
 const SMALLEST_DISPLAYED_POINTS = 0.005;
-const MISSING_LINEUP = '–';
-
 export function MatchupStats({ team, opponent, teamLineup, opponentLineup, median }: MatchupStatsProps) {
   const hasBestLineups = team.bestPoints !== null || opponent.bestPoints !== null;
   if (median === undefined && !hasBestLineups) return null;
@@ -98,5 +96,5 @@ function BenchPoints({ team, lineup }: { team: Team; lineup: WeekLineup | null }
 }
 
 function MissingLineup() {
-  return <span className="h2h-stat-missing" title="Sleeper didn't return this lineup">{MISSING_LINEUP}</span>;
+  return <span className="h2h-stat-missing" title="Sleeper didn't return this lineup">{MISSING_VALUE}</span>;
 }

@@ -81,11 +81,34 @@ export interface BestLineupContext {
   players: PlayerDirectory;
 }
 
+export type WeeklyPoints = Map<number, Map<UserId, number>>;
+
 export type WeeklyInjuries = Map<number, ReadonlySet<PlayerId>>;
+
+export type PlayoffRoundType = 'one-week' | 'two-week-final' | 'two-week';
+
+export type BracketSource =
+  | { kind: 'seed'; rosterId: RosterId }
+  | { kind: 'winner' | 'loser'; matchId: number };
+
+export interface BracketMatchSpec {
+  id: number;
+  round: number;
+  place: number | null;
+  sources: [BracketSource | null, BracketSource | null];
+  recordedWinner: RosterId | null;
+}
+
+export interface Brackets {
+  winners: BracketMatchSpec[];
+  losers: BracketMatchSpec[];
+}
 
 export interface LeagueRules {
   startWeek: number;
   regularSeasonEnd: number | null;
+  playoffRoundType: PlayoffRoundType;
+  playoffTeamCount: number | null;
   isBestBall: boolean;
   hasMedianGame: boolean;
 }
@@ -102,7 +125,10 @@ export interface Season {
   teamUsers: User[];
   teamIdsByManagerId: Map<UserId, UserId>;
   completedMatchups: Matchup[];
+  completedWeeklyPoints: WeeklyPoints;
   lastRegularSeasonWeek: number;
+  playoffRoundType: PlayoffRoundType;
+  playoffTeamCount: number | null;
   hasMedianGame: boolean;
   hasHeadToHead: boolean;
   officialStandings: Map<UserId, TeamRecord>;

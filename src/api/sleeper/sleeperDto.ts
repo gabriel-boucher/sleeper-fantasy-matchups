@@ -44,6 +44,8 @@ export interface LeagueDto {
   scoring_settings?: Record<string, number> | null;
   settings?: {
     playoff_week_start?: number;
+    playoff_round_type?: number;
+    playoff_teams?: number;
     start_week?: number;
     league_average_match?: number;
     best_ball?: number;
@@ -70,6 +72,23 @@ export interface NflStateDto {
   league_season: string;
   week: number;
   season_type: 'pre' | 'regular' | 'post' | 'off';
+}
+
+export interface BracketSourceDto {
+  w?: number;
+  l?: number;
+}
+
+export interface BracketMatchDto {
+  r: number;
+  m: number;
+  t1: number | null;
+  t2: number | null;
+  w: number | null;
+  l: number | null;
+  t1_from?: BracketSourceDto | null;
+  t2_from?: BracketSourceDto | null;
+  p?: number | null;
 }
 
 export interface ProjectionDto {
