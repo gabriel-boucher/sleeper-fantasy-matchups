@@ -2,7 +2,6 @@ import { Matchup, UserId, WeeklyInjuries } from '../types/models';
 import { formatPoints, formatSignedTenths, formatTally } from '../utils/format';
 import { getAverage, getMedian } from '../utils/math';
 import { getInjuryLoss } from './injuries';
-import { Sort } from './leaderboardSort';
 import { groupByWeek, hasAnyPoints } from './matchups';
 
 export interface WeeklyScore {
@@ -28,7 +27,6 @@ export interface WeeklyMetric {
 type ScoreComparison = (points: number, otherPoints: number) => boolean;
 
 const isHigher: ScoreComparison = (points, otherPoints) => points > otherPoints;
-const isLower: ScoreComparison = (points, otherPoints) => points < otherPoints;
 const isEqual: ScoreComparison = (points, otherPoints) => points === otherPoints;
 const OWN_SCORE_COUNT = 1;
 
@@ -59,36 +57,30 @@ function headToHeadMetric(label: string, counts: ScoreComparison): WeeklyMetric 
   };
 }
 
-const POINTS_FOR = pointsMetric('Points for', m => m.team.points);
+export const DEFAULT_WEEKLY_METRIC_KEY = 'allPlayWins';
 
-const METRICS_BY_SORT_KEY: Record<string, WeeklyMetric> = {
-  allPlayRecord: allPlayMetric('All-play wins', isHigher),
+export const WEEKLY_METRICS_BY_COLUMN_KEY: Record<string, WeeklyMetric> = {
+  allPlayWins: allPlayMetric('All-Play Wins', isHigher),
   allPlayTies: {
-    label: 'All-play ties',
+    label: 'All-Play Ties',
     format: formatTally,
     valueOf: ({ team }, { scores }) => scores.filter(score => isEqual(team.points, score)).length - OWN_SCORE_COUNT
   },
-  actualRecord: headToHeadMetric('Wins', isHigher),
+  wins: headToHeadMetric('Wins', isHigher),
   ties: {
     label: 'Ties',
     format: formatTally,
     valueOf: ({ team, opponent }) => toCount(isEqual(team.points, opponent.points))
   },
-  pointsFor: POINTS_FOR,
-  pointsAgainst: pointsMetric('Points against', m => m.opponent.points),
-  projected: pointsMetric('Projected points', m => m.team.projectedPoints),
-  bench: pointsMetric('Bench points', ({ team }) => (team.bestPoints === null ? null : team.bestPoints - team.points)),
-  injuries: pointsMetric('Points lost to injuries', (m, { injuries }) => (injuries ? getInjuryLoss([m], injuries)?.pointsLost ?? null : null)),
+  pointsFor: pointsMetric('Points For', m => m.team.points),
+  projected: pointsMetric('Projected Points', m => m.team.projectedPoints),
+  bench: pointsMetric('Bench Points', ({ team }) => (team.bestPoints === null ? null : team.bestPoints - team.points)),
+  injuries: pointsMetric('Points Lost to Injuries', (m, { injuries }) => (injuries ? getInjuryLoss([m], injuries)?.pointsLost ?? null : null)),
   scheduleStrength: {
-    label: 'Schedule strength',
+    label: 'Schedule Strength',
     format: formatSignedTenths,
     valueOf: (m, { scores }) => m.opponent.points - getAverage(scores)
   }
-};
-
-const LOSS_METRICS_BY_SORT_KEY: Record<string, WeeklyMetric> = {
-  allPlayRecord: allPlayMetric('All-play losses', isLower),
-  actualRecord: headToHeadMetric('Losses', isLower)
 };
 
 export function toCumulativeScores(scores: WeeklyScore[]): WeeklyScore[] {
@@ -100,11 +92,6 @@ export function toCumulativeScores(scores: WeeklyScore[]): WeeklyScore[] {
     totals.median += median;
     return { week, ...totals };
   });
-}
-
-export function getWeeklyMetric({ key, direction }: Sort): WeeklyMetric {
-  const lossMetric = direction === 'asc' ? LOSS_METRICS_BY_SORT_KEY[key] : undefined;
-  return lossMetric ?? METRICS_BY_SORT_KEY[key] ?? POINTS_FOR;
 }
 
 export function getWeeklyMetricScores(

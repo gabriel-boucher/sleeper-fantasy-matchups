@@ -1,56 +1,20 @@
 .weekly-chart-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
-.weekly-chart-controls {
+.weekly-chart-header-controls {
   display: flex;
-  flex-direction: column;
-}
-
-.weekly-chart-controls .toggle,
-.weekly-chart-controls .weekly-chart-toggle {
-  width: 100%;
-  margin: 0;
-  padding: var(--space-2) var(--space-3);
-  border-radius: 0;
-}
-
-.weekly-chart-controls .weekly-chart-legend {
-  flex-direction: column;
-  gap: 0;
-}
-
-@media (max-width: 640px) {
-  .weekly-chart-body {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-3);
-  }
-
-  .weekly-chart-controls {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-2) var(--space-4);
-  }
-
-  .weekly-chart-controls .toggle,
-  .weekly-chart-controls .weekly-chart-toggle {
-    width: auto;
-    padding: var(--space-1) var(--space-1-5);
-  }
-
-  .weekly-chart-controls .weekly-chart-legend {
-    flex-direction: row;
-    gap: var(--space-1) var(--space-2);
-  }
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
 }
 
 .weekly-chart-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1) var(--space-4);
+  justify-content: center;
+  gap: var(--space-1) var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -62,7 +26,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-1-5);
-  margin: calc(-1 * var(--space-1)) calc(-1 * var(--space-1-5));
+  margin: 0;
   padding: var(--space-1) var(--space-1-5);
   background: none;
   border: none;
@@ -162,13 +126,6 @@
 .weekly-chart-dot.average { fill: var(--chart-average); }
 .weekly-chart-dot.median { fill: var(--chart-median); }
 
-.weekly-chart-end-label {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  fill: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-
 .weekly-chart-hit-area {
   fill: transparent;
   cursor: crosshair;
@@ -208,4 +165,8 @@
 .weekly-chart-tooltip-row strong {
   color: var(--text);
   font-variant-numeric: tabular-nums;
+}
+
+.weekly-chart-metric-picker {
+  width: 220px;
 }

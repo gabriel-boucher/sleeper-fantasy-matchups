@@ -1,8 +1,8 @@
 export const SERIES = [
   { key: 'team', label: 'Team' },
   { key: 'opponent', label: 'Opponent' },
-  { key: 'average', label: 'League avg' },
-  { key: 'median', label: 'League median' }
+  { key: 'average', label: 'League Avg' },
+  { key: 'median', label: 'League Median' }
 ] as const;
 
 export type Series = typeof SERIES[number];

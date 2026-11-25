@@ -1,4 +1,4 @@
-import { KeyboardEvent, PointerEvent, useMemo, useState } from 'react';
+import { KeyboardEvent, PointerEvent, ReactNode, useMemo, useState } from 'react';
 import { toCumulativeScores, WeeklyMetric, WeeklyScore } from '../../domain/weeklyMetrics';
 import { useElementWidth } from '../../hooks/useElementWidth';
 import { useShownChartSeries } from '../../hooks/useShownChartSeries';
@@ -10,7 +10,7 @@ import { Toggle } from '../common/Toggle';
 import './WeeklyTrendChart.css';
 
 const HEIGHT = 300;
-const MARGIN = { top: 12, right: 52, bottom: 24, left: 40 };
+const MARGIN = { top: 12, right: 16, bottom: 24, left: 40 };
 const Y_TICK_COUNT = 6;
 const MIN_WEEK_LABEL_GAP = 28;
 const DOT_RADIUS = 4;
@@ -23,6 +23,7 @@ interface WeeklyTrendChartProps {
   metric: WeeklyMetric;
   teamName: string;
   isMedianShownByDefault: boolean;
+  metricPicker: ReactNode;
 }
 
 interface LegendProps {
@@ -31,7 +32,7 @@ interface LegendProps {
   onToggle: (key: SeriesKey) => void;
 }
 
-export function WeeklyTrendChart({ scores: weeklyScores, metric, teamName, isMedianShownByDefault }: WeeklyTrendChartProps) {
+export function WeeklyTrendChart({ scores: weeklyScores, metric, teamName, isMedianShownByDefault, metricPicker }: WeeklyTrendChartProps) {
   const [isCumulative, setIsCumulative] = useState(false);
   const scores = useMemo(() => (isCumulative ? toCumulativeScores(weeklyScores) : weeklyScores), [isCumulative, weeklyScores]);
   const metricName = isCumulative ? `${metric.label}, cumulative` : metric.label;
@@ -85,8 +86,14 @@ export function WeeklyTrendChart({ scores: weeklyScores, metric, teamName, isMed
 
   return (
     <Section
-      title={`All-play chart — ${metric.label}`}
+      title="All-play chart"
       titleHint={`Showing ${metricName.toLowerCase()} per week for ${teamName}`}
+      actions={
+        <div className="weekly-chart-header-controls">
+          <Toggle label="Cumulative" checked={isCumulative} onChange={setIsCumulative} />
+          <div className="weekly-chart-metric-picker">{metricPicker}</div>
+        </div>
+      }
       hasDivider={false}
     >
       <div className="weekly-chart-body">
@@ -131,12 +138,6 @@ export function WeeklyTrendChart({ scores: weeklyScores, metric, teamName, isMed
                 <circle key={series.key} className={`weekly-chart-dot ${series.key}`} cx={activeX} cy={getY(activeScore[series.key])} r={DOT_RADIUS} />
               ))}
 
-              {isShown('team') && (
-                <text className="weekly-chart-end-label" x={getX(lastIndex) + AXIS_LABEL_GAP} y={getY(scores[lastIndex].team)} dominantBaseline="middle">
-                  {metric.format(scores[lastIndex].team)}
-                </text>
-              )}
-
               <rect
                 className="weekly-chart-hit-area"
                 x={MARGIN.left - HIT_AREA_OVERFLOW}
@@ -154,10 +155,7 @@ export function WeeklyTrendChart({ scores: weeklyScores, metric, teamName, isMed
           )}
         </div>
 
-        <div className="weekly-chart-controls">
-          <Toggle label="Cumulative" checked={isCumulative} onChange={setIsCumulative} />
-          <Legend shownSeries={shownSeries} isShown={isShown} onToggle={toggleSeries} />
-        </div>
+        <Legend shownSeries={shownSeries} isShown={isShown} onToggle={toggleSeries} />
       </div>
 
       <ScreenReaderTable scores={scores} metric={metric} title={`${metricName} per week`} />

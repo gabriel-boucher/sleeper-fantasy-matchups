@@ -7,8 +7,6 @@ import {
 import { FIRST_WEEK } from '../../constants/weeks';
 import { getAllPlayLeaderboard, getLeaderboardWeeks, withLiveResults } from '../../domain/leaderboard';
 import { DEFAULT_SORT } from '../../domain/leaderboardSort';
-import { getTeamName } from '../../domain/teams';
-import { getWeeklyMetric, getWeeklyMetricScores } from '../../domain/weeklyMetrics';
 import { useMidGameInjuries } from '../../hooks/useMidGameInjuries';
 import { useStoredSet } from '../../hooks/useStoredSet';
 import { useUrlParamsSync } from '../../hooks/useUrlParamsSync';
@@ -19,7 +17,7 @@ import { Toggle } from '../common/Toggle';
 import { WeekNavigator } from '../common/WeekNavigator';
 import { Leaderboard } from './Leaderboard';
 import { getColumnState } from './leaderboardColumns';
-import { WeeklyTrendChart } from './WeeklyTrendChart';
+import { WeeklyTrend } from './WeeklyTrend';
 
 type LeaderboardView = 'season' | 'week';
 
@@ -94,12 +92,7 @@ export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSel
     () => getColumnState(entries, { isLoadingInjuries }, hiddenGroups.keys, sort),
     [entries, isLoadingInjuries, hiddenGroups.keys, sort]
   );
-  const metric = getWeeklyMetric(columnState.activeSort);
   const selectedUser = teamUsers.find(user => user.id === selectedUserId) ?? null;
-  const trendScores = useMemo(
-    () => (selectedUser ? getWeeklyMetricScores(matchups, selectedUser.id, metric, { hasMedianGame, injuries }) : []),
-    [selectedUser, matchups, metric, hasMedianGame, injuries]
-  );
 
   function changeLiveWeekInclusion(isIncluded: boolean) {
     setWantsLiveWeek(isIncluded);
@@ -126,12 +119,13 @@ export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSel
       onSortChange={setSort}
       selectedUserId={selectedUserId}
       onSelectUser={onSelectUser}
-      footer={selectedUser && trendScores.length > 0 && (
-        <WeeklyTrendChart
-          scores={trendScores}
-          metric={metric}
-          teamName={getTeamName(selectedUser)}
-          isMedianShownByDefault={hasMedianGame}
+      footer={selectedUser && (
+        <WeeklyTrend
+          matchups={matchups}
+          user={selectedUser}
+          columns={columnState.availableColumns}
+          hasMedianGame={hasMedianGame}
+          injuries={injuries}
         />
       )}
     />

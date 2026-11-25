@@ -1,12 +1,12 @@
 export const COLUMN_GROUPS = [
-  { key: 'allPlayRecord', label: 'All-play record' },
-  { key: 'actualRecord', label: 'Real record' },
-  { key: 'pointsFor', label: 'Points for' },
-  { key: 'pointsAgainst', label: 'Points against' },
-  { key: 'projected', label: 'Projected points' },
-  { key: 'bench', label: 'Bench points' },
-  { key: 'injuries', label: 'Points lost to injuries' },
-  { key: 'scheduleStrength', label: 'Strength of schedule' }
+  { key: 'allPlayRecord', label: 'All-Play Record' },
+  { key: 'actualRecord', label: 'Real Record' },
+  { key: 'pointsFor', label: 'Points For' },
+  { key: 'pointsAgainst', label: 'Points Against' },
+  { key: 'projected', label: 'Projected Points' },
+  { key: 'bench', label: 'Bench Points' },
+  { key: 'injuries', label: 'Points Lost to Injuries' },
+  { key: 'scheduleStrength', label: 'Strength of Schedule' }
 ] as const;
 
 export type ColumnGroup = typeof COLUMN_GROUPS[number];

@@ -1,7 +1,8 @@
 import { formatRecord } from '../../domain/records';
 import { getTeamName } from '../../domain/teams';
 import { TeamRecord, User, UserId } from '../../types/models';
-import { ListboxField, ListboxOption } from '../common/ListboxField';
+import { ListboxOption } from '../common/Listbox';
+import { ListboxField } from '../common/ListboxField';
 import { UsernameLink } from '../common/TeamLinks';
 
 interface TeamFiltersProps {
