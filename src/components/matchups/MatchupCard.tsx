@@ -2,16 +2,10 @@ import { getResult, MatchupResult } from '../../domain/matchups';
 import { GameResult, getGameResult } from '../../domain/records';
 import { getTeamName } from '../../domain/teams';
 import { Matchup, Team } from '../../types/models';
-import { formatPoints, MISSING_VALUE } from '../../utils/format';
+import { formatPoints } from '../../utils/format';
 import { TickingPoints } from '../common/TickingPoints';
+import { RESULT_LABELS } from './resultLabels';
 import './MatchupCard.css';
-
-const RESULT_LABELS: Record<MatchupResult, string> = {
-  win: 'W',
-  loss: 'L',
-  tie: 'T',
-  unplayed: MISSING_VALUE
-};
 
 const MEDIAN_OUTCOMES: Record<GameResult, string> = {
   win: 'won',

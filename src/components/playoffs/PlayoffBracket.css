@@ -4,7 +4,7 @@
 
 .playoff-scroll {
   overflow-x: auto;
-  margin: var(--space-4) calc(-1 * var(--panel-padding)) 0;
+  margin: 0 calc(-1 * var(--panel-padding));
   padding: 0 var(--panel-padding);
 }
 

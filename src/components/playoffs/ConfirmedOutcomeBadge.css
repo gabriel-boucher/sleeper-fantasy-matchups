@@ -1,0 +1,12 @@
+.confirmed-outcome-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.confirmed-outcome-badge.playoffs {
+  color: var(--win);
+}
+
+.confirmed-outcome-badge.toiletBowl {
+  color: var(--loss);
+}

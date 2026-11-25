@@ -35,7 +35,7 @@ function getChanceOfReaching({ stats: statKeys, threshold }: ThresholdBonus, sta
   return 1 - getNormalCdf((threshold - average) / (average * STAT_SPREAD_RATIO_OF_AVERAGE));
 }
 
-export function getLineupProjection(starters: PlayerId[], projections: PlayerProjections): number {
+function getLineupProjection(starters: PlayerId[], projections: PlayerProjections): number {
   return sumBy(starters, id => projections[id] ?? 0);
 }
 

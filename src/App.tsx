@@ -1,5 +1,5 @@
-import { UserSearchProvider } from './context/UserSearchProvider';
 import { useUserSearchContext } from './context/userSearchContext';
+import { UserSearchProvider } from './context/UserSearchProvider';
 import { HomePage } from './pages/HomePage';
 import { MainPage } from './pages/MainPage';
 

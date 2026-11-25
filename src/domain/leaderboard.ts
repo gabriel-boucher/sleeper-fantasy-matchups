@@ -14,7 +14,7 @@ import {
   hasAnyPoints
 } from './matchups';
 import { getTotalProjection } from './projections';
-import { addGame, addRecords, createEmptyRecord, getGamesPlayed, getWinPct } from './records';
+import { addAllPlayResults, addGame, addRecords, compareStandings, copyStandings, createEmptyRecord, getGamesPlayed } from './records';
 
 export interface LeaderboardEntry {
   user: User;
@@ -59,7 +59,7 @@ export function withLiveResults(
   liveMatchups: Matchup[],
   hasMedianGame: boolean
 ): Map<UserId, TeamRecord> {
-  const standings = new Map([...officialStandings].map(([id, record]) => [id, { ...record }]));
+  const standings = copyStandings(officialStandings);
 
   getPlayedMatchups(liveMatchups).forEach(m => {
     const id = m.team.user.id;
@@ -112,7 +112,7 @@ export function getAllPlayLeaderboard(
 
   const actualRanks = new Map(
     [...teams]
-      .sort((a, b) => getWinPct(b.actual) - getWinPct(a.actual) || b.actual.pointsFor - a.actual.pointsFor)
+      .sort((a, b) => compareStandings(a.actual, b.actual))
       .map((team, i) => [team.user.id, i + 1])
   );
   const leagueAverage = getAveragePointsPerGame(teams.map(team => team.headToHead));
@@ -140,9 +140,8 @@ function getAllPlayRecords(matchups: Matchup[], users: User[]): Map<UserId, Team
     weekMatchups.forEach(({ team }) => {
       const record = records.get(team.user.id);
       if (!record) return;
-      weekMatchups
-        .filter(other => other.team.user.id !== team.user.id)
-        .forEach(other => addGame(record, team.points, other.team.points));
+      const otherTeamsPoints = weekMatchups.filter(other => other.team.user.id !== team.user.id).map(other => other.team.points);
+      addAllPlayResults(record, team.points, otherTeamsPoints);
     });
   });
 

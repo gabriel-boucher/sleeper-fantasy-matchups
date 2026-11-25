@@ -1,8 +1,8 @@
-import { LeagueBrowser } from '../components/league/LeagueBrowser';
 import { Navbar } from '../components/layout/Navbar';
 import { PageContent } from '../components/layout/PageContent';
+import { LeagueBrowser } from '../components/league/LeagueBrowser';
 import { SearchErrorMessage } from '../components/search/SearchErrorMessage';
-import { TeamActionsProvider } from '../context/TeamActionsProvider';
+import { TeamSelectionProvider } from '../context/TeamSelectionProvider';
 import { useUserSearchContext } from '../context/userSearchContext';
 
 interface MainPageProps {
@@ -17,11 +17,11 @@ export function MainPage({ username }: MainPageProps) {
       <Navbar username={username} />
       <PageContent>
         <SearchErrorMessage />
-        <TeamActionsProvider switchUser={switchToLeagueMember}>
+        <TeamSelectionProvider switchUser={switchToLeagueMember}>
           {userLeagues && (
             <LeagueBrowser key={`${userLeagues.userId}-${historyNavigationCount}`} userLeagues={userLeagues} />
           )}
-        </TeamActionsProvider>
+        </TeamSelectionProvider>
       </PageContent>
     </>
   );

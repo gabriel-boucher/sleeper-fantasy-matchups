@@ -1,0 +1,135 @@
+.data-table-scroll {
+  overflow-x: auto;
+}
+
+.data-table-scroll:not(:last-child) tbody tr:last-child > * {
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table th,
+.data-table td {
+  padding: var(--space-2-5) var(--space-2);
+  text-align: right;
+  white-space: nowrap;
+  border-top: 1px solid var(--border);
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  padding-left: var(--space-3);
+}
+
+.data-table th:last-child,
+.data-table td:last-child {
+  padding-right: var(--space-3);
+}
+
+.data-table thead th:first-child {
+  border-top-left-radius: var(--radius-sm);
+}
+
+.data-table thead th:last-child {
+  border-top-right-radius: var(--radius-sm);
+}
+
+.data-table thead th {
+  vertical-align: middle;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  letter-spacing: var(--letter-spacing-display);
+  text-transform: uppercase;
+  color: var(--slab-text-muted);
+  background: var(--slab);
+  border-top: none;
+}
+
+.data-table .rank {
+  width: 1%;
+  text-align: left;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-subtle);
+}
+
+.data-table thead .rank {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.data-table tbody tr.selected .rank {
+  color: var(--accent);
+}
+
+.data-table .team {
+  width: 100%;
+  max-width: 0;
+  min-width: 180px;
+  text-align: left;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.data-table th.team ~ th,
+.data-table th.team ~ td {
+  padding-left: clamp(var(--space-2), 2vw - 4px, var(--space-6));
+}
+
+.data-table tbody tr {
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.data-table tbody tr:hover {
+  background: var(--surface-muted);
+}
+
+.data-table tbody tr.selected {
+  background: var(--surface-muted);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.data-table tbody tr.selected .team {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.team-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.team-cell-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  .data-table th,
+  .data-table td {
+    padding: var(--space-2) var(--space-1-5);
+    font-size: var(--font-size-sm);
+  }
+
+  .data-table th.team ~ th,
+  .data-table th.team ~ td {
+    padding-left: var(--space-1-5);
+  }
+
+  .data-table .team {
+    min-width: 112px;
+    max-width: 112px;
+  }
+}

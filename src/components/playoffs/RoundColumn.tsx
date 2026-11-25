@@ -1,7 +1,7 @@
 import { PlayoffBye, PlayoffRound } from '../../domain/playoffs';
 import { formatWeekSpan } from '../../utils/format';
-import { getBracketCell, getCellBelowBracket, getHeaderCell } from './bracketGrid';
 import { BracketDisplay, getSelectedClass } from './bracketDisplay';
+import { getBracketCell, getCellBelowBracket, getHeaderCell } from './bracketGrid';
 import { MatchCard } from './MatchCard';
 import { PlayoffTeamLine } from './PlayoffTeamLine';
 

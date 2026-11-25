@@ -1,7 +1,7 @@
 import { CHAMPIONSHIP_PLACE } from '../constants/playoffs';
-import { BracketMatchSpec, BracketSource, PlayoffRoundType, RosterId, TeamRecord, User, UserId, WeeklyPoints } from '../types/models';
+import { BracketMatchSpec, BracketSource, PlayoffRoundType, RosterId, Season, User, UserId, WeeklyPoints } from '../types/models';
 import { BracketLayout, getBracketLayout, RowSpan } from './bracketLayout';
-import { getSeedRosterIds, sortRosterIdsByStandings } from './bracketSeeding';
+import { getSeedRosterIds } from './bracketSeeding';
 import { getPointsOverWeeks, hasPointsFromWeek } from './weeklyPoints';
 
 export type PlayoffSeeding = 'real' | 'allPlay';
@@ -60,7 +60,7 @@ export interface PlayoffInputs {
   rosterOwners: Map<RosterId, User>;
   firstPlayoffWeek: number;
   roundType: PlayoffRoundType;
-  officialStandings: Map<UserId, TeamRecord>;
+  realOrder: UserId[];
   allPlayOrder: UserId[];
 }
 
@@ -89,6 +89,10 @@ interface ResolvedMatch {
 
 type TeamFactory = (slot: Slot, points?: number | null) => PlayoffTeam;
 
+export function canProjectPlayoffs({ playoffTeamCount, completedMatchups }: Season): boolean {
+  return playoffTeamCount !== null && completedMatchups.length > 0;
+}
+
 export function hasPlayoffsStarted(completedWeeklyPoints: WeeklyPoints, liveWeek: number | null, firstPlayoffWeek: number): boolean {
   const isPlayoffWeekLive = liveWeek !== null && liveWeek >= firstPlayoffWeek;
   return isPlayoffWeekLive || hasPointsFromWeek(completedWeeklyPoints, firstPlayoffWeek);
@@ -115,14 +119,14 @@ export function buildPlayoffBracket(inputs: PlayoffInputs): PlayoffBracket | nul
   };
 }
 
-function getSeeding({ specs, seeding, seedOffset, rosterOwners, officialStandings, allPlayOrder }: PlayoffInputs): Seeding | null {
-  const realSeeds = sortRosterIdsByStandings(getSeedRosterIds(specs), rosterOwners, officialStandings);
+function getSeeding({ specs, seeding, seedOffset, rosterOwners, realOrder, allPlayOrder }: PlayoffInputs): Seeding | null {
+  const rosterIdsByUserId = new Map([...rosterOwners].map(([rosterId, user]) => [user.id, rosterId]));
+  const toRosterIds = (order: UserId[]) => order.flatMap(userId => rosterIdsByUserId.get(userId) ?? []);
+  const bracketRosterIds = new Set(getSeedRosterIds(specs));
+  const realSeeds = toRosterIds(realOrder).filter(rosterId => bracketRosterIds.has(rosterId));
   if (realSeeds.length === 0) return null;
 
-  const rosterIdsByUserId = new Map([...rosterOwners].map(([rosterId, user]) => [user.id, rosterId]));
-  const allPlaySeeds = allPlayOrder
-    .flatMap(userId => rosterIdsByUserId.get(userId) ?? [])
-    .slice(seedOffset, seedOffset + realSeeds.length);
+  const allPlaySeeds = toRosterIds(allPlayOrder).slice(seedOffset, seedOffset + realSeeds.length);
   const isAllPlay = seeding === 'allPlay' && allPlaySeeds.length === realSeeds.length;
   return { realSeeds, seeds: isAllPlay ? allPlaySeeds : realSeeds, isAllPlay };
 }
@@ -142,11 +146,14 @@ function toPlayoffTeam(slot: Slot, points: number | null, { realSeeds }: Seeding
   };
 }
 
+export function getRoundLength(round: number, lastRound: number, roundType: PlayoffRoundType): number {
+  return roundType === 'two-week' || (roundType === 'two-week-final' && round === lastRound) ? 2 : 1;
+}
+
 function getRoundWeeks(round: number, lastRound: number, firstPlayoffWeek: number, roundType: PlayoffRoundType): number[] {
-  const getRoundLength = (r: number) => (roundType === 'two-week' || (roundType === 'two-week-final' && r === lastRound) ? 2 : 1);
   let start = firstPlayoffWeek;
-  for (let r = 1; r < round; r++) start += getRoundLength(r);
-  return Array.from({ length: getRoundLength(round) }, (_, i) => start + i);
+  for (let r = 1; r < round; r++) start += getRoundLength(r, lastRound, roundType);
+  return Array.from({ length: getRoundLength(round, lastRound, roundType) }, (_, i) => start + i);
 }
 
 function resolveMatches(specs: BracketMatchSpec[], lastRound: number, inputs: PlayoffInputs, seeding: Seeding): Map<number, ResolvedMatch> {

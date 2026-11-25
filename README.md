@@ -120,7 +120,7 @@ src/
     matchups/      Weekly matchup cards and list
     lineup/        Head-to-head lineup dialog and player avatars
     leaderboard/   All-play leaderboard, column picker, sortable headers, luck badges, weekly trend chart
-    playoffs/      Playoff and toilet bowl brackets
+    playoffs/      Playoff panel: playoff and toilet bowl brackets, simulated playoff odds table
     settings/      League settings gear and dialog (median game and custom scoring)
     home/          Home page illustrations
   pages/           Top-level pages (home page, main page)
@@ -132,10 +132,10 @@ src/
   types/           Models shared across the app
   domain/          Pure fantasy logic with no React or network
   services/        Loading and caching of leagues, seasons, brackets, players, projections, player stats and injuries
-  context/         React contexts (user search, team actions, league settings, settings draft)
-  hooks/           React hooks (async loading, live refresh, playoff brackets, URL sync, stored preferences)
-  constants/       Shared constants (weeks, playoff places, cache duration, chart series, leaderboard column groups, scoring setting groups)
-  utils/           Generic helpers (math, collections, formatting, expiring cache, weekly cache, storage, URL parameters)
+  context/         React contexts (user search, team selection, league settings, settings draft)
+  hooks/           React hooks (async loading, live refresh, team selection, playoff brackets and simulation, URL sync, stored preferences)
+  constants/       Shared constants (weeks, playoff places and simulation settings, cache duration, chart series, record tiles, leaderboard column groups, scoring setting groups)
+  utils/           Generic helpers (math, collections, formatting, seeded random numbers, expiring cache, weekly cache, storage, URL parameters)
   styles/          Global design tokens (variables.css), reset and shared building blocks
 scripts/           Node scripts run by the GitHub Action (publishData.ts and its lib/ modules)
 ```
@@ -144,7 +144,7 @@ Most stats live in `src/domain/` as plain functions:
 
 | File | Responsibility |
 |---|---|
-| `records.ts` | Win/loss records: adding games, win percentage, formatting |
+| `records.ts` | Win/loss records: adding games and all-play results, win percentage, standings order, formatting |
 | `matchups.ts` | Results, played matchups, weekly medians and median record |
 | `schedules.ts` | Schedule swaps, best/worst schedule |
 | `leaderboard.ts` | All-play ranking, real rank, luck, strength of schedule |
@@ -156,7 +156,11 @@ Most stats live in `src/domain/` as plain functions:
 | `playoffs.ts` | Playoff bracket results, byes and final standings |
 | `bracketSeeding.ts` | Bracket seeds and standings order |
 | `bracketLayout.ts` | Grid rows of each bracket match and bye |
-| `projectedBracket.ts` | Bracket built from the current standings before the playoffs start |
+| `projectedBracket.ts` | Bracket built from a ranked order of teams before the playoffs start |
+| `playoffOdds.ts` | Monte Carlo playoff odds: playoffs, byes, title, toilet bowl and last place |
+| `simulatedStandings.ts` | Plays out the remaining weeks for the simulation, with real or all-play seeding |
+| `scoringModel.ts` | Each team's scoring average and spread, pulled toward the league's |
+| `playoffClinching.ts` | Teams mathematically sure to make the playoffs or the toilet bowl |
 | `seasonProgress.ts` | Which weeks are finished and which one is live |
 | `injuries.ts` | Starters who left their game injured |
 

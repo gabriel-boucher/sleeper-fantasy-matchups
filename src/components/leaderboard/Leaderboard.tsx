@@ -1,10 +1,10 @@
 import { ReactNode, useMemo } from 'react';
 import { COLUMN_GROUPS, ColumnGroupKey } from '../../constants/leaderboardColumnGroups';
+import { useTeamSelectionContext } from '../../context/teamSelectionContext';
 import { getLuckExtremes, getSpotsGainedInAllPlay, LeaderboardEntry, LuckExtremes } from '../../domain/leaderboard';
 import { getNextSort, Sort, sortEntries } from '../../domain/leaderboardSort';
 import { getTeamName } from '../../domain/teams';
-import { StoredSet } from '../../hooks/useStoredSet';
-import { UserId } from '../../types/models';
+import { StoredSetState } from '../../hooks/useStoredSet';
 import { Panel } from '../common/Panel';
 import { ColumnPicker, ColumnPickerGroup } from './ColumnPicker';
 import { RankChange } from './LeaderboardCells';
@@ -18,11 +18,9 @@ interface LeaderboardProps {
   viewControls?: ReactNode;
   weekNavigator?: ReactNode;
   footer?: ReactNode;
-  hiddenGroups: StoredSet<ColumnGroupKey>;
+  hiddenGroups: StoredSetState<ColumnGroupKey>;
   columnState: ColumnState;
   onSortChange: (sort: Sort) => void;
-  selectedUserId: UserId;
-  onSelectUser: (userId: UserId) => void;
 }
 
 interface LeaderboardRowProps {
@@ -30,8 +28,6 @@ interface LeaderboardRowProps {
   position: number;
   columns: Column[];
   luckExtremes: LuckExtremes;
-  isSelected: boolean;
-  onSelect: () => void;
 }
 
 const NOTHING_HIDDEN: ReadonlySet<ColumnGroupKey> = new Set();
@@ -52,9 +48,7 @@ export function Leaderboard({
   footer,
   hiddenGroups,
   columnState,
-  onSortChange,
-  selectedUserId,
-  onSelectUser
+  onSortChange
 }: LeaderboardProps) {
   const { availableColumns, columns, activeSort, isEveryAvailableColumnHidden } = columnState;
   const sortOrder = availableColumns.find(column => column.sortKey === activeSort.key)?.sortOrders[activeSort.direction];
@@ -84,8 +78,8 @@ export function Leaderboard({
 
       {weekNavigator}
 
-      <div className="leaderboard-scroll">
-        <table className="leaderboard-table">
+      <div className="data-table-scroll">
+        <table className="data-table leaderboard-table">
           <thead>
             <tr>
               <th scope="col" className="rank">#</th>
@@ -105,8 +99,6 @@ export function Leaderboard({
                 position={i + 1}
                 columns={columns}
                 luckExtremes={luckExtremes}
-                isSelected={entry.user.id === selectedUserId}
-                onSelect={() => onSelectUser(entry.user.id)}
               />
             ))}
           </tbody>
@@ -117,12 +109,13 @@ export function Leaderboard({
   );
 }
 
-function LeaderboardRow({ entry, position, columns, luckExtremes, isSelected, onSelect }: LeaderboardRowProps) {
+function LeaderboardRow({ entry, position, columns, luckExtremes }: LeaderboardRowProps) {
+  const { selectedUserId, selectTeam } = useTeamSelectionContext();
   const { user, actualRank } = entry;
   const spotsGainedInAllPlay = getSpotsGainedInAllPlay(entry);
 
   return (
-    <tr className={isSelected ? 'selected' : ''} onClick={onSelect}>
+    <tr className={user.id === selectedUserId ? 'selected' : ''} onClick={() => selectTeam?.(user.id)}>
       <td className="rank">{position}</td>
       <td className="actual-rank">{actualRank}</td>
       <td className="rank-change"><RankChange spotsAboveRealRank={actualRank - position} /></td>

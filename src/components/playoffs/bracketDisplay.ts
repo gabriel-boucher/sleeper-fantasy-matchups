@@ -4,7 +4,7 @@ import { UserId } from '../../types/models';
 export interface BracketDisplay {
   isToiletBowl: boolean;
   showsSeedChanges: boolean;
-  selectedUserId: UserId;
+  selectedUserId?: UserId;
   teamCount: number;
 }
 

@@ -1,5 +1,5 @@
-import { BracketMatchDto, LeagueDto, LeagueMemberDto, MatchupDto, NflStateDto, PlayerDto, PlayerStatLineDto, RosterDto, SleeperUserDto } from './sleeperDto';
 import { fetchJson } from '../http';
+import { BracketMatchDto, LeagueDto, LeagueMemberDto, MatchupDto, NflStateDto, PlayerDto, PlayerStatLineDto, RosterDto, SleeperUserDto } from './sleeperDto';
 
 const API_URL = 'https://api.sleeper.app/v1';
 const PROJECTIONS_URL = 'https://api.sleeper.com/projections/nfl';

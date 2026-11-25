@@ -3,6 +3,7 @@ import { WeekLineup } from '../../domain/lineup';
 import { GameResult, getGameResult } from '../../domain/records';
 import { Team } from '../../types/models';
 import { formatPoints, MISSING_VALUE } from '../../utils/format';
+import { RESULT_LABELS } from '../matchups/resultLabels';
 
 interface MatchupStatsProps {
   team: Team;
@@ -18,12 +19,6 @@ interface StatRowProps {
   right: ReactNode;
 }
 
-const MEDIAN_RESULT_LABELS: Record<GameResult, string> = {
-  win: 'W',
-  loss: 'L',
-  tie: 'T'
-};
-
 const MEDIAN_RESULT_NAMES: Record<GameResult, string> = {
   win: 'Beat the median',
   loss: 'Lost to the median',
@@ -31,6 +26,7 @@ const MEDIAN_RESULT_NAMES: Record<GameResult, string> = {
 };
 
 const SMALLEST_DISPLAYED_POINTS = 0.005;
+
 export function MatchupStats({ team, opponent, teamLineup, opponentLineup, median }: MatchupStatsProps) {
   const hasBestLineups = team.bestPoints !== null || opponent.bestPoints !== null;
   if (median === undefined && !hasBestLineups) return null;
@@ -76,7 +72,7 @@ function MedianResult({ points, median }: { points: number; median: number }) {
   const result = getGameResult(points, median);
   return (
     <span className={`h2h-stat-pill ${result}`} title={MEDIAN_RESULT_NAMES[result]}>
-      <span aria-hidden="true">{MEDIAN_RESULT_LABELS[result]}</span>
+      <span aria-hidden="true">{RESULT_LABELS[result]}</span>
       <span className="visually-hidden">{MEDIAN_RESULT_NAMES[result]}</span>
     </span>
   );

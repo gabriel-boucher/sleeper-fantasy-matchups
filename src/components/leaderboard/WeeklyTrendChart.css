@@ -10,69 +10,6 @@
   gap: var(--space-2) var(--space-4);
 }
 
-.weekly-chart-legend {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-1) var(--space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-}
-
-.weekly-chart-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1-5);
-  margin: 0;
-  padding: var(--space-1) var(--space-1-5);
-  background: none;
-  border: none;
-  border-radius: var(--radius-xs);
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  transition: color var(--transition-fast), opacity var(--transition-fast), background-color var(--transition-fast);
-}
-
-.weekly-chart-toggle:hover:not(:disabled) {
-  color: var(--text);
-  background: var(--surface-muted);
-}
-
-.weekly-chart-toggle:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-shadow);
-}
-
-.weekly-chart-toggle:disabled {
-  cursor: default;
-}
-
-.weekly-chart-toggle.off {
-  opacity: 0.5;
-  text-decoration: line-through;
-}
-
-.weekly-chart-toggle.off .weekly-chart-key {
-  background: var(--text-subtle);
-}
-
-.weekly-chart-key {
-  display: inline-block;
-  width: 14px;
-  height: 2px;
-  border-radius: 1px;
-  flex-shrink: 0;
-}
-
-.weekly-chart-key.team { background: var(--chart-team); }
-.weekly-chart-key.opponent { background: var(--chart-opponent); }
-.weekly-chart-key.average { background: var(--chart-average); }
-.weekly-chart-key.median { background: var(--chart-median); }
-
 .weekly-chart {
   position: relative;
   outline: none;
@@ -129,42 +66,6 @@
 .weekly-chart-hit-area {
   fill: transparent;
   cursor: crosshair;
-}
-
-.weekly-chart-tooltip {
-  position: absolute;
-  top: 0;
-  z-index: 1;
-  min-width: 150px;
-  padding: var(--space-2) var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.12);
-  font-size: var(--font-size-sm);
-  pointer-events: none;
-}
-
-.weekly-chart-tooltip.right { transform: translateX(var(--space-3)); }
-.weekly-chart-tooltip.left { transform: translateX(calc(-100% - var(--space-3))); }
-
-.weekly-chart-tooltip-title {
-  margin-bottom: var(--space-1);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.weekly-chart-tooltip-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--text-muted);
-}
-
-.weekly-chart-tooltip-row strong {
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
 }
 
 .weekly-chart-metric-picker {

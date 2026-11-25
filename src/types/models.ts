@@ -1,6 +1,5 @@
 export type UserId = string;
 export type RosterId = number;
-export type MatchupId = number;
 export type PlayerId = string;
 
 export interface User {
@@ -143,6 +142,7 @@ export interface Season {
   teamUsers: User[];
   teamIdsByManagerId: Map<UserId, UserId>;
   completedMatchups: Matchup[];
+  upcomingMatchups: Matchup[];
   completedWeeklyPoints: WeeklyPoints;
   lastRegularSeasonWeek: number;
   playoffRoundType: PlayoffRoundType;

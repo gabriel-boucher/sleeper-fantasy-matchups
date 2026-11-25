@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { UrlParamUpdates, updateUrlParams } from '../utils/urlParams';
+import { updateUrlParams, UrlParamUpdates } from '../utils/urlParams';
 
 export function useUrlParamsSync(params: UrlParamUpdates): void {
   const isFirstWrite = useRef(true);

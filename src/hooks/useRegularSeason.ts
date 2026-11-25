@@ -10,13 +10,13 @@ function toProjectedRegularSeason(matchups: Matchup[], lastRegularSeasonWeek: nu
   return projections ? withProjections(regularSeason, projections) : regularSeason;
 }
 
-interface RegularSeason {
+export interface RegularSeasonState {
   season: Season;
   liveMatchups: Matchup[];
   allLiveMatchups: Matchup[];
 }
 
-export function useRegularSeason(loadedSeason: Season): RegularSeason {
+export function useRegularSeason(loadedSeason: Season): RegularSeasonState {
   const projections = useProjections(loadedSeason);
   const refreshedLiveMatchups = useLiveMatchups(loadedSeason);
   const { lastRegularSeasonWeek } = loadedSeason;

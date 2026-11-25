@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { RecordTileVariant } from '../../constants/recordTiles';
 import { getPlayedMatchups, getRecord } from '../../domain/matchups';
 import { getTotalProjection } from '../../domain/projections';
 import { addRecords } from '../../domain/records';
@@ -8,7 +9,6 @@ import { formatPoints } from '../../utils/format';
 import { Panel } from '../common/Panel';
 import { MatchupList } from '../matchups/MatchupList';
 import { RecordTile } from './RecordTile';
-import { RecordTileVariant } from './recordTileVariants';
 import { ScheduleRangeSummary } from './ScheduleRangeSummary';
 import './RecordSummary.css';
 
@@ -28,10 +28,9 @@ interface RecordDetailsProps {
 interface RecordSummaryProps extends Omit<RecordDetailsProps, 'matchups'> {
   teamFilters: ReactNode;
   matchups: Matchup[] | null;
-  footer?: ReactNode;
 }
 
-export function RecordSummary({ teamFilters, matchups, footer, ...detailsProps }: RecordSummaryProps) {
+export function RecordSummary({ teamFilters, matchups, ...detailsProps }: RecordSummaryProps) {
   return (
     <Panel title="Season record" className="record-summary">
       <div className="record-summary-controls">{teamFilters}</div>
@@ -39,8 +38,6 @@ export function RecordSummary({ teamFilters, matchups, footer, ...detailsProps }
       {matchups
         ? <RecordDetails matchups={matchups} {...detailsProps} />
         : <p className="empty-state">Pick a team to see its season.</p>}
-
-      {footer}
     </Panel>
   );
 }

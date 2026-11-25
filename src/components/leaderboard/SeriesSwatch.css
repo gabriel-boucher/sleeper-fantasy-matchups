@@ -1,0 +1,12 @@
+.series-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.series-swatch.team { background: var(--chart-team); }
+.series-swatch.opponent { background: var(--chart-opponent); }
+.series-swatch.average { background: var(--chart-average); }
+.series-swatch.median { background: var(--chart-median); }

@@ -18,7 +18,7 @@ import { getLastCompletedWeek, getLiveWeek, getWeekCount, isCurrentSeason } from
 import { BestLineupContext, LeagueRules, LeagueSettings, Matchup, PlayerDirectory, ProjectionSettings, Season } from '../types/models';
 import { range } from '../utils/collections';
 import { withExpiringCache } from '../utils/expiringCache';
-import { getPlayerDirectory } from './playerService';
+import { loadPlayerDirectory } from './playerService';
 import { rescoreLiveMatchups } from './statsService';
 
 interface SeasonData {
@@ -49,7 +49,7 @@ async function fetchSeason(leagueId: string): Promise<Season> {
     getLeagueMembers(leagueId),
     getRosters(leagueId),
     fetchMatchupWeeks(leagueId, range(FIRST_WEEK, DEFAULT_WEEK_COUNT)),
-    getPlayerDirectory().catch(() => null)
+    loadPlayerDirectory().catch(() => null)
   ]);
   if (!leagueDto) throw new Error('This season no longer exists on Sleeper');
 
@@ -77,6 +77,7 @@ function toSeason(leagueId: string, data: SeasonData): Season {
   const matchups = [...matchupDtosByWeek].flatMap(([week, matchupDtos]) =>
     toMatchups(rosterOwners, matchupDtos, { week, isFinal: week <= lastCompletedWeek }, bestLineupContext)
   );
+  const lastRegularSeasonWeek = rules.regularSeasonEnd ?? getLastScheduledWeek(matchupDtosByWeek) ?? weekCount;
 
   return {
     leagueId,
@@ -84,8 +85,9 @@ function toSeason(leagueId: string, data: SeasonData): Season {
     teamUsers: toTeamUsers(rosterOwners, members),
     teamIdsByManagerId: toTeamIdsByManagerId(rosterDtos, rosterOwners),
     completedMatchups: matchups.filter(m => m.isFinal),
+    upcomingMatchups: matchups.filter(m => !m.isFinal && m.week <= lastRegularSeasonWeek),
     completedWeeklyPoints: toWeeklyPoints(rosterOwners, matchupDtosByWeek, lastCompletedWeek),
-    lastRegularSeasonWeek: rules.regularSeasonEnd ?? getLastScheduledWeek(matchupDtosByWeek) ?? weekCount,
+    lastRegularSeasonWeek,
     playoffRoundType: rules.playoffRoundType,
     playoffTeamCount: rules.playoffTeamCount,
     hasMedianGame: rules.hasMedianGame,

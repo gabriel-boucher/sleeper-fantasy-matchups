@@ -1,5 +1,5 @@
 import { ScoringSettingDefinition } from '../../constants/scoringSettingGroups';
-import { useSettingsDraft } from '../../context/settingsDraftContext';
+import { useSettingsDraftContext } from '../../context/settingsDraftContext';
 import { SettingRow } from './SettingRow';
 
 interface ScoringSettingRowProps {
@@ -7,7 +7,7 @@ interface ScoringSettingRowProps {
 }
 
 export function ScoringSettingRow({ setting: { key, label } }: ScoringSettingRowProps) {
-  const draft = useSettingsDraft();
+  const draft = useSettingsDraftContext();
   const inputId = `league-setting-${key}`;
 
   return (

@@ -45,7 +45,7 @@ export function getColumnState(
   return { availableColumns, columns, activeSort: isSortColumnShown ? sort : DEFAULT_SORT, isEveryAvailableColumnHidden };
 }
 
-export function getColumns(entries: LeaderboardEntry[], { isLoadingInjuries }: ColumnLoadingState): Column[] {
+function getColumns(entries: LeaderboardEntry[], { isLoadingInjuries }: ColumnLoadingState): Column[] {
   const hasAllPlayTies = entries.some(e => e.allPlayRecord.ties > 0);
   const hasActualTies = entries.some(e => e.actualRecord.ties > 0);
   const hasBench = entries.some(e => e.bench !== null);

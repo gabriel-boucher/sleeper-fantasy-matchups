@@ -2,8 +2,8 @@ import { getBestLineup } from '../../domain/lineup';
 import { getTeamName } from '../../domain/teams';
 import { BestLineupContext, League, LeagueSeason, Matchup, RosterId, Team, TeamRecord, TeamRoster, User, UserId, WeeklyPoints, WeeklyRosters } from '../../types/models';
 import { groupBy, toMapKeepingFirst } from '../../utils/collections';
-import { LeagueDto, LeagueMemberDto, MatchupDto, MatchupDtosByWeek, RosterDto } from './sleeperDto';
 import { getAvatarUrl } from './sleeperCdn';
+import { LeagueDto, LeagueMemberDto, MatchupDto, MatchupDtosByWeek, RosterDto } from './sleeperDto';
 
 const HUNDREDTHS_PER_POINT = 100;
 

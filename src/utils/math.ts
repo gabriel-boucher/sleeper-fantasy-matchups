@@ -6,6 +6,11 @@ export function getAverage(values: number[]): number {
   return sumBy(values, value => value) / values.length;
 }
 
+export function getVariance(values: number[]): number {
+  const average = getAverage(values);
+  return getAverage(values.map(value => (value - average) ** 2));
+}
+
 const ABRAMOWITZ_STEGUN_P = 0.2316419;
 const ABRAMOWITZ_STEGUN_COEFFICIENTS = [0.319381530, -0.356563782, 1.781477937, -1.821255978, 1.330274429];
 

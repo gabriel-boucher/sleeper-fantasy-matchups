@@ -1,9 +1,11 @@
 import { FinalPlace, PlayoffTeam } from '../../domain/playoffs';
 import { TeamIdentity } from '../common/TeamIdentity';
-import { getBracketCell, getHeaderCell } from './bracketGrid';
 import { BracketDisplay } from './bracketDisplay';
+import { getBracketCell, getHeaderCell } from './bracketGrid';
 import { FinalStandings } from './FinalStandings';
 import { TO_BE_DECIDED } from './playoffLabels';
+
+const PLACEMENT_ROW_COUNT = 1;
 
 interface ChampionColumnProps {
   champion: PlayoffTeam | null;
@@ -16,13 +18,14 @@ interface ChampionColumnProps {
 export function ChampionColumn({ champion, finalStandings, column, rowCount, display }: ChampionColumnProps) {
   const { isToiletBowl } = display;
   const hasDecidedPlaces = finalStandings.some(place => place.team);
+  const rows = { start: 0, end: champion ? rowCount + PLACEMENT_ROW_COUNT : rowCount };
 
   return (
     <>
       <h3 className="playoff-round-title" style={getHeaderCell(column)}>
         {isToiletBowl ? 'Last place' : 'Champion'}
       </h3>
-      <div className="playoff-cell playoff-end" style={getBracketCell(column, { start: 0, end: rowCount + 1 })}>
+      <div className="playoff-cell playoff-end" style={getBracketCell(column, rows)}>
         <div className={`playoff-champion ${isToiletBowl ? 'last-place' : ''} ${champion ? '' : 'pending'}`}>
           <span className="playoff-trophy" aria-hidden="true">{isToiletBowl ? '🚽' : '🏆'}</span>
           {champion ? (

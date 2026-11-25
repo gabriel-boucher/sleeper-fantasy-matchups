@@ -1,11 +1,11 @@
-import { useSettingsDraft } from '../../context/settingsDraftContext';
+import { useSettingsDraftContext } from '../../context/settingsDraftContext';
 import { Toggle } from '../common/Toggle';
 import { SettingRow } from './SettingRow';
 
 const SETTING_NAME = 'Median game';
 
 export function MedianGameSettingRow() {
-  const draft = useSettingsDraft();
+  const draft = useSettingsDraftContext();
 
   return (
     <SettingRow

@@ -1,11 +1,11 @@
-import { ScheduleStrength } from '../../domain/leaderboard';
 import { InjuryLoss } from '../../domain/injuries';
+import { ScheduleStrength } from '../../domain/leaderboard';
 import { BenchStats } from '../../domain/lineup';
 import { formatCount, formatPercent, formatPoints, formatSignedTenths, MISSING_VALUE, roundToTenths } from '../../utils/format';
 import { Spinner } from '../common/Spinner';
 
-export function UnknownValue({ reason }: { reason: string }) {
-  return <span className="bench-value unknown" title={reason}>{MISSING_VALUE}</span>;
+function UnknownValue({ reason }: { reason: string }) {
+  return <span className="leaderboard-value unknown" title={reason}>{MISSING_VALUE}</span>;
 }
 
 export function ProjectedPointsValue({ projectedPoints }: { projectedPoints: number | null }) {
@@ -18,7 +18,7 @@ export function InjuryLossValue({ injuryLoss, isLoading }: { injuryLoss: InjuryL
   if (injuryLoss === null) return <UnknownValue reason="Injury data or projections unavailable" />;
 
   return (
-    <span className="bench-value" title={`${formatCount(injuryLoss.injuredStarters, 'starter')} left their game injured`}>
+    <span className="leaderboard-value" title={`${formatCount(injuryLoss.injuredStarters, 'starter')} left their game injured`}>
       {formatPoints(injuryLoss.pointsLost)}
     </span>
   );
@@ -29,7 +29,7 @@ export function BenchValue({ bench }: { bench: BenchStats | null }) {
 
   return (
     <span
-      className="bench-value"
+      className="leaderboard-value"
       title={`Best lineup: ${formatPoints(bench.bestPoints)} pts · ${formatPercent(bench.efficiency, 1)} efficiency`}
     >
       {formatPoints(bench.pointsLeft)}

@@ -1,0 +1,41 @@
+.split-odds-bar {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 96px;
+  vertical-align: middle;
+}
+
+.split-odds-track {
+  display: flex;
+  justify-content: space-between;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+  overflow: hidden;
+}
+
+.split-odds-fill.good {
+  background: var(--win);
+}
+
+.split-odds-fill.bad {
+  background: var(--loss);
+}
+
+.split-odds-values {
+  display: flex;
+  justify-content: space-between;
+  min-height: 1lh;
+  font-size: var(--font-size-2xs);
+  line-height: 1.2;
+}
+
+.split-odds-value.good {
+  color: var(--win);
+}
+
+.split-odds-value.bad {
+  color: var(--loss);
+}

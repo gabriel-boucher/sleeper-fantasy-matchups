@@ -9,6 +9,10 @@ export function groupBy<T, K>(items: T[], getKey: (item: T) => K): Map<K, T[]> {
   return groups;
 }
 
+export function filterEntries<V>(record: Record<string, V>, keep: (key: string, value: V) => boolean): Record<string, V> {
+  return Object.fromEntries(Object.entries(record).filter(([key, value]) => keep(key, value)));
+}
+
 export function range(first: number, last: number): number[] {
   return Array.from({ length: Math.max(last - first + 1, 0) }, (_, i) => first + i);
 }

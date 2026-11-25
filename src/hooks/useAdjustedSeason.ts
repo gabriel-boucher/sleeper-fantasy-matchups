@@ -5,13 +5,13 @@ import { loadSeasonStats } from '../services/statsService';
 import { LeagueSettings, Season } from '../types/models';
 import { useAsync } from './useAsync';
 
-interface AdjustedSeason {
+export interface AdjustedSeasonState {
   season: Season;
   loading: boolean;
   error: string | null;
 }
 
-export function useAdjustedSeason(loadedSeason: Season, settings: LeagueSettings): AdjustedSeason {
+export function useAdjustedSeason(loadedSeason: Season, settings: LeagueSettings): AdjustedSeasonState {
   const needsStats = hasScoringChanges(settings, loadedSeason.defaultSettings);
   const { data: weeklyStats, loading, error } = useAsync(needsStats ? loadedSeason : null, loadSeasonStats);
 

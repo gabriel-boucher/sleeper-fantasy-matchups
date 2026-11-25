@@ -1,8 +1,8 @@
+import { RecordTileVariant } from '../../constants/recordTiles';
 import { ScheduleRange } from '../../domain/schedules';
 import { getTeamName } from '../../domain/teams';
 import { UserId } from '../../types/models';
 import { RecordTile } from './RecordTile';
-import { RecordTileVariant } from './recordTileVariants';
 import './ScheduleRangeSummary.css';
 
 interface ScheduleRangeSummaryProps {

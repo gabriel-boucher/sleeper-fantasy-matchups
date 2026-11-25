@@ -23,7 +23,7 @@ export function groupByWeek(matchups: Matchup[]): Map<number, Matchup[]> {
   return groupBy(matchups, m => m.week);
 }
 
-export function getScoresByWeek(matchups: Matchup[]): Map<number, number[]> {
+function getScoresByWeek(matchups: Matchup[]): Map<number, number[]> {
   return new Map([...groupByWeek(matchups)].map(([week, weekMatchups]) => [week, weekMatchups.map(m => m.team.points)]));
 }
 

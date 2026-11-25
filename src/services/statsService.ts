@@ -1,9 +1,9 @@
 import { getWeeklyStats } from '../api/sleeper/sleeperApi';
 import { CURATED_SCORING_KEYS } from '../constants/scoringSettingGroups';
 import { getSeasonRescorer, rescoreMatchups } from '../domain/rescoring';
-import { Matchup, PlayerId, PlayerStats, Season, WeekPlayerStats, WeeklyStats } from '../types/models';
-import { readStoredJson, writeStoredJson } from '../utils/storage';
-import { loadWeeks, StoredWeeks, toStoredWeeks, WeeklyStore, withLiveWeek } from '../utils/weeklyCache';
+import { Matchup, PlayerId, PlayerStats, Season, WeeklyStats, WeekPlayerStats } from '../types/models';
+import { filterEntries } from '../utils/collections';
+import { loadWeeks, openWeeklyStore, toStoredWeeks, WeeklyStore, withLiveWeek } from '../utils/weeklyCache';
 
 const STORAGE_PREFIX = 'sleeper-stats-v1:';
 const FALLBACK_POSITIONS = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
@@ -30,11 +30,7 @@ export async function rescoreLiveMatchups(season: Season, liveWeek: number, matc
 }
 
 function openStatsStore(season: Season): WeeklyStore<WeekPlayerStats> {
-  const storageKey = STORAGE_PREFIX + season.leagueId;
-  return {
-    stored: readStoredJson<StoredWeeks<WeekPlayerStats>>(storageKey) ?? {},
-    write: weeks => writeStoredJson(storageKey, weeks)
-  };
+  return openWeeklyStore(STORAGE_PREFIX + season.leagueId);
 }
 
 async function fetchWeekStats(season: Season, week: number, extraMatchups: Matchup[] = []): Promise<WeekPlayerStats> {
@@ -64,5 +60,5 @@ function getScoringKeys(season: Season): Set<string> {
 }
 
 function pickScoringStats(stats: PlayerStats, scoringKeys: Set<string>): PlayerStats {
-  return Object.fromEntries(Object.entries(stats).filter(([key, value]) => scoringKeys.has(key) && value !== 0));
+  return filterEntries(stats, (key, value) => scoringKeys.has(key) && value !== 0);
 }

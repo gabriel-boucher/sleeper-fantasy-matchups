@@ -1,0 +1,49 @@
+.weekly-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.weekly-chart-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  margin: 0;
+  padding: var(--space-1) var(--space-1-5);
+  background: none;
+  border: none;
+  border-radius: var(--radius-xs);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: color var(--transition-fast), opacity var(--transition-fast), background-color var(--transition-fast);
+}
+
+.weekly-chart-toggle:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--surface-muted);
+}
+
+.weekly-chart-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+.weekly-chart-toggle:disabled {
+  cursor: default;
+}
+
+.weekly-chart-toggle.off {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.weekly-chart-toggle.off .series-swatch {
+  background: var(--text-subtle);
+}

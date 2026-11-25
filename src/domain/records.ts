@@ -1,4 +1,4 @@
-import { TeamRecord } from '../types/models';
+import { TeamRecord, UserId } from '../types/models';
 
 export type GameResult = 'win' | 'loss' | 'tie';
 
@@ -30,6 +30,11 @@ export function addGame(record: TeamRecord, pointsFor: number, pointsAgainst: nu
   return record;
 }
 
+export function addAllPlayResults(record: TeamRecord, points: number, otherTeamsPoints: number[]): TeamRecord {
+  otherTeamsPoints.forEach(otherPoints => addResult(record, getGameResult(points, otherPoints)));
+  return record;
+}
+
 export function addRecords(a: TeamRecord, b: TeamRecord): TeamRecord {
   return {
     wins: a.wins + b.wins,
@@ -47,6 +52,14 @@ export function getGamesPlayed(record: TeamRecord): number {
 export function getWinPct(record: TeamRecord): number {
   const games = getGamesPlayed(record);
   return games > 0 ? (record.wins + record.ties / 2) / games : 0;
+}
+
+export function compareStandings(a: TeamRecord, b: TeamRecord): number {
+  return getWinPct(b) - getWinPct(a) || b.pointsFor - a.pointsFor;
+}
+
+export function copyStandings(standings: Map<UserId, TeamRecord>): Map<UserId, TeamRecord> {
+  return new Map([...standings].map(([userId, record]) => [userId, { ...record }]));
 }
 
 export function formatRecord(record: TeamRecord): string {

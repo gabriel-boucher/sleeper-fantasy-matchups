@@ -9,9 +9,9 @@ import {
   StartingSlot,
   Team,
   TeamRoster,
-  WeekPlayerStats,
   WeeklyPoints,
-  WeeklyStats
+  WeeklyStats,
+  WeekPlayerStats
 } from '../types/models';
 import { roundPoints, sumBy } from '../utils/math';
 import { getStandings } from './leaderboard';

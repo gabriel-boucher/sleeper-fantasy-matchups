@@ -19,15 +19,15 @@ interface StoredPlayers {
 
 let pendingDirectory: Promise<PlayerDirectory> | null = null;
 
-export function getPlayerDirectory(): Promise<PlayerDirectory> {
-  pendingDirectory ??= loadPlayerDirectory().catch(error => {
+export function loadPlayerDirectory(): Promise<PlayerDirectory> {
+  pendingDirectory ??= loadPlayerDirectoryFromSources().catch(error => {
     pendingDirectory = null;
     throw error;
   });
   return pendingDirectory;
 }
 
-async function loadPlayerDirectory(): Promise<PlayerDirectory> {
+async function loadPlayerDirectoryFromSources(): Promise<PlayerDirectory> {
   const stored = readStoredJson<StoredPlayers>(STORAGE_KEY);
   if (stored && Date.now() - stored.savedAt < STORED_MAX_AGE_MS) return toPlayerDirectory(stored.players);
 

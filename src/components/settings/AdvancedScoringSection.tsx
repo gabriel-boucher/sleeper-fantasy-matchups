@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { ADVANCED_SECTION_TITLE, ScoringSettingGroup } from '../../constants/scoringSettingGroups';
-import { useSettingsDraft } from '../../context/settingsDraftContext';
-import { getScoringKeys, toGridCells } from './scoringSettingLayout';
+import { useSettingsDraftContext } from '../../context/settingsDraftContext';
 import { ScoringSettingFieldset } from './ScoringSettingFieldset';
+import { getScoringKeys, toGridCells } from './scoringSettingLayout';
 
 interface AdvancedScoringSectionProps {
   groups: ScoringSettingGroup[];
 }
 
 export function AdvancedScoringSection({ groups }: AdvancedScoringSectionProps) {
-  const draft = useSettingsDraft();
+  const draft = useSettingsDraftContext();
   const [isInitiallyOpen] = useState(() => getScoringKeys(groups).some(draft.isChanged));
 
   if (groups.length === 0) return null;

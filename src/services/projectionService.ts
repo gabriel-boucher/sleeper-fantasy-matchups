@@ -3,9 +3,10 @@ import { hasScoringChanges } from '../domain/leagueSettings';
 import { getWeeks } from '../domain/matchups';
 import { getProjectedPoints } from '../domain/projections';
 import { Matchup, PlayerId, PlayerProjections, ProjectionSettings, Season, WeeklyProjections } from '../types/models';
+import { filterEntries } from '../utils/collections';
 import { roundPoints } from '../utils/math';
 import { readStoredJson, writeStoredJson } from '../utils/storage';
-import { loadWeeks, StoredWeeks, toStoredWeeks, WeeklyStore, withLiveWeek } from '../utils/weeklyCache';
+import { loadWeeks, openWeeklyStore, StoredWeeks, toStoredWeeks, WeeklyStore, withLiveWeek } from '../utils/weeklyCache';
 
 const STORAGE_PREFIX = 'sleeper-projections-v2:';
 const CUSTOM_STORAGE_PREFIX = 'sleeper-projections-custom-v1:';
@@ -35,13 +36,7 @@ export async function loadProjections(season: Season): Promise<WeeklyProjections
 }
 
 function openProjectionStore(season: Season, settings: ProjectionSettings): WeeklyStore<PlayerProjections> {
-  if (!hasScoringChanges(season.settings, season.defaultSettings)) {
-    const storageKey = STORAGE_PREFIX + season.leagueId;
-    return {
-      stored: readStoredJson<StoredWeeks<PlayerProjections>>(storageKey) ?? {},
-      write: weeks => writeStoredJson(storageKey, weeks)
-    };
-  }
+  if (!hasScoringChanges(season.settings, season.defaultSettings)) return openWeeklyStore(STORAGE_PREFIX + season.leagueId);
 
   const storageKey = CUSTOM_STORAGE_PREFIX + season.leagueId;
   const scoring = toScoringFingerprint(settings.pointsPerStat);
@@ -73,5 +68,5 @@ function getRosteredPlayers(matchups: Matchup[], week: number): Set<PlayerId> {
 }
 
 function pickPlayers(projections: PlayerProjections, playerIds: Set<PlayerId>): PlayerProjections {
-  return Object.fromEntries(Object.entries(projections).filter(([id]) => playerIds.has(id)));
+  return filterEntries(projections, id => playerIds.has(id));
 }

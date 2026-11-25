@@ -1,10 +1,10 @@
 import { createContext, useContext } from 'react';
-import { LeagueSettingsDraft } from '../hooks/useLeagueSettingsDraft';
+import { LeagueSettingsDraftState } from '../hooks/useLeagueSettingsDraft';
 
-export const SettingsDraftContext = createContext<LeagueSettingsDraft | null>(null);
+export const SettingsDraftContext = createContext<LeagueSettingsDraftState | null>(null);
 
-export function useSettingsDraft(): LeagueSettingsDraft {
+export function useSettingsDraftContext(): LeagueSettingsDraftState {
   const draft = useContext(SettingsDraftContext);
-  if (!draft) throw new Error('useSettingsDraft must be used inside a SettingsDraftContext provider');
+  if (!draft) throw new Error('useSettingsDraftContext must be used inside a SettingsDraftProvider');
   return draft;
 }

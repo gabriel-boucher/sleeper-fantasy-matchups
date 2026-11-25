@@ -3,7 +3,7 @@ import { LeagueSettings, ScoringSettings } from '../types/models';
 
 type ScoringInputs = Record<string, string>;
 
-export interface LeagueSettingsDraft {
+export interface LeagueSettingsDraftState {
   defaultSettings: LeagueSettings;
   hasMedianGame: boolean;
   isMedianGameChanged: boolean;
@@ -30,7 +30,7 @@ function parseInput(input: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export function useLeagueSettingsDraft(settings: LeagueSettings, defaultSettings: LeagueSettings, keys: string[]): LeagueSettingsDraft {
+export function useLeagueSettingsDraft(settings: LeagueSettings, defaultSettings: LeagueSettings, keys: string[]): LeagueSettingsDraftState {
   const [hasMedianGame, setHasMedianGame] = useState(settings.hasMedianGame);
   const [inputs, setInputs] = useState(() => toInputs(settings.scoring, keys));
 

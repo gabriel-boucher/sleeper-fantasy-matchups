@@ -19,7 +19,7 @@ function scrollToTop(): void {
   window.scrollTo({ top: 0 });
 }
 
-export interface UserSearch {
+export interface UserSearchState {
   username: string | null;
   userLeagues: UserLeagues | null;
   loading: boolean;
@@ -30,7 +30,7 @@ export interface UserSearch {
   switchToLeagueMember: (userId: UserId) => Promise<void>;
 }
 
-export function useUserSearch(): UserSearch {
+export function useUserSearch(): UserSearchState {
   const [attempt, setAttempt] = useState(readSearchAttemptFromUrl);
   const { data: userLeagues, loading, error: searchError } = useAsync(attempt, findLeagues);
   const [switchError, setSwitchError] = useState<string | null>(null);

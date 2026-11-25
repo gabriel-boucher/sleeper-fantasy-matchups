@@ -1,6 +1,6 @@
+import { RecordTileVariant } from '../../constants/recordTiles';
 import { formatRecord } from '../../domain/records';
 import { TeamRecord } from '../../types/models';
-import { RecordTileVariant } from './recordTileVariants';
 import './RecordTile.css';
 
 interface RecordTileProps {

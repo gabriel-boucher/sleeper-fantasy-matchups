@@ -1,8 +1,19 @@
 import { useMemo } from 'react';
 import { getMatchupsFor, getMedianRecord, getPlayedMatchups, getRecord, getWeeklyMedians } from '../domain/matchups';
 import { addRecords, createEmptyRecord, getGamesPlayed } from '../domain/records';
-import { getMatchupsOnSchedule, getRecordsOnAllSchedulesBestFirst, getScheduleRange } from '../domain/schedules';
+import { getMatchupsOnSchedule, getRecordsOnAllSchedulesBestFirst, getScheduleRange, ScheduleRange } from '../domain/schedules';
 import { Matchup, Season, TeamRecord, UserId } from '../types/models';
+
+export interface TeamSeasonState {
+  matchups: Matchup[];
+  liveMatchup: Matchup | null;
+  weeksWithMatchupCard: number[];
+  medianRecord: TeamRecord;
+  weeklyMedians: Map<number, number>;
+  ownScheduleRecord: TeamRecord;
+  recordsByScheduleOwner: Map<UserId, TeamRecord>;
+  scheduleRange: ScheduleRange | null;
+}
 
 interface TeamSeasonOptions {
   season: Season;
@@ -11,7 +22,7 @@ interface TeamSeasonOptions {
   scheduleOwnerId: UserId;
 }
 
-export function useTeamSeason({ season, liveMatchups, userId, scheduleOwnerId }: TeamSeasonOptions) {
+export function useTeamSeason({ season, liveMatchups, userId, scheduleOwnerId }: TeamSeasonOptions): TeamSeasonState {
   const { completedMatchups, teamUsers, lastRegularSeasonWeek, hasMedianGame } = season;
 
   const matchups = useMemo(

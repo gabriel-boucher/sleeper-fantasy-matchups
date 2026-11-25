@@ -1,5 +1,5 @@
 import { MouseEvent, ReactNode } from 'react';
-import { useTeamActions } from '../../context/teamActionsContext';
+import { useTeamSelectionContext } from '../../context/teamSelectionContext';
 import { getTeamName } from '../../domain/teams';
 import { User } from '../../types/models';
 import './TeamLinks.css';
@@ -30,7 +30,7 @@ function LinkButton({ className, title, onClick, children }: LinkButtonProps) {
 }
 
 export function TeamNameLink({ user, className = '' }: TeamLinkProps) {
-  const { selectTeam } = useTeamActions();
+  const { selectTeam } = useTeamSelectionContext();
   const name = getTeamName(user);
   if (!selectTeam) return <span className={className}>{name}</span>;
 
@@ -42,7 +42,7 @@ export function TeamNameLink({ user, className = '' }: TeamLinkProps) {
 }
 
 export function UsernameLink({ user, className = '' }: TeamLinkProps) {
-  const { switchUser } = useTeamActions();
+  const { switchUser } = useTeamSelectionContext();
   const usernameClassName = `username ${className}`;
   const { managerId } = user;
   if (managerId === null) return <span className={usernameClassName}>No manager</span>;

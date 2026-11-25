@@ -1,6 +1,5 @@
 import { CHAMPIONSHIP_PLACE, FIFTH_PLACE, THIRD_PLACE } from '../constants/playoffs';
-import { BracketMatchSpec, Brackets, BracketSource, RosterId, TeamRecord, User, UserId } from '../types/models';
-import { sortRosterIdsByStandings } from './bracketSeeding';
+import { BracketMatchSpec, Brackets, BracketSource, RosterId } from '../types/models';
 
 const MIN_BRACKET_TEAMS = 2;
 const FIRST_ROUND = 1;
@@ -8,12 +7,7 @@ const SECOND_ROUND = 2;
 const MIN_ROUNDS_FOR_FIFTH_PLACE_GAME = 3;
 const TEAMS_PER_MATCH = 2;
 
-export function getProjectedBrackets(
-  rosterOwners: Map<RosterId, User>,
-  standings: Map<UserId, TeamRecord>,
-  playoffTeamCount: number
-): Brackets {
-  const rosterIdsBestFirst = sortRosterIdsByStandings([...rosterOwners.keys()], rosterOwners, standings);
+export function getProjectedBrackets(rosterIdsBestFirst: RosterId[], playoffTeamCount: number): Brackets {
   const playoffTeams = rosterIdsBestFirst.slice(0, playoffTeamCount);
   const toiletBowlTeamsWorstFirst = rosterIdsBestFirst.slice(playoffTeamCount).reverse();
   return {
@@ -30,7 +24,7 @@ function getSeedOrder(bracketSize: number): number[] {
   return order;
 }
 
-function buildBracket(rosterIdsBySeed: RosterId[]): BracketMatchSpec[] {
+export function buildBracket(rosterIdsBySeed: RosterId[]): BracketMatchSpec[] {
   const teamCount = rosterIdsBySeed.length;
   if (teamCount < MIN_BRACKET_TEAMS) return [];
 

@@ -1,3 +1,5 @@
+import { readStoredJson, writeStoredJson } from './storage';
+
 export type StoredWeeks<T> = Record<string, T>;
 
 export interface WeeklyStore<T> {
@@ -10,6 +12,13 @@ interface WeeklyLoadOptions<T> {
   liveWeek: number | null;
   stored: StoredWeeks<T>;
   fetchWeek: (week: number) => Promise<T | null>;
+}
+
+export function openWeeklyStore<T>(storageKey: string): WeeklyStore<T> {
+  return {
+    stored: readStoredJson<StoredWeeks<T>>(storageKey) ?? {},
+    write: weeks => writeStoredJson(storageKey, weeks)
+  };
 }
 
 export function withLiveWeek(completedWeeks: number[], liveWeek: number | null): number[] {

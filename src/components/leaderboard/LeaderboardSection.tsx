@@ -5,12 +5,13 @@ import {
   HIDDEN_COLUMN_GROUPS_STORAGE_KEY
 } from '../../constants/leaderboardColumnGroups';
 import { FIRST_WEEK } from '../../constants/weeks';
+import { useTeamSelectionContext } from '../../context/teamSelectionContext';
 import { getAllPlayLeaderboard, getLeaderboardWeeks, withLiveResults } from '../../domain/leaderboard';
 import { DEFAULT_SORT } from '../../domain/leaderboardSort';
 import { useMidGameInjuries } from '../../hooks/useMidGameInjuries';
 import { useStoredSet } from '../../hooks/useStoredSet';
 import { useUrlParamsSync } from '../../hooks/useUrlParamsSync';
-import { Matchup, Season, UserId } from '../../types/models';
+import { Matchup, Season } from '../../types/models';
 import { readUrlParam } from '../../utils/urlParams';
 import { Segment, SegmentedControl } from '../common/SegmentedControl';
 import { Toggle } from '../common/Toggle';
@@ -32,8 +33,6 @@ const NO_WEEK = 0;
 interface LeaderboardSectionProps {
   season: Season;
   liveMatchups: Matchup[];
-  selectedUserId: UserId;
-  onSelectUser: (userId: UserId) => void;
 }
 
 function getIncludableLiveWeek(season: Season, liveMatchups: Matchup[]): number | null {
@@ -47,7 +46,7 @@ function readWeekFromUrl(weeks: number[]): number | null {
   return weeks.includes(linkedWeek) ? linkedWeek : null;
 }
 
-export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSelectUser }: LeaderboardSectionProps) {
+export function LeaderboardSection({ season, liveMatchups }: LeaderboardSectionProps) {
   const { completedMatchups, teamUsers, lastRegularSeasonWeek, officialStandings, hasMedianGame } = season;
 
   const liveWeek = getIncludableLiveWeek(season, liveMatchups);
@@ -92,6 +91,7 @@ export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSel
     () => getColumnState(entries, { isLoadingInjuries }, hiddenGroups.keys, sort),
     [entries, isLoadingInjuries, hiddenGroups.keys, sort]
   );
+  const { selectedUserId } = useTeamSelectionContext();
   const selectedUser = teamUsers.find(user => user.id === selectedUserId) ?? null;
 
   function changeLiveWeekInclusion(isIncluded: boolean) {
@@ -117,8 +117,6 @@ export function LeaderboardSection({ season, liveMatchups, selectedUserId, onSel
       hiddenGroups={hiddenGroups}
       columnState={columnState}
       onSortChange={setSort}
-      selectedUserId={selectedUserId}
-      onSelectUser={onSelectUser}
       footer={selectedUser && (
         <WeeklyTrend
           matchups={matchups}
