@@ -1,0 +1,45 @@
+.league-settings-gear {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  padding: 0;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.league-settings-gear:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.league-settings-gear:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus-shadow);
+}
+
+.league-settings-gear:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.league-settings-gear.is-customized {
+  color: var(--text);
+}
+
+.league-settings-gear-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 11px;
+  height: 11px;
+  background: var(--flag);
+  border: 2px solid var(--surface);
+  border-radius: var(--radius-full);
+}

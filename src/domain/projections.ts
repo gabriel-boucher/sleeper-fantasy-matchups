@@ -1,5 +1,6 @@
 import { Matchup, PlayerId, PlayerProjections, Team, WeeklyProjections } from '../types/models';
 import { getNormalCdf, sumBy } from '../utils/math';
+import { mapMatchupTeams } from './matchups';
 
 interface ThresholdBonus {
   setting: string;
@@ -39,13 +40,7 @@ export function getLineupProjection(starters: PlayerId[], projections: PlayerPro
 }
 
 export function withProjections(matchups: Matchup[], projections: WeeklyProjections): Matchup[] {
-  const projectedTeams = new Map<Team, Team>();
-  const projectOnce = (team: Team, week: number): Team => {
-    if (!projectedTeams.has(team)) projectedTeams.set(team, projectTeam(team, projections.get(week)));
-    return projectedTeams.get(team)!;
-  };
-
-  return matchups.map(m => ({ ...m, team: projectOnce(m.team, m.week), opponent: projectOnce(m.opponent, m.week) }));
+  return mapMatchupTeams(matchups, (team, week) => projectTeam(team, projections.get(week)));
 }
 
 function projectTeam(team: Team, projections: PlayerProjections | undefined): Team {

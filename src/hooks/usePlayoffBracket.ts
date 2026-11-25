@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { FIRST_WEEK } from '../constants/weeks';
 import { getSeedRosterIds } from '../domain/bracketSeeding';
 import { getAllPlayLeaderboard } from '../domain/leaderboard';
-import { BracketKind, buildPlayoffBracket, hasPlayoffsStarted, PlayoffBracket, PlayoffSeeding } from '../domain/playoffs';
+import { BracketKind, BracketMode, buildPlayoffBracket, hasPlayoffsStarted, PlayoffBracket, PlayoffSeeding } from '../domain/playoffs';
 import { getProjectedBrackets } from '../domain/projectedBracket';
 import { withLivePoints } from '../domain/weeklyPoints';
 import { Brackets, Matchup, Season } from '../types/models';
@@ -19,7 +19,12 @@ interface PlayoffBracketState {
   bracket: PlayoffBracket | null;
   kind: BracketKind;
   hasToiletBowl: boolean;
-  isProjected: boolean;
+  mode: BracketMode;
+}
+
+function getBracketMode(isStarted: boolean, isCustomized: boolean): BracketMode {
+  if (!isStarted) return 'projected';
+  return isCustomized ? 'resimulated' : 'recorded';
 }
 
 function useProjectedBrackets(season: Season, isEnabled: boolean): Brackets | null {
@@ -42,9 +47,11 @@ function useAllPlayOrder({ completedMatchups, teamUsers, lastRegularSeasonWeek }
 export function usePlayoffBracket({ season, liveMatchups, seeding, requestedKind }: PlayoffBracketOptions): PlayoffBracketState {
   const firstPlayoffWeek = season.lastRegularSeasonWeek + 1;
   const isStarted = hasPlayoffsStarted(season.completedWeeklyPoints, season.liveWeek, firstPlayoffWeek);
-  const fetchedBrackets = useBrackets(isStarted ? season.leagueId : null);
-  const projectedBrackets = useProjectedBrackets(season, !isStarted);
-  const brackets = isStarted ? fetchedBrackets : projectedBrackets;
+  const mode = getBracketMode(isStarted, season.isCustomized);
+  const usesRecordedBrackets = mode === 'recorded';
+  const fetchedBrackets = useBrackets(usesRecordedBrackets ? season.leagueId : null);
+  const projectedBrackets = useProjectedBrackets(season, !usesRecordedBrackets);
+  const brackets = usesRecordedBrackets ? fetchedBrackets : projectedBrackets;
   const allPlayOrder = useAllPlayOrder(season);
 
   const hasToiletBowl = !!brackets && getSeedRosterIds(brackets.losers).length > 0;
@@ -68,5 +75,5 @@ export function usePlayoffBracket({ season, liveMatchups, seeding, requestedKind
     });
   }, [brackets, kind, seeding, season, liveMatchups, firstPlayoffWeek, allPlayOrder]);
 
-  return { bracket, kind, hasToiletBowl, isProjected: !isStarted };
+  return { bracket, kind, hasToiletBowl, mode };
 }

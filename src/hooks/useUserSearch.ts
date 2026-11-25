@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { findUserLeagues, findUsername } from '../services/leagueService';
-import { UserId } from '../types/models';
+import { UserId, UserLeagues } from '../types/models';
 import { CLEARED_LEAGUE_PARAMS, readUrlParam, updateUrlParams } from '../utils/urlParams';
 import { useAsync } from './useAsync';
 
@@ -19,7 +19,18 @@ function scrollToTop(): void {
   window.scrollTo({ top: 0 });
 }
 
-export function useUserSearch() {
+export interface UserSearch {
+  username: string | null;
+  userLeagues: UserLeagues | null;
+  loading: boolean;
+  error: string | null;
+  historyNavigationCount: number;
+  searchUser: (username: string) => void;
+  goHome: () => void;
+  switchToLeagueMember: (userId: UserId) => Promise<void>;
+}
+
+export function useUserSearch(): UserSearch {
   const [attempt, setAttempt] = useState(readSearchAttemptFromUrl);
   const { data: userLeagues, loading, error: searchError } = useAsync(attempt, findLeagues);
   const [switchError, setSwitchError] = useState<string | null>(null);

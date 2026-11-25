@@ -91,7 +91,7 @@ export interface BracketMatchDto {
   p?: number | null;
 }
 
-export interface ProjectionDto {
+export interface PlayerStatLineDto {
   player_id: string;
   stats: Record<string, number>;
 }

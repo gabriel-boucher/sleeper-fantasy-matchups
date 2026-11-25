@@ -1,0 +1,53 @@
+.setting-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 84px;
+  align-items: center;
+  column-gap: var(--space-2);
+  padding: var(--space-1) var(--space-1-5);
+  border-radius: var(--radius-xs);
+  box-shadow: inset 3px 0 0 transparent;
+}
+
+.setting-row.is-changed {
+  background: color-mix(in srgb, var(--flag) 8%, transparent);
+  box-shadow: inset 3px 0 0 var(--flag);
+}
+
+.setting-row:has(.toggle) {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.setting-row-label,
+.setting-row .toggle {
+  grid-column: 1;
+}
+
+.setting-row-label {
+  font-size: var(--font-size-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.setting-row-input {
+  grid-column: 3;
+  width: 100%;
+  padding: var(--space-1) var(--space-1-5);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+}
+
+.setting-row-input:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+.setting-row-input.is-invalid {
+  border-color: var(--loss);
+}

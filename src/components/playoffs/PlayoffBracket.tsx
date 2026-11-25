@@ -8,7 +8,7 @@ import { getBracketColumns } from './bracketGrid';
 import { BracketDisplay } from './bracketDisplay';
 import { BracketNavigator } from './BracketNavigator';
 import { ChampionColumn } from './ChampionColumn';
-import { BRACKET_LABELS, getProjectionHint, getRoundName } from './playoffLabels';
+import { getBracketHint, getBracketTitle, getRoundName } from './playoffLabels';
 import { RoundColumn } from './RoundColumn';
 import './PlayoffBracket.css';
 
@@ -26,7 +26,7 @@ interface PlayoffBracketProps {
 export function PlayoffBracket({ season, liveMatchups, selectedUserId }: PlayoffBracketProps) {
   const [seeding, setSeeding] = useState<PlayoffSeeding>('real');
   const [requestedKind, setRequestedKind] = useState<BracketKind>('winners');
-  const { bracket, kind, hasToiletBowl, isProjected } = usePlayoffBracket({ season, liveMatchups, seeding, requestedKind });
+  const { bracket, kind, hasToiletBowl, mode } = usePlayoffBracket({ season, liveMatchups, seeding, requestedKind });
 
   if (!bracket) return null;
 
@@ -42,8 +42,8 @@ export function PlayoffBracket({ season, liveMatchups, selectedUserId }: Playoff
 
   return (
     <Section
-      title={isProjected ? `${BRACKET_LABELS.winners} — Projected` : BRACKET_LABELS.winners}
-      titleHint={isProjected ? getProjectionHint(season.lastRegularSeasonWeek, season.liveWeek) : undefined}
+      title={getBracketTitle(mode)}
+      titleHint={getBracketHint(mode, season)}
       actions={<SegmentedControl label="Playoff seeding" segments={SEEDINGS} value={seeding} onChange={setSeeding} />}
     >
       {hasToiletBowl && <BracketNavigator kind={kind} onChange={setRequestedKind} />}

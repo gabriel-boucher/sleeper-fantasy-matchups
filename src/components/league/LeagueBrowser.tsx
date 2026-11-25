@@ -1,3 +1,4 @@
+import { LeagueSettingsProvider } from '../../context/LeagueSettingsProvider';
 import { findManagedTeam, getTeamName } from '../../domain/teams';
 import { useAsync } from '../../hooks/useAsync';
 import { useLeagueSelection } from '../../hooks/useLeagueSelection';
@@ -15,9 +16,10 @@ export function LeagueBrowser({ userLeagues: { userId, displayName, avatarUrl, l
   const { leagueId, seasonLeagueId, selectLeague, selectSeason } = useLeagueSelection(leagues);
   const { data: season, loading, error } = useAsync(seasonLeagueId || null, loadSeason);
   const ownTeam = season ? findManagedTeam(season, userId) : undefined;
+  const comparableSeason = season?.hasHeadToHead ? season : null;
 
   return (
-    <>
+    <LeagueSettingsProvider season={comparableSeason}>
       <LeaguePicker
         displayName={displayName}
         teamName={ownTeam && getTeamName(ownTeam)}
@@ -33,7 +35,7 @@ export function LeagueBrowser({ userLeagues: { userId, displayName, avatarUrl, l
       {season && !season.hasHeadToHead && (
         <InfoMessage text="This league has no head-to-head matchups (e.g. a guillotine league), so there are no schedules to compare." />
       )}
-      {season?.hasHeadToHead && <SeasonView key={seasonLeagueId} loadedSeason={season} searchedUserId={userId} />}
-    </>
+      {comparableSeason && <SeasonView key={seasonLeagueId} loadedSeason={comparableSeason} searchedUserId={userId} />}
+    </LeagueSettingsProvider>
   );
 }

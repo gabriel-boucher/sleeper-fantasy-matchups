@@ -26,3 +26,9 @@ export function getMedian(values: number[]): number {
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
+
+const POINTS_PRECISION = 100;
+
+export function roundPoints(points: number): number {
+  return Math.round(points * POINTS_PRECISION) / POINTS_PRECISION;
+}

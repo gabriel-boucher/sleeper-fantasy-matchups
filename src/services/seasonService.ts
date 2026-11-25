@@ -8,16 +8,18 @@ import {
   toTeamIdsByManagerId,
   toTeamUsers,
   toUser,
-  toWeeklyPoints
+  toWeeklyPoints,
+  toWeeklyRosters
 } from '../api/sleeper/sleeperMappers';
 import { LEAGUE_DATA_CACHE_DURATION_MS } from '../constants/cache';
 import { DEFAULT_WEEK_COUNT, FIRST_WEEK } from '../constants/weeks';
 import { getStartingPositions, getStartingSlotNames, getStartingSlots } from '../domain/lineup';
 import { getLastCompletedWeek, getLiveWeek, getWeekCount, isCurrentSeason } from '../domain/seasonProgress';
-import { BestLineupContext, LeagueRules, Matchup, PlayerDirectory, ProjectionSettings, Season } from '../types/models';
+import { BestLineupContext, LeagueRules, LeagueSettings, Matchup, PlayerDirectory, ProjectionSettings, Season } from '../types/models';
 import { range } from '../utils/collections';
 import { withExpiringCache } from '../utils/expiringCache';
 import { getPlayerDirectory } from './playerService';
+import { rescoreLiveMatchups } from './statsService';
 
 interface SeasonData {
   leagueDto: LeagueDto;
@@ -34,8 +36,10 @@ export const loadSeason = withExpiringCache(fetchSeason, LEAGUE_DATA_CACHE_DURAT
 
 export async function loadLiveMatchups(season: Season): Promise<Matchup[]> {
   if (season.liveWeek === null) return [];
-  const matchupDtos = await getMatchups(season.leagueId, season.liveWeek);
-  return toMatchups(season.rosterOwners, matchupDtos, { week: season.liveWeek, isFinal: false }, season.bestLineupContext);
+  const liveWeek = season.liveWeek;
+  const matchupDtos = await getMatchups(season.leagueId, liveWeek);
+  const matchups = toMatchups(season.rosterOwners, matchupDtos, { week: liveWeek, isFinal: false }, season.bestLineupContext);
+  return rescoreLiveMatchups(season, liveWeek, matchups);
 }
 
 async function fetchSeason(leagueId: string): Promise<Season> {
@@ -69,6 +73,7 @@ function toSeason(leagueId: string, data: SeasonData): Season {
   const bestLineupContext = toBestLineupContext(leagueDto, rules, players);
   const lastCompletedWeek = getLastCompletedWeek(leagueDto.season, nflState, weekCount);
   const liveWeek = getLiveWeek(leagueDto.season, nflState, weekCount);
+  const defaultSettings: LeagueSettings = { scoring: leagueDto.scoring_settings ?? {}, hasMedianGame: rules.hasMedianGame };
   const matchups = [...matchupDtosByWeek].flatMap(([week, matchupDtos]) =>
     toMatchups(rosterOwners, matchupDtos, { week, isFinal: week <= lastCompletedWeek }, bestLineupContext)
   );
@@ -93,7 +98,13 @@ function toSeason(leagueId: string, data: SeasonData): Season {
     startingSlotNames: getStartingSlotNames(rosterPositions),
     players,
     isCurrentSeason: isCurrentSeason(leagueDto.season, nflState),
-    projectionSettings: toProjectionSettings(leagueDto, rosterPositions)
+    projectionSettings: toProjectionSettings(leagueDto, rosterPositions),
+    isBestBall: rules.isBestBall,
+    startingSlots: getStartingSlots(rosterPositions),
+    completedWeeklyRosters: toWeeklyRosters(rosterOwners, matchupDtosByWeek, lastCompletedWeek),
+    defaultSettings,
+    settings: defaultSettings,
+    isCustomized: false
   };
 }
 

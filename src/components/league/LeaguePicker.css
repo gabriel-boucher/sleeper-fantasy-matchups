@@ -40,9 +40,11 @@
   line-height: 1.1;
 }
 
-.league-picker-fields {
-  flex: 0 1 460px;
+.field-row.league-picker-fields {
+  flex: 0 1 520px;
   min-width: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
 }
 
 @media (max-width: 760px) {
@@ -51,7 +53,7 @@
     align-items: stretch;
   }
 
-  .league-picker-fields {
+  .field-row.league-picker-fields {
     flex-basis: auto;
   }
 }
@@ -59,5 +61,13 @@
 @media (max-width: 640px) {
   .league-picker-user {
     font-size: 1.75rem;
+  }
+
+  .field-row.league-picker-fields {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .field-row.league-picker-fields > .field:first-child {
+    grid-column: 1 / -1;
   }
 }

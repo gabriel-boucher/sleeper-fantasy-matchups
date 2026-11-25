@@ -110,8 +110,10 @@ The app reads these files from `raw.githubusercontent.com` (override with `VITE_
 ```
 src/
   components/      React components, grouped by feature, each with its own CSS
-    common/        Shared controls (panel, section, select, segmented toggle, step navigator, status messages)
-    search/        Username form
+    common/        Shared controls (panel, section, select, segmented toggle, step navigator, modal, status messages)
+    icons/         Inline SVG icons
+    layout/        Page chrome (navbar, page content)
+    search/        Username form and search errors
     league/        League and season pickers
     season/        Season view and team / schedule filters
     record/        Season record card and record tiles
@@ -119,7 +121,9 @@ src/
     lineup/        Head-to-head lineup dialog and player avatars
     leaderboard/   All-play leaderboard, column picker, sortable headers, luck badges, weekly trend chart
     playoffs/      Playoff and toilet bowl brackets
-    home/          Home page
+    settings/      League settings gear and dialog (median game and custom scoring)
+    home/          Home page illustrations
+  pages/           Top-level pages (home page, main page)
   api/             One folder per external source, each with its HTTP calls (*Api), response types (*Dto) and mappers (*Mappers)
     sleeper/       Sleeper leagues, players, projections and images
     espn/          ESPN games, play-by-play and recaps, and injury parsing
@@ -127,11 +131,11 @@ src/
     publishedData/ Files published to the data branch by the GitHub Action
   types/           Models shared across the app
   domain/          Pure fantasy logic with no React or network
-  services/        Loading and caching of leagues, seasons, brackets, players, projections and injuries
-  context/         React context for team and user links
+  services/        Loading and caching of leagues, seasons, brackets, players, projections, player stats and injuries
+  context/         React contexts (user search, team actions, league settings, settings draft)
   hooks/           React hooks (async loading, live refresh, playoff brackets, URL sync, stored preferences)
-  constants/       Shared constants (weeks, playoff places, cache duration, chart series, leaderboard column groups)
-  utils/           Generic helpers (math, collections, formatting, expiring cache, storage, URL parameters)
+  constants/       Shared constants (weeks, playoff places, cache duration, chart series, leaderboard column groups, scoring setting groups)
+  utils/           Generic helpers (math, collections, formatting, expiring cache, weekly cache, storage, URL parameters)
   styles/          Global design tokens (variables.css), reset and shared building blocks
 scripts/           Node scripts run by the GitHub Action (publishData.ts and its lib/ modules)
 ```

@@ -1,7 +1,7 @@
-import { Matchup, TeamRecord, UserId } from '../types/models';
+import { Matchup, Team, TeamRecord, UserId } from '../types/models';
 import { groupBy } from '../utils/collections';
 import { getMedian } from '../utils/math';
-import { addGame, addResult, createEmptyRecord, GameResult, getGameResult } from './records';
+import { addGame, addRecords, addResult, createEmptyRecord, GameResult, getGameResult } from './records';
 
 export type MatchupResult = GameResult | 'unplayed';
 
@@ -62,4 +62,18 @@ export function getMedianRecord(matchups: Matchup[], userId: UserId, lastRegular
     const median = medians.get(m.week);
     return median === undefined ? record : addResult(record, getGameResult(m.team.points, median));
   }, createEmptyRecord());
+}
+
+export function getRecordWithMedianGames(matchups: Matchup[], userId: UserId, hasMedianGame: boolean, lastWeek: number): TeamRecord {
+  const headToHead = getRecord(getMatchupsFor(matchups, userId));
+  return hasMedianGame ? addRecords(headToHead, getMedianRecord(matchups, userId, lastWeek)) : headToHead;
+}
+
+export function mapMatchupTeams(matchups: Matchup[], transform: (team: Team, week: number) => Team): Matchup[] {
+  const transformedTeams = new Map<Team, Team>();
+  const transformOnce = (team: Team, week: number): Team => {
+    if (!transformedTeams.has(team)) transformedTeams.set(team, transform(team, week));
+    return transformedTeams.get(team)!;
+  };
+  return matchups.map(m => ({ ...m, team: transformOnce(m.team, m.week), opponent: transformOnce(m.opponent, m.week) }));
 }

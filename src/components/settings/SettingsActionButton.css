@@ -1,0 +1,30 @@
+.settings-action-button {
+  padding: var(--space-1-5) var(--space-3);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+
+.settings-action-button:hover {
+  background: var(--surface-muted);
+}
+
+.settings-action-button.is-primary {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.settings-action-button.is-primary:hover {
+  background: var(--accent-hover);
+}
+
+.settings-action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

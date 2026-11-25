@@ -27,14 +27,13 @@ interface RecordDetailsProps {
 
 interface RecordSummaryProps extends Omit<RecordDetailsProps, 'matchups'> {
   teamFilters: ReactNode;
-  medianToggle: ReactNode;
   matchups: Matchup[] | null;
   footer?: ReactNode;
 }
 
-export function RecordSummary({ teamFilters, medianToggle, matchups, footer, ...detailsProps }: RecordSummaryProps) {
+export function RecordSummary({ teamFilters, matchups, footer, ...detailsProps }: RecordSummaryProps) {
   return (
-    <Panel title="Season record" actions={medianToggle} className="record-summary">
+    <Panel title="Season record" className="record-summary">
       <div className="record-summary-controls">{teamFilters}</div>
 
       {matchups

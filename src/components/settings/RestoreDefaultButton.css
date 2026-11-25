@@ -1,0 +1,26 @@
+.restore-default-button {
+  grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-0-5) var(--space-1-5);
+  font: inherit;
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-subtle);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.restore-default-button:hover {
+  color: var(--text);
+  border-color: var(--flag);
+}
+
+.restore-default-button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}

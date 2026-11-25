@@ -9,11 +9,10 @@ interface TeamSeasonOptions {
   liveMatchups: Matchup[];
   userId: UserId;
   scheduleOwnerId: UserId;
-  isMedianCounted: boolean;
 }
 
-export function useTeamSeason({ season, liveMatchups, userId, scheduleOwnerId, isMedianCounted }: TeamSeasonOptions) {
-  const { completedMatchups, teamUsers, lastRegularSeasonWeek } = season;
+export function useTeamSeason({ season, liveMatchups, userId, scheduleOwnerId }: TeamSeasonOptions) {
+  const { completedMatchups, teamUsers, lastRegularSeasonWeek, hasMedianGame } = season;
 
   const matchups = useMemo(
     () => (userId ? getMatchupsOnSchedule(completedMatchups, userId, scheduleOwnerId) : []),
@@ -31,15 +30,15 @@ export function useTeamSeason({ season, liveMatchups, userId, scheduleOwnerId, i
   );
 
   const medianRecord = useMemo(
-    () => (isMedianCounted && userId ? getMedianRecord(completedMatchups, userId, lastRegularSeasonWeek) : createEmptyRecord()),
-    [isMedianCounted, completedMatchups, lastRegularSeasonWeek, userId]
+    () => (hasMedianGame && userId ? getMedianRecord(completedMatchups, userId, lastRegularSeasonWeek) : createEmptyRecord()),
+    [hasMedianGame, completedMatchups, lastRegularSeasonWeek, userId]
   );
 
   const weeklyMedians = useMemo(
-    () => (isMedianCounted
+    () => (hasMedianGame
       ? getWeeklyMedians([...completedMatchups, ...liveMatchups], lastRegularSeasonWeek)
       : new Map<number, number>()),
-    [isMedianCounted, completedMatchups, liveMatchups, lastRegularSeasonWeek]
+    [hasMedianGame, completedMatchups, liveMatchups, lastRegularSeasonWeek]
   );
 
   const ownScheduleRecord = useMemo(

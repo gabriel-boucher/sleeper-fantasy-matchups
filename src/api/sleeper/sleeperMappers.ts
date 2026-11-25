@@ -1,6 +1,6 @@
 import { getBestLineup } from '../../domain/lineup';
 import { getTeamName } from '../../domain/teams';
-import { BestLineupContext, League, LeagueSeason, Matchup, RosterId, Team, TeamRecord, TeamRoster, User, UserId, WeeklyPoints } from '../../types/models';
+import { BestLineupContext, League, LeagueSeason, Matchup, RosterId, Team, TeamRecord, TeamRoster, User, UserId, WeeklyPoints, WeeklyRosters } from '../../types/models';
 import { groupBy, toMapKeepingFirst } from '../../utils/collections';
 import { LeagueDto, LeagueMemberDto, MatchupDto, MatchupDtosByWeek, RosterDto } from './sleeperDto';
 import { getAvatarUrl } from './sleeperCdn';
@@ -167,13 +167,27 @@ export function toMatchups(
   });
 }
 
-export function toWeeklyPoints(rosterOwners: Map<RosterId, User>, matchupDtosByWeek: MatchupDtosByWeek, lastCompletedWeek: number): WeeklyPoints {
+function mapCompletedWeeks<T>(
+  rosterOwners: Map<RosterId, User>,
+  matchupDtosByWeek: MatchupDtosByWeek,
+  lastCompletedWeek: number,
+  getValue: (matchupDto: MatchupDto) => T | null
+): Map<number, Map<UserId, T>> {
   const completedWeeks = [...matchupDtosByWeek].filter(([week]) => week <= lastCompletedWeek);
   return new Map(completedWeeks.map(([week, matchupDtos]) => [
     week,
     new Map(matchupDtos.flatMap(matchupDto => {
       const user = rosterOwners.get(matchupDto.roster_id);
-      return user ? [[user.id, matchupDto.points] as const] : [];
+      const value = getValue(matchupDto);
+      return user && value !== null ? [[user.id, value] as const] : [];
     }))
   ]));
+}
+
+export function toWeeklyRosters(rosterOwners: Map<RosterId, User>, matchupDtosByWeek: MatchupDtosByWeek, lastCompletedWeek: number): WeeklyRosters {
+  return mapCompletedWeeks(rosterOwners, matchupDtosByWeek, lastCompletedWeek, toRoster);
+}
+
+export function toWeeklyPoints(rosterOwners: Map<RosterId, User>, matchupDtosByWeek: MatchupDtosByWeek, lastCompletedWeek: number): WeeklyPoints {
+  return mapCompletedWeeks(rosterOwners, matchupDtosByWeek, lastCompletedWeek, matchupDto => matchupDto.points);
 }

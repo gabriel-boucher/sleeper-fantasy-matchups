@@ -1,6 +1,7 @@
 import { League } from '../../types/models';
 import { ListboxField } from '../common/ListboxField';
 import { UserAvatar } from '../common/UserAvatar';
+import { LeagueSettingsButton } from '../settings/LeagueSettingsButton';
 import './LeaguePicker.css';
 
 interface LeaguePickerProps {
@@ -46,6 +47,7 @@ export function LeaguePicker({ displayName, teamName, avatarUrl, leagues, league
           disabled={!selectedLeague}
           onChange={onSeasonChange}
         />
+        <LeagueSettingsButton />
       </div>
     </section>
   );

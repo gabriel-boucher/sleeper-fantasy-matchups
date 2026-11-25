@@ -13,25 +13,6 @@
 
   width: min(820px, calc(100vw - 2 * var(--space-4)));
   max-height: min(85vh, 900px);
-  padding: 0;
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 12px 40px rgba(16, 24, 40, 0.25);
-}
-
-html:has(.lineup-dialog[open]) {
-  overflow: hidden;
-  scrollbar-gutter: stable;
-}
-
-.lineup-dialog {
-  overscroll-behavior: contain;
-}
-
-.lineup-dialog::backdrop {
-  background: rgba(10, 12, 16, 0.55);
 }
 
 .lineup-dialog-content {
@@ -60,30 +41,6 @@ html:has(.lineup-dialog[open]) {
 
 .lineup-dialog-week .step-navigator-label {
   min-width: 0;
-}
-
-.lineup-dialog-close {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  background: none;
-  border: 1px solid var(--border);
-  padding: 0;
-  border-radius: var(--radius-xs);
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.lineup-dialog-close:hover {
-  color: var(--text);
-  border-color: var(--text-subtle);
-}
-
-.lineup-dialog-close:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-shadow);
 }
 
 .h2h-row {

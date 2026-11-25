@@ -7,6 +7,7 @@ import { getPointsOverWeeks, hasPointsFromWeek } from './weeklyPoints';
 export type PlayoffSeeding = 'real' | 'allPlay';
 
 export type BracketKind = 'winners' | 'toiletBowl';
+export type BracketMode = 'recorded' | 'projected' | 'resimulated';
 
 export interface PlayoffTeam {
   user: User;

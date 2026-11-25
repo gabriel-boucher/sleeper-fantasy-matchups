@@ -2,7 +2,17 @@ import { Matchup, TeamRecord, User, UserId, WeeklyInjuries } from '../types/mode
 import { sumBy } from '../utils/math';
 import { getInjuryLoss, InjuryLoss } from './injuries';
 import { BenchStats, getBenchStats } from './lineup';
-import { getMatchupsFor, getMedianRecord, getPlayedMatchups, getRecord, getRegularSeasonMatchups, getWeeks, groupByWeek, hasAnyPoints } from './matchups';
+import {
+  getMatchupsFor,
+  getMedianRecord,
+  getPlayedMatchups,
+  getRecord,
+  getRecordWithMedianGames,
+  getRegularSeasonMatchups,
+  getWeeks,
+  groupByWeek,
+  hasAnyPoints
+} from './matchups';
 import { getTotalProjection } from './projections';
 import { addGame, addRecords, createEmptyRecord, getGamesPlayed, getWinPct } from './records';
 
@@ -62,6 +72,16 @@ export function withLiveResults(
   return standings;
 }
 
+export function getStandings(
+  matchups: Matchup[],
+  users: User[],
+  hasMedianGame: boolean,
+  lastRegularSeasonWeek: number
+): Map<UserId, TeamRecord> {
+  const regularSeason = getRegularSeasonMatchups(matchups, lastRegularSeasonWeek);
+  return new Map(users.map(user => [user.id, getRecordWithMedianGames(regularSeason, user.id, hasMedianGame, lastRegularSeasonWeek)]));
+}
+
 export function getAllPlayLeaderboard(
   matchups: Matchup[],
   users: User[],
@@ -76,7 +96,7 @@ export function getAllPlayLeaderboard(
       const teamMatchups = getMatchupsFor(inRange, user.id);
       const playedMatchups = getPlayedMatchups(teamMatchups);
       const headToHead = getRecord(teamMatchups);
-      const withMedianGames = hasMedianGame ? addRecords(headToHead, getMedianRecord(inRange, user.id, weeks.to)) : headToHead;
+      const withMedianGames = getRecordWithMedianGames(inRange, user.id, hasMedianGame, weeks.to);
       const official = officialStandings.get(user.id);
       return {
         user,

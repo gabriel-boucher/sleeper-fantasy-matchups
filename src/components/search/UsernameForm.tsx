@@ -1,10 +1,9 @@
 import { FormEvent, useState } from 'react';
+import { useUserSearchContext } from '../../context/userSearchContext';
 import './UsernameForm.css';
 
 interface UsernameFormProps {
   initialUsername?: string;
-  loading: boolean;
-  onSubmit: (username: string) => void;
   inputId?: string;
   variant?: 'compact' | 'hero';
   autoFocus?: boolean;
@@ -14,18 +13,17 @@ const INPUT_LABEL = 'Sleeper username';
 
 export function UsernameForm({
   initialUsername = '',
-  loading,
-  onSubmit,
   inputId = 'username-input',
   variant = 'compact',
   autoFocus,
 }: UsernameFormProps) {
+  const { loading, searchUser } = useUserSearchContext();
   const [username, setUsername] = useState(initialUsername);
   const trimmedUsername = username.trim();
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (trimmedUsername) onSubmit(trimmedUsername);
+    if (trimmedUsername) searchUser(trimmedUsername);
   }
 
   return (

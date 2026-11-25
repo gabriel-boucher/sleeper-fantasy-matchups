@@ -113,6 +113,24 @@ export interface LeagueRules {
   hasMedianGame: boolean;
 }
 
+export type ScoringSettings = Record<string, number>;
+
+export interface LeagueSettings {
+  scoring: ScoringSettings;
+  hasMedianGame: boolean;
+}
+
+export interface LeagueSettingsOverrides {
+  scoring?: ScoringSettings;
+  hasMedianGame?: boolean;
+}
+
+export type PlayerStats = Record<string, number>;
+export type WeekPlayerStats = Record<PlayerId, PlayerStats>;
+export type WeeklyStats = Map<number, WeekPlayerStats>;
+
+export type WeeklyRosters = Map<number, Map<UserId, TeamRoster>>;
+
 export interface ProjectionSettings {
   season: string;
   pointsPerStat: Record<string, number>;
@@ -140,4 +158,10 @@ export interface Season {
   players: PlayerDirectory | null;
   isCurrentSeason: boolean;
   projectionSettings: ProjectionSettings | null;
+  isBestBall: boolean;
+  startingSlots: StartingSlot[];
+  completedWeeklyRosters: WeeklyRosters;
+  defaultSettings: LeagueSettings;
+  settings: LeagueSettings;
+  isCustomized: boolean;
 }

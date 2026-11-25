@@ -1,8 +1,9 @@
-import { BracketMatchDto, LeagueDto, LeagueMemberDto, MatchupDto, NflStateDto, PlayerDto, ProjectionDto, RosterDto, SleeperUserDto } from './sleeperDto';
+import { BracketMatchDto, LeagueDto, LeagueMemberDto, MatchupDto, NflStateDto, PlayerDto, PlayerStatLineDto, RosterDto, SleeperUserDto } from './sleeperDto';
 import { fetchJson } from '../http';
 
 const API_URL = 'https://api.sleeper.app/v1';
 const PROJECTIONS_URL = 'https://api.sleeper.com/projections/nfl';
+const STATS_URL = 'https://api.sleeper.com/stats/nfl';
 
 async function fetchList<T>(url: string, errorMessage: string): Promise<T[]> {
   return (await fetchJson<T[] | null>(url, errorMessage)) ?? [];
@@ -48,7 +49,14 @@ export function getAllPlayers(): Promise<Record<string, PlayerDto>> {
   return fetchJson(`${API_URL}/players/nfl`, 'Failed to fetch players');
 }
 
-export function getProjections(season: string, week: number, positions: string[]): Promise<ProjectionDto[]> {
-  const query = ['season_type=regular', ...positions.map(p => `position[]=${encodeURIComponent(p)}`)].join('&');
-  return fetchList(`${PROJECTIONS_URL}/${season}/${week}?${query}`, 'Failed to fetch projections');
+function toPositionQuery(positions: string[]): string {
+  return ['season_type=regular', ...positions.map(p => `position[]=${encodeURIComponent(p)}`)].join('&');
+}
+
+export function getProjections(season: string, week: number, positions: string[]): Promise<PlayerStatLineDto[]> {
+  return fetchList(`${PROJECTIONS_URL}/${season}/${week}?${toPositionQuery(positions)}`, 'Failed to fetch projections');
+}
+
+export function getWeeklyStats(season: string, week: number, positions: string[]): Promise<PlayerStatLineDto[]> {
+  return fetchList(`${STATS_URL}/${season}/${week}?${toPositionQuery(positions)}`, 'Failed to fetch player stats');
 }
